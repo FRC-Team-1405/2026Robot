@@ -9,6 +9,7 @@
     - does increase in FPS greatly improve vision estimates? not at all?
     - can we run 3 or 4 cameras on the same pi without much issue.
   - other sensors? lidar, lasers, etc, things that can be used for high precision readings that we could integrate with our vision data.
+  - tune a new PID for the drivebase that will automatically engage while the elevator is extended that will prevent tipping and allow smooth precise movement.
 
 ## Software Improvements:
   - logging/publishing camera target poses (we currently log estimated poses for each camera)
@@ -22,3 +23,6 @@
 ## Event Prep:
   - drive team should know how to setup the advantagescope for recording
   - bring april tags to the competition
+
+## Thoughts for drive team
+  - when facing defense like in this [match](https://www.thebluealliance.com/match/2025ohcl_qm50) i love the spin move we do to nudge the bot out of our way. if we approach the feeder with the side of our bot instead of the front (intake) we can spin after contact to then face the intake toward the feeder. we should practice this bc it seems to work very well against defensive bots.
