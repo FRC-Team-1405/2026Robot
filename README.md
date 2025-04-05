@@ -1,6 +1,6 @@
 # 2026Robot
 
-Offseason Projects
+## Offseason Projects
   - profile current swerve odometry (encoders only) to determine its accuracy and determine why it isn't perfectly accurate (slippage? other?)
     - implement any identified improvements in software/hardware
   - determine how to calibrate cameras for different lighting situations
@@ -10,12 +10,15 @@ Offseason Projects
     - can we run 3 or 4 cameras on the same pi without much issue.
   - other sensors? lidar, lasers, etc, things that can be used for high precision readings that we could integrate with our vision data.
 
-Software Improvements:
+## Software Improvements:
   - logging/publishing camera target poses (we currently log estimated poses for each camera)
   - figure out how to export data from advantagescope for better match analysis
     - likely we will need to reduce the amount of data we are publishing to smartdashboard.
     - i don't think advantage scope will let us import log data
 
-Event Prep:
+## Considerations for 2026 Game
+  - if there is a large obstacle that will restrict vision (like a giant reef) we need a camera for the driver to use when they are behind that obstacle so they aren't bumping into coral/algae when trying to place and not realizing it and droping pieces and taking 10+ sec to place a coral.
+
+## Event Prep:
   - drive team should know how to setup the advantagescope for recording
   - bring april tags to the competition
