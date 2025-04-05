@@ -1,6 +1,7 @@
 # 2026Robot
 
 ## Offseason Projects
+  - buy a pigeon (IMU) start using CTRe Swerve Drive (via the generator) hopefully this will improve our encoder-only odometry
   - profile current swerve odometry (encoders only) to determine its accuracy and determine why it isn't perfectly accurate (slippage? other?)
     - implement any identified improvements in software/hardware
   - determine how to calibrate cameras for different lighting situations
