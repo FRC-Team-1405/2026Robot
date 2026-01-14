@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
+import frc.robot.lib.CommandTracker;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
@@ -85,5 +87,25 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return AutoCommands.getAutonomousCommand();
+    }
+
+    /** Update NetworkTables with active commands from CommandTracker */
+    public static void updateNT() {
+        var inst = NetworkTableInstance.getDefault();
+        var table = inst.getTable("CommandTracker");
+
+        // Write active commands
+        int i = 0;
+        for (Command cmd : CommandTracker.getRunning()) {
+            table.getEntry("cmd_" + i).setString(cmd.getName());
+            i++;
+        }
+
+        // Clear leftover slots
+        for (int j = i; j < 2; j++) {
+            table.getEntry("cmd_" + j).setString("");
+        }
+
+        table.getEntry("count").setNumber(CommandTracker.getRunning().size());
     }
 }
