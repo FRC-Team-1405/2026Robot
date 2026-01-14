@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.lib.AprilTags;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class AutoPilotCommands {
@@ -19,20 +20,32 @@ public class AutoPilotCommands {
     public static final Rotation2d CCW_30deg = Rotation2d.fromDegrees(30);
 
     // Poses
-    public static Supplier<Pose2d> pos1 = () -> new Pose2d(3.23, 2.4, Rotation2d.fromDegrees(90));
+    public static Supplier<Pose2d> pos1 = () -> AprilTags.getAprilTagPose(28);
 
     public static void registerCommands(CommandSwerveDrivetrain drivetrain) {
         /* Commands */
         // Uses command suppliers instead of commands so that we can reuse the same
         // command in an autonomous
-        Supplier<Command> MoveTo_pos1 = () -> new AutoPilotCommand(
-                () -> pos1.get(), drivetrain, "MoveTo_pos1");
+        Supplier<Command> MoveTo_pos1 = () -> new AutoPilotCommand.Builder(
+                () -> pos1.get(), drivetrain, "MoveTo_pos1")
+                .build();
+
+        Supplier<Command> MoveTo_pos1_withTracking = () -> new AutoPilotCommand.Builder(
+                () -> pos1.get(), drivetrain, "MoveTo_pos1_withTracking")
+                .withPointTowardsDuringMotion(() -> AprilTags.getAprilTagPose(20)) // Example: track tag 4 while moving
+                .withPointTowardsTransitionThreshold(0.7) // Transition to final rotation at 70% of the path
+                .withFlipPoseForAlliance(true)
+                .build();
 
         /* Full Autos */
         Command AP_auto1 = new SequentialCommandGroup(
                 MoveTo_pos1.get());
 
+        Command AP_tracking_example = new SequentialCommandGroup(
+                MoveTo_pos1_withTracking.get());
+
         /* Register Commands */
         NamedCommands.registerCommand("AP_auto1", AP_auto1);
+        NamedCommands.registerCommand("AP_tracking_example", AP_tracking_example);
     }
 }

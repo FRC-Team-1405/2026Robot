@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -16,6 +17,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.lib.AprilTags;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -33,7 +35,7 @@ public class PidToPoseCommands {
       .getStructTopic("DebugPose", Pose2d.struct).publish();
 
   /* Poses */
-  public static Supplier<Pose2d> pos1 = () -> new Pose2d(4.67, 2.04, Rotation2d.fromDegrees(-90));
+  public static Supplier<Pose2d> pos1 = () -> AprilTags.getAprilTagPose(1);
 
   public static void registerCommands(CommandSwerveDrivetrain drivetrain) {
     Pose2d debugPose = new Pose2d(4.22, 3.22, Rotation2d.fromDegrees(60));
@@ -42,8 +44,10 @@ public class PidToPoseCommands {
     /* Commands */
     // Uses command suppliers instead of commands so that we can reuse the same
     // command in an autonomous
-    Supplier<Command> MoveTo_pos1 = () -> new PidToPoseCommand(drivetrain,
-        () -> pos1.get(), SCORE_TOLERANCE, "MoveTo_pos1");
+    Supplier<Command> MoveTo_pos1 = () -> new PidToPoseCommand.Builder(drivetrain,
+        () -> pos1.get(), "MoveTo_pos1")
+        .withTolerance(SCORE_TOLERANCE)
+        .build();
 
     /* Full Autos */
     Command P2P_auto1 = new SequentialCommandGroup(

@@ -1,15 +1,15 @@
 {
   "hubs": [
     {
-      "x": 0,
+      "x": 1280,
       "y": 0,
       "width": 1280,
       "height": 1392,
       "state": {
         "sidebar": {
-          "width": 253,
+          "width": 301,
           "expanded": [
-            "/TagMap"
+            "/AdvantageScopeLogs"
           ]
         },
         "tabs": {
@@ -20,7 +20,7 @@
               "title": "",
               "controller": null,
               "controllerUUID": "50nautkyc4smoe33rob2u4zjyp2buwjo",
-              "renderer": "",
+              "renderer": "#/",
               "controlsHeight": 0
             },
             {
@@ -64,11 +64,21 @@
                 ],
                 "field": "FRC:Evergreen",
                 "orientation": 0,
-                "size": "large"
+                "size": "medium"
               },
               "controllerUUID": "8w7x6wodeb0f5hyhcyrxm5mey0a7f07p",
               "renderer": null,
               "controlsHeight": 200
+            },
+            {
+              "type": 5,
+              "title": "Console",
+              "controller": "NT:/AdvantageScopeLogs/PidToPoseCommand",
+              "controllerUUID": "duq44rjnoov5f1xi7ouwggyoj0c9bnjw",
+              "renderer": {
+                "highlight": false
+              },
+              "controlsHeight": 0
             },
             {
               "type": 2,

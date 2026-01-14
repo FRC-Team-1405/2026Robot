@@ -31,16 +31,53 @@ import frc.robot.lib.FinneyCommand;
 import frc.robot.lib.FinneyLogger;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
+/**
+ * Command that uses PID control to navigate the robot to a target pose.
+ * 
+ * <p>
+ * Use the Builder pattern to create instances:
+ * 
+ * <pre>
+ * // Simple usage - default constraints, no name
+ * new PidToPoseCommand.Builder(drivetrain, targetPoseSupplier, toleranceInches)
+ *         .build();
+ * 
+ * // With field symmetry (flip for red alliance)
+ * new PidToPoseCommand.Builder(drivetrain, targetPoseSupplier, toleranceInches)
+ *         .withFieldSymmetry(true)
+ *         .withName("ScoreReef")
+ *         .build();
+ * 
+ * // With velocities for path chaining
+ * new PidToPoseCommand.Builder(drivetrain, targetPoseSupplier, toleranceInches)
+ *         .withInitialVelocity(2.0)
+ *         .withEndVelocity(1.5)
+ *         .withName("ApproachTarget")
+ *         .build();
+ * 
+ * // With REEF constraints (faster)
+ * new PidToPoseCommand.Builder(drivetrain, targetPoseSupplier, toleranceInches)
+ *         .withReefConstraints()
+ *         .withName("ReefScore")
+ *         .build();
+ * 
+ * // With custom constraints
+ * new PidToPoseCommand.Builder(drivetrain, targetPoseSupplier, toleranceInches)
+ *         .withConstraints(new TrapezoidProfile.Constraints(6, 8))
+ *         .withName("FastMove")
+ *         .build();
+ * </pre>
+ */
 public class PidToPoseCommand extends FinneyCommand {
     private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
 
     private static final TrapezoidProfile.Constraints DEFAULT_CONSTRAINTS = new TrapezoidProfile.Constraints(4, 5);
-    private static final TrapezoidProfile.Constraints REEF_DEFAULT_CONSTRAINTS = new TrapezoidProfile.Constraints(5, 6);
+    private static final TrapezoidProfile.Constraints REEF_DEFAULT_CONSTRAINTS = new TrapezoidProfile.Constraints(5,
+            6);
 
-    private final boolean DEBUG_LOGGING_ENABLED = false;
+    private final boolean DEBUG_LOGGING_ENABLED = true;
     DataLog log = DataLogManager.getLog();
     StringLogEntry commandLog = new StringLogEntry(log, "/Commands/P2P");
-
 
     private final CommandSwerveDrivetrain drive;
     private final Supplier<Pose2d> targetPose;
@@ -57,7 +94,9 @@ public class PidToPoseCommand extends FinneyCommand {
     private final ProfiledPIDController thetaController;
 
     private Pose2d poseToMoveTo;
-    private StructPublisher<Pose2d> pidToPosePublisher = NetworkTableInstance.getDefault().getStructTopic("PID_TO_POSE/Pose", Pose2d.struct).publish();
+    private StructPublisher<Pose2d> pidToPosePublisher = NetworkTableInstance.getDefault()
+            .getStructTopic("SmartDashboard/Auto/AUTOPILOT/PID_TO_POSE/TargetPose", Pose2d.struct)
+            .publish();
 
     // initial velocity mechanism
     Mechanism2d initialMechanism;
@@ -84,57 +123,46 @@ public class PidToPoseCommand extends FinneyCommand {
     double smoothedError;
 
     public static final SwerveRequest.ApplyFieldSpeeds pidToPose_FieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
-      .withDriveRequestType(DriveRequestType.Velocity);
+            .withDriveRequestType(DriveRequestType.Velocity);
 
-    public PidToPoseCommand(CommandSwerveDrivetrain drive, Supplier<Pose2d> targetPose, double toleranceInches, boolean applyFieldSymmetryToPose, String commandName) {
-        // used by auto score in teleop
-        this(drive, targetPose, toleranceInches,
-                applyFieldSymmetryToPose, 0, 0, commandName, DEFAULT_CONSTRAINTS);
-    }
-
-    public PidToPoseCommand(CommandSwerveDrivetrain drive, Supplier<Pose2d> targetPose, double toleranceInches, String commandName) {
-        // used in PidToPoseCommands for Reef Positions
-        this(drive, targetPose, toleranceInches,
-                false, 0, 0, commandName, REEF_DEFAULT_CONSTRAINTS);
-    }
-
-    public PidToPoseCommand(CommandSwerveDrivetrain drive, Supplier<Pose2d> targetPose, double toleranceInches,
-            boolean applyFieldSymmetryToPose, double initialStateVelocity, double endStateVelocity) {
-        // un-used currently
-        this(drive, targetPose, toleranceInches,
-                applyFieldSymmetryToPose, 0, 0, null, DEFAULT_CONSTRAINTS);
-    }
-
-    public PidToPoseCommand(CommandSwerveDrivetrain drive, Supplier<Pose2d> targetPose, double toleranceInches,
-            boolean applyFieldSymmetryToPose, double initialStateVelocity, double endStateVelocity, String commandName, TrapezoidProfile.Constraints drivingContraints) {
-        this.drive = drive;
-        this.targetPose = targetPose;
-        this.toleranceInches = toleranceInches;
-        this.applyFieldSymmetryToPose = applyFieldSymmetryToPose;
-        this.initialStateVelocity = initialStateVelocity;
-        this.endStateVelocity = endStateVelocity;
-        this.commandName = commandName;
-        this.drivingContraints = drivingContraints;
+    /**
+     * Private constructor - use Builder to create instances
+     */
+    private PidToPoseCommand(Builder builder) {
+        this.drive = builder.drive;
+        this.targetPose = builder.targetPose;
+        this.toleranceInches = builder.toleranceInches;
+        this.applyFieldSymmetryToPose = builder.applyFieldSymmetryToPose;
+        this.initialStateVelocity = builder.initialStateVelocity;
+        this.endStateVelocity = builder.endStateVelocity;
+        this.commandName = builder.commandName;
+        this.drivingContraints = builder.drivingContraints;
 
         xController = new ProfiledPIDController(2.2, 0, 0, drivingContraints);
         yController = new ProfiledPIDController(2.2, 0, 0, drivingContraints);
         thetaController = new ProfiledPIDController(2, 0, 0, DEFAULT_CONSTRAINTS);
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI); // Enable angle wrapping
 
         initialMechanism = new Mechanism2d(2, 2); // 2x2 unit canvas
         initialOrigin = initialMechanism.getRoot("initialOrigin", 1, 1); // center of canvas
 
-        initialDeltaLigament = initialOrigin.append(new MechanismLigament2d("initialdelta", 0, 0, 1, new Color8Bit(Color.kBlue)));
-        initialDirectionLigament = initialOrigin.append(new MechanismLigament2d("initialdirection", 0, 0, 1, new Color8Bit(Color.kGreen)));
-        initialVelocityLigament = initialOrigin.append(new MechanismLigament2d("initialvelocity", 0, 0, 1, new Color8Bit(Color.kRed)));
-
+        initialDeltaLigament = initialOrigin
+                .append(new MechanismLigament2d("initialdelta", 0, 0, 1, new Color8Bit(Color.kBlue)));
+        initialDirectionLigament = initialOrigin
+                .append(new MechanismLigament2d("initialdirection", 0, 0, 1,
+                        new Color8Bit(Color.kGreen)));
+        initialVelocityLigament = initialOrigin
+                .append(new MechanismLigament2d("initialvelocity", 0, 0, 1, new Color8Bit(Color.kRed)));
 
         loopMechanism = new Mechanism2d(2, 2); // 2x2 unit canvas
         loopOrigin = loopMechanism.getRoot("loopOrigin", 1, 1); // center of canvas
 
-        loopDeltaLigament = loopOrigin.append(new MechanismLigament2d("loopdelta", 0, 0, 1, new Color8Bit(Color.kBlue)));
-        loopDirectionLigament = loopOrigin.append(new MechanismLigament2d("loopdirection", 0, 0, 1, new Color8Bit(Color.kGreen)));
-        loopVelocityLigament = loopOrigin.append(new MechanismLigament2d("loopvelocity", 0, 0, 1, new Color8Bit(Color.kRed)));
+        loopDeltaLigament = loopOrigin
+                .append(new MechanismLigament2d("loopdelta", 0, 0, 1, new Color8Bit(Color.kBlue)));
+        loopDirectionLigament = loopOrigin
+                .append(new MechanismLigament2d("loopdirection", 0, 0, 1, new Color8Bit(Color.kGreen)));
+        loopVelocityLigament = loopOrigin
+                .append(new MechanismLigament2d("loopvelocity", 0, 0, 1, new Color8Bit(Color.kRed)));
 
         SmartDashboard.putData("P2P_InitialVectorMechanism", initialMechanism);
         SmartDashboard.putData("P2P_LoopVectorMechanism", loopMechanism);
@@ -142,6 +170,58 @@ public class PidToPoseCommand extends FinneyCommand {
         addRequirements(drive);
 
         this.setName("PidToPose");
+    }
+
+    /**
+     * Builder class for PidToPoseCommand
+     */
+    public static class Builder {
+        // Required parameters
+        private final CommandSwerveDrivetrain drive;
+        private final Supplier<Pose2d> targetPose;
+        private final String commandName;
+
+        // Optional parameters with default values
+        private boolean applyFieldSymmetryToPose = false;
+        private double initialStateVelocity = 0;
+        private double endStateVelocity = 0;
+        private double toleranceInches = 2.0;
+        private TrapezoidProfile.Constraints drivingContraints = DEFAULT_CONSTRAINTS;
+
+        public Builder(CommandSwerveDrivetrain drive, Supplier<Pose2d> targetPose, String commandName) {
+            this.drive = drive;
+            this.targetPose = targetPose;
+            this.commandName = commandName;
+        }
+
+        public Builder withFieldSymmetry(boolean applyFieldSymmetryToPose) {
+            this.applyFieldSymmetryToPose = applyFieldSymmetryToPose;
+            return this;
+        }
+
+        public Builder withInitialVelocity(double initialStateVelocity) {
+            this.initialStateVelocity = initialStateVelocity;
+            return this;
+        }
+
+        public Builder withEndVelocity(double endStateVelocity) {
+            this.endStateVelocity = endStateVelocity;
+            return this;
+        }
+
+        public Builder withTolerance(double toleranceInches) {
+            this.toleranceInches = toleranceInches;
+            return this;
+        }
+
+        public Builder withConstraints(TrapezoidProfile.Constraints drivingContraints) {
+            this.drivingContraints = drivingContraints;
+            return this;
+        }
+
+        public PidToPoseCommand build() {
+            return new PidToPoseCommand(this);
+        }
     }
 
     @Override
@@ -157,7 +237,8 @@ public class PidToPoseCommand extends FinneyCommand {
         log("Pose to move to (after symmetry): " + poseToMoveTo);
         log("Current pose: " + drive.getState().Pose);
 
-        // Without resetting when we chain commands together the robot will drive full speed in a weird direction. unclear why but this fixes it.
+        // Without resetting when we chain commands together the robot will drive full
+        // speed in a weird direction. unclear why but this fixes it.
         Pose2d currentPose = drive.getState().Pose;
 
         Translation2d delta = poseToMoveTo.getTranslation().minus(currentPose.getTranslation());
@@ -188,25 +269,29 @@ public class PidToPoseCommand extends FinneyCommand {
 
         xController.reset(new TrapezoidProfile.State(currentPose.getX(), initialVelocityVector.getX()));
         yController.reset(new TrapezoidProfile.State(currentPose.getY(), initialVelocityVector.getY()));
-        thetaController.reset(new TrapezoidProfile.State(currentPose.getRotation().getRadians(), 0)); // TODO: provide a value?
+        thetaController.reset(new TrapezoidProfile.State(currentPose.getRotation().getRadians(), 0)); // TODO:
+                                                                                                      // provide
+                                                                                                      // a
+                                                                                                      // value?
 
         // preload controllers
-        if (Math.abs(initialStateVelocity) > 0){
+        if (Math.abs(initialStateVelocity) > 0) {
             for (int i = 0; i < 5; i++) {
                 // arbitrary 5 times preloaded, but it works
                 double xOutput = xController.calculate(currentPose.getX(),
                         new TrapezoidProfile.State(poseToMoveTo.getX(), 0));
-                double yOutput = yController.calculate(currentPose.getY(),  
+                double yOutput = yController.calculate(currentPose.getY(),
                         new TrapezoidProfile.State(poseToMoveTo.getY(), 0));
-                drive.setControl(pidToPose_FieldSpeeds.withSpeeds(new ChassisSpeeds(xOutput, yOutput, 0)));
+                drive.setControl(pidToPose_FieldSpeeds
+                        .withSpeeds(new ChassisSpeeds(xOutput, yOutput, 0)));
             }
         }
 
         commandLog.append("Initialized: " + getName());
 
         fLogger.log("Initializing %s to target Pose (x: %.1f, y: %.1f, rot: %.1f deg)",
-            getName(),
-            poseToMoveTo.getX(), poseToMoveTo.getY(), poseToMoveTo.getRotation().getDegrees());
+                getName(),
+                poseToMoveTo.getX(), poseToMoveTo.getY(), poseToMoveTo.getRotation().getDegrees());
     }
 
     @Override
@@ -246,9 +331,13 @@ public class PidToPoseCommand extends FinneyCommand {
         double thetaOutput = thetaController.calculate(currentPose.getRotation().getRadians(),
                 poseToMoveTo.getRotation().getRadians());
 
-        if (errorIncreasing && Math.abs(initialStateVelocity) > 0){
-            xOutput = xOutput < initialVelocityVector.getX() ? average(initialVelocityVector.getX(), xOutput) : xOutput;
-            yOutput = yOutput < initialVelocityVector.getY() ? average(initialVelocityVector.getY(), yOutput) : yOutput;
+        if (errorIncreasing && Math.abs(initialStateVelocity) > 0) {
+            xOutput = xOutput < initialVelocityVector.getX()
+                    ? average(initialVelocityVector.getX(), xOutput)
+                    : xOutput;
+            yOutput = yOutput < initialVelocityVector.getY()
+                    ? average(initialVelocityVector.getY(), yOutput)
+                    : yOutput;
         }
 
         SmartDashboard.putNumber("PID_TO_POSE/xError", xController.getPositionError());
@@ -260,13 +349,14 @@ public class PidToPoseCommand extends FinneyCommand {
         drive.setControl(pidToPose_FieldSpeeds.withSpeeds(new ChassisSpeeds(xOutput, yOutput, thetaOutput)));
 
         previousLoopBiggestError = currentLoopBiggestError;
-        currentLoopBiggestError = xController.getPositionError() > yController.getPositionError() ? xController.getPositionError() : yController.getPositionError();
-        
+        currentLoopBiggestError = xController.getPositionError() > yController.getPositionError()
+                ? xController.getPositionError()
+                : yController.getPositionError();
+
         previousSmoothedError = smoothedError;
         double maxError = Math.max(
-            Math.abs(xController.getPositionError()),
-            Math.abs(yController.getPositionError())
-        );
+                Math.abs(xController.getPositionError()),
+                Math.abs(yController.getPositionError()));
         smoothedError = errorAverage.calculate(maxError);
 
         if (smoothedError < previousSmoothedError) {
@@ -285,7 +375,9 @@ public class PidToPoseCommand extends FinneyCommand {
     @Override
     public void end(boolean interrupted) {
         super.end(interrupted);
-        //TODO modify command to optionally apply "brakes" where it not only cuts velocity to wheels but moves the wheels into brake formation making the robot harder to move
+        // TODO modify command to optionally apply "brakes" where it not only cuts
+        // velocity to wheels but moves the wheels into brake formation making the robot
+        // harder to move
         if (endStateVelocity == 0) {
             log("KILLING DRIVE VELOCITY");
             drive.setControl(pidToPose_FieldSpeeds.withSpeeds(new ChassisSpeeds(0, 0, 0)));
@@ -293,22 +385,26 @@ public class PidToPoseCommand extends FinneyCommand {
             SmartDashboard.putNumber("PID_TO_POSE/xError", xController.getPositionError());
             SmartDashboard.putNumber("PID_TO_POSE/yError", yController.getPositionError());
         }
-        
+
         double finalDistance = Units
-                .metersToInches(drive.getState().Pose.getTranslation().getDistance(poseToMoveTo.getTranslation()));
+                .metersToInches(drive.getState().Pose.getTranslation()
+                        .getDistance(poseToMoveTo.getTranslation()));
         log("PidToPose " + (interrupted ? "interrupted" : "completed") +
                 ". Final pose: " + drive.getState().Pose +
                 ", Target: " + poseToMoveTo +
                 ", Distance to target (in): " + finalDistance +
-                ", End state velocity: ( x: " + drive.getState().Speeds.vxMetersPerSecond + ", y: " + drive.getState().Speeds.vyMetersPerSecond + " )");
+                ", End state velocity: ( x: " + drive.getState().Speeds.vxMetersPerSecond + ", y: "
+                + drive.getState().Speeds.vyMetersPerSecond + " )");
 
         commandLog.append("Finished (interrupt: " + (interrupted ? "Y" : "N") + "): " + getName());
 
-        fLogger.log("%s ended, final Pose (x: %.1f, y: %.1f, rot: %.1f deg), target Pose (x: %.1f, y: %.1f, rot: %.1f deg), interrupted: %s",
-        getName(),
-        drive.getState().Pose.getX(), drive.getState().Pose.getY(), drive.getState().Pose.getRotation().getDegrees(),
-        poseToMoveTo.getX(), poseToMoveTo.getY(), poseToMoveTo.getRotation().getDegrees(),
-        interrupted);
+        fLogger.log(
+                "%s ended, final Pose (x: %.1f, y: %.1f, rot: %.1f deg), target Pose (x: %.1f, y: %.1f, rot: %.1f deg), interrupted: %s",
+                getName(),
+                drive.getState().Pose.getX(), drive.getState().Pose.getY(),
+                drive.getState().Pose.getRotation().getDegrees(),
+                poseToMoveTo.getX(), poseToMoveTo.getY(), poseToMoveTo.getRotation().getDegrees(),
+                interrupted);
     }
 
     public static double average(Double... values) {
@@ -318,6 +414,7 @@ public class PidToPoseCommand extends FinneyCommand {
     private void log(String logMessage) {
         if (DEBUG_LOGGING_ENABLED) {
             DataLogManager.log("[PidToPoseCommand] " + logMessage);
+            System.out.println("[PidToPoseCommand] " + logMessage);
         }
     }
 
@@ -328,8 +425,8 @@ public class PidToPoseCommand extends FinneyCommand {
     }
 
     private String formatPose(Pose2d pose) {
-        return String.format("(%.2f, %.2f, %.1f°)", 
-            pose.getX(), pose.getY(), pose.getRotation().getDegrees());
+        return String.format("(%.2f, %.2f, %.1f°)",
+                pose.getX(), pose.getY(), pose.getRotation().getDegrees());
     }
 
 }
