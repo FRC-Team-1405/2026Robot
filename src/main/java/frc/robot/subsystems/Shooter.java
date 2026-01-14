@@ -12,8 +12,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Shooter extends SubsystemBase {
   private final TalonFX shooterMotor = new TalonFX(20);
 
-  private void setShooterSpeed() {
-    shooterMotor.setControl(new VelocityVoltage(1.0));
+  private void setShooterSpeed(Double speed) {
+    shooterMotor.setControl(new VelocityVoltage(speed));
   }
 
   private void shooterStop() {
