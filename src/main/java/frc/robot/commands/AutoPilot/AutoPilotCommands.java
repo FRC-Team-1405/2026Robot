@@ -28,6 +28,7 @@ public class AutoPilotCommands {
         // command in an autonomous
         Supplier<Command> MoveTo_pos1 = () -> new AutoPilotCommand.Builder(
                 () -> pos1.get(), drivetrain, "MoveTo_pos1")
+                .withFlipPoseForAlliance(true)
                 .build();
 
         Supplier<Command> MoveTo_pos1_withTracking = () -> new AutoPilotCommand.Builder(

@@ -73,15 +73,19 @@ public class AutoPilotCommand extends FinneyCommand {
     private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
 
     // Publishes AP's target position
-    private StructPublisher<Pose2d> apPublisher = NetworkTableInstance.getDefault()
+    private StructPublisher<Pose2d> apTargetPublisher = NetworkTableInstance.getDefault()
             .getStructTopic("SmartDashboard/Auto/AUTOPILOT/TargetPose", Pose2d.struct).publish();
+
+    // Publishes AP's point-towards target position
+    private StructPublisher<Pose2d> apPointTowardsTargetPublisher = NetworkTableInstance.getDefault()
+            .getStructTopic("SmartDashboard/Auto/AUTOPILOT/PointTowardsTargetPose", Pose2d.struct).publish();
 
     public final SwerveRequest.ApplyFieldSpeeds pidToPose_FieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
             .withDriveRequestType(DriveRequestType.Velocity);
     public final SwerveRequest.ApplyRobotSpeeds applyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds()
             .withDriveRequestType(DriveRequestType.Velocity);
     private static final APConstraints kConstraints = new APConstraints()
-            .withAcceleration(10.0)
+            .withAcceleration(10.0) // TUNE THIS TO YOUR ROBOT!
             .withJerk(10.0);
 
     // AutoPilot Thresholds
@@ -97,18 +101,20 @@ public class AutoPilotCommand extends FinneyCommand {
     private final CommandSwerveDrivetrain m_drivetrain;
     private final Optional<Rotation2d> m_entryAngle;
     private final boolean m_flipPoseForAlliance;
-    private final Optional<Supplier<Pose2d>> m_pointTowardsDuringMotion;
+    private final Optional<Supplier<Pose2d>> m_pointTowardsDuringMotionSupplier;
+    private Optional<Supplier<Pose2d>> m_pointTowardsDuringMotion;
     private final double m_pointTowardsTransitionThreshold;
     private double startingDistanceFromTarget;
     private Pose2d startingPosition;
     private final String commandName;
 
     private ProfiledPIDController m_thetaController;
+    private final ProfiledPIDController m_thetaController_endMotion;
 
     private final SwerveRequest.FieldCentricFacingAngle m_request = new SwerveRequest.FieldCentricFacingAngle()
             .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance)
             .withDriveRequestType(DriveRequestType.Velocity)
-            .withHeadingPID(5, 0, 0); /* auto pilots angle PID, TUNE THIS TO YOUR ROBOT! */
+            .withHeadingPID(2, 0, 0); /* auto pilots angle PID, TUNE THIS TO YOUR ROBOT! */
 
     /**
      * Private constructor - use Builder to create instances
@@ -118,15 +124,21 @@ public class AutoPilotCommand extends FinneyCommand {
         m_drivetrain = builder.drivetrain;
         m_entryAngle = builder.entryAngle;
         m_flipPoseForAlliance = builder.flipPoseForAlliance;
-        m_pointTowardsDuringMotion = builder.pointTowardsDuringMotion;
+        m_pointTowardsDuringMotionSupplier = builder.pointTowardsDuringMotion;
         m_pointTowardsTransitionThreshold = builder.pointTowardsTransitionThreshold;
         this.commandName = builder.commandName;
 
         m_thetaController = new ProfiledPIDController(
-                30, 0.0, 0.5, // PID gains
+                30, 0.0, 0.5, // PID gains, TUNE THIS TO YOUR ROBOT!
                 new TrapezoidProfile.Constraints(20, 25) // max velocity (rad/s) and acceleration (rad/s^2)
         );
         m_thetaController.enableContinuousInput(-Math.PI, Math.PI); // Enable angle wrapping
+
+        m_thetaController_endMotion = new ProfiledPIDController(
+                10, 0.0, 0.1, // PID gains for end motion, TUNE THIS TO YOUR ROBOT!
+                new TrapezoidProfile.Constraints(10, 15) // max velocity (rad/s) and acceleration (rad/s^2)
+        );
+        m_thetaController_endMotion.enableContinuousInput(-Math.PI, Math.PI); // Enable angle wrapping
 
         addRequirements(m_drivetrain);
     }
@@ -178,19 +190,28 @@ public class AutoPilotCommand extends FinneyCommand {
     public void initialize() {
         super.initialize();
 
-        // point-towards-target's alliance flipping is handled in execute()
+        m_pointTowardsDuringMotion = m_pointTowardsDuringMotionSupplier;
         if (m_flipPoseForAlliance && DriverStation.Alliance.Red.equals(DriverStation.getAlliance().get())) {
             // flip pose for red alliance
             m_target = new APTarget(AllianceSymmetry.flip(m_targetSupplier.get()));
+
+            if (m_pointTowardsDuringMotionSupplier.isPresent()) {
+                m_pointTowardsDuringMotion = Optional
+                        .of(() -> AllianceSymmetry.flip(m_pointTowardsDuringMotionSupplier.get().get()));
+            }
         } else {
             m_target = new APTarget(m_targetSupplier.get());
         }
-        apPublisher.set(m_target.getReference());
+        apTargetPublisher.set(m_target.getReference());
+        if (m_pointTowardsDuringMotion.isPresent()) {
+            apPointTowardsTargetPublisher.set(m_pointTowardsDuringMotion.get().get());
+        }
 
         startingDistanceFromTarget = getDistanceToTarget();
         startingPosition = m_drivetrain.getState().Pose;
 
         m_thetaController.reset(startingPosition.getRotation().getRadians());
+        m_thetaController_endMotion.reset(startingPosition.getRotation().getRadians());
 
         fLogger.log("Initializing %s to target Pose (x: %.1f, y: %.1f, rot: %.1f deg)",
                 getName(),
@@ -240,14 +261,7 @@ public class AutoPilotCommand extends FinneyCommand {
             // Calculate rotation to point towards the specified pose
             Translation2d currentTranslation = pose.getTranslation();
 
-            Translation2d pointTowardsTranslation;
-            if (m_flipPoseForAlliance && DriverStation.Alliance.Red.equals(DriverStation.getAlliance().get())) {
-                // flip point-towards target for red alliance
-                pointTowardsTranslation = AllianceSymmetry.flip(m_pointTowardsDuringMotion.get().get())
-                        .getTranslation();
-            } else {
-                pointTowardsTranslation = m_pointTowardsDuringMotion.get().get().getTranslation();
-            }
+            Translation2d pointTowardsTranslation = m_pointTowardsDuringMotion.get().get().getTranslation();
 
             Translation2d delta = pointTowardsTranslation.minus(currentTranslation);
             rotationToUse = delta.getAngle();
@@ -260,21 +274,43 @@ public class AutoPilotCommand extends FinneyCommand {
                     getPercentageOfDistanceToTarget() * 100);
         }
 
-        // updateThetaGains(rotationalError, linearVelocity);
-        double thetaOutput = m_thetaController.calculate(
-                currentRotation.getRadians(),
-                rotationToUse.getRadians());
+        if (0.9 < getPercentageOfDistanceToTarget()) {
+            // Nearing the end of motion towards target, use end-motion theta PID
+            double thetaOutput = m_thetaController_endMotion.calculate(
+                    currentRotation.getRadians(),
+                    rotationToUse.getRadians());
 
-        ChassisSpeeds outRobotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                out.vx(),
-                out.vy(),
-                AngularVelocity.ofBaseUnits(thetaOutput, RadiansPerSecond),
-                m_drivetrain.getState().Pose.getRotation());
+            ChassisSpeeds outRobotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                    out.vx(),
+                    out.vy(),
+                    AngularVelocity.ofBaseUnits(thetaOutput, RadiansPerSecond),
+                    m_drivetrain.getState().Pose.getRotation());
 
-        if (0.1 < getPercentageOfDistanceToTarget()) {
+            m_drivetrain.setControl(applyRobotSpeeds.withSpeeds(outRobotRelativeSpeeds));
+
+            fLogger.log(
+                    "End-motion PID, kP=%.1f, error: %.1fdeg (e: %.3frad) (e: %.3f), linearVelocity: %.3f - (at %.1f%% distance)",
+                    m_thetaController_endMotion.getP(),
+                    rotationalError.getDegrees(),
+                    m_thetaController_endMotion.getPositionError(),
+                    m_thetaController_endMotion.getAccumulatedError(),
+                    linearVelocity,
+                    getPercentageOfDistanceToTarget() * 100);
+        } else if (0.1 < getPercentageOfDistanceToTarget()) {
             // System.out.println("percentageToTarget: +10%");
             if (shouldPointTowardsTarget && Math.abs(rotationalError.getDegrees()) < 20) {
                 // use custom theta PID when close to target rotation
+
+                double thetaOutput = m_thetaController.calculate(
+                        currentRotation.getRadians(),
+                        rotationToUse.getRadians());
+
+                ChassisSpeeds outRobotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                        out.vx(),
+                        out.vy(),
+                        AngularVelocity.ofBaseUnits(thetaOutput, RadiansPerSecond),
+                        m_drivetrain.getState().Pose.getRotation());
+
                 m_drivetrain.setControl(applyRobotSpeeds.withSpeeds(outRobotRelativeSpeeds));
 
                 fLogger.log(
@@ -297,7 +333,13 @@ public class AutoPilotCommand extends FinneyCommand {
                         rotationalError.getDegrees(),
                         linearVelocity,
                         getPercentageOfDistanceToTarget() * 100);
+
+                // keep resetting custom theta controller to avoid sudden jumps when switching
+                m_thetaController.reset(currentRotation.getRadians());
             }
+
+            // keep resetting end-motion controller to avoid sudden jumps when switching
+            m_thetaController_endMotion.reset(currentRotation.getRadians());
         } else {
             // Beginning of motion towards target, don't start rotation yet
             // to allow for movement away from walls before rotation begins.
