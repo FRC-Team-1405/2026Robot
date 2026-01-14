@@ -4,7 +4,7 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -13,11 +13,11 @@ public class Shooter extends SubsystemBase {
   private final TalonFX shooterMotor = new TalonFX(20);
 
   private void setShooterSpeed() {
-    shooterMotor.setControl(new DutyCycleOut(1.0));
+    shooterMotor.setControl(new VelocityVoltage(1.0));
   }
 
   private void shooterStop() {
-    shooterMotor.setControl(new DutyCycleOut(0.0));
+    shooterMotor.setControl(new VelocityVoltage(0.0));
   }
 
   /** Creates a new Shooter. */
