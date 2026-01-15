@@ -18,9 +18,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
+import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
 import frc.robot.lib.CommandTracker;
+import frc.robot.lib.FieldCentricAutoPoint;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
@@ -35,6 +37,14 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+
+    /* Auto-pointing drive mode for teleop assist */
+    private final FieldCentricAutoPoint autoPoint = new FieldCentricAutoPoint()
+            .withDeadband(MaxSpeed * 0.1)
+            .withRotationalDeadband(MaxAngularRate * 0.1)
+            .withRotationOverrideThreshold(MaxAngularRate * 0.15) // 15% threshold for override
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withHeadingPID(5.0, 0.0, 0.1); // Tune these PID values for your robot
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -81,6 +91,18 @@ public class RobotContainer {
 
         // Reset the field-centric heading on left bumper press.
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+        // Auto-point at the hub when right bumper is held
+        // Driver maintains full translation control, rotation auto-points to target
+        // Moving the right stick overrides auto-pointing for manual rotation
+        // Note: No need to flip for alliance - field-centric control handles operator
+        // perspective automatically
+        joystick.rightBumper().whileTrue(
+                drivetrain.applyRequest(() -> autoPoint.getRequest(
+                        -joystick.getLeftY() * MaxSpeed,
+                        -joystick.getLeftX() * MaxSpeed,
+                        -joystick.getRightX() * MaxAngularRate,
+                        drivetrain.getAngleToTarget(AllianceSymmetry.flipIfRed(AprilTags.getAprilTagPose(20))))));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

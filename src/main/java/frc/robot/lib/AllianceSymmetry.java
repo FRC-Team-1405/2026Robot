@@ -312,4 +312,12 @@ public final class AllianceSymmetry {
     public static Pose2d flip(Pose2d pose) {
         return flip(pose, getStrategy());
     }
+
+    public static Pose2d flipIfRed(Pose2d pose) {
+        if (isRed()) {
+            return flip(pose);
+        } else {
+            return pose;
+        }
+    }
 }

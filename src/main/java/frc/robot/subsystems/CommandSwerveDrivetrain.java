@@ -362,4 +362,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Return magnitude of linear acceleration
         return Math.hypot(ax, ay);
     }
+
+    /**
+     * Calculates the angle from the robot to a target pose.
+     * Returns the angle in field coordinates, adjusted for operator perspective.
+     * 
+     * @param targetPose The target pose (should be already flipped for alliance if
+     *                   needed)
+     * @return The angle the robot should face, relative to operator perspective
+     */
+    public Rotation2d getAngleToTarget(Pose2d targetPose) {
+        // System.out.print("Calculating angle to target pose: " + targetPose);
+        Pose2d currentPose = getState().Pose;
+        Rotation2d fieldAngle = targetPose.getTranslation().minus(currentPose.getTranslation()).getAngle();
+
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+            // System.out.println(". Flipping angle for Red alliance");
+            fieldAngle = fieldAngle.minus(Rotation2d.k180deg);
+        }
+        // System.out.println(". Not flipping angle for Blue alliance");
+        System.out.println("Angle to target (field coords): " + fieldAngle.getDegrees() + " deg");
+
+        return fieldAngle;
+    }
 }

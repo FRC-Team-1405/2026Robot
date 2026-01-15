@@ -77,7 +77,7 @@ public class TunerConstants {
 
     // Theoretical free speed (m/s) at 12 V applied output;
     // This needs to be tuned to your individual robot
-    public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(14.54);
+    public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.00); // originally 14.54
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
@@ -85,7 +85,7 @@ public class TunerConstants {
 
     private static final double kDriveGearRatio = 3.7142857142857144;
     private static final double kSteerGearRatio = 25.9;
-    private static final Distance kWheelRadius = Inches.of(3.5);
+    private static final Distance kWheelRadius = Inches.of(1.75);
 
     private static final boolean kInvertLeftSide = false;
     private static final boolean kInvertRightSide = true;
@@ -96,8 +96,8 @@ public class TunerConstants {
     private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
     private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
     // Simulated voltage necessary to overcome friction
-    private static final Voltage kSteerFrictionVoltage = Volts.of(0.1); // initially was 0.2
-    private static final Voltage kDriveFrictionVoltage = Volts.of(0.1); // initially was 0.2
+    private static final Voltage kSteerFrictionVoltage = Volts.of(0.2); // initially was 0.2
+    private static final Voltage kDriveFrictionVoltage = Volts.of(0.2); // initially was 0.2
 
     public static final SwerveDrivetrainConstants DrivetrainConstants = new SwerveDrivetrainConstants()
             .withCANBusName(kCANBus.getName())
