@@ -7,9 +7,19 @@
       "height": 1392,
       "state": {
         "sidebar": {
-          "width": 301,
+          "width": 207,
           "expanded": [
-            "/AdvantageScopeLogs"
+            "/AdvantageScopeLogs",
+            "/AUTOPILOT",
+            "/AUTOPILOT/Pose",
+            "/AUTOPILOT/Pose/translation",
+            "/RobotPose",
+            "/DriveState",
+            "/SmartDashboard/Auto/AUTOPILOT",
+            "/SmartDashboard",
+            "/SmartDashboard/Commands",
+            "/CommandTracker",
+            "/Drivetrain"
           ]
         },
         "tabs": {
@@ -60,21 +70,146 @@
                     "options": {
                       "bumpers": ""
                     }
+                  },
+                  {
+                    "type": "arrow",
+                    "logKey": "NT:SmartDashboard/Auto/AUTOPILOT/TargetPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:SmartDashboard/Auto/AUTOPILOT/PointTowardsTargetPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ffff"
+                    }
+                  },
+                  {
+                    "type": "arrow",
+                    "logKey": "NT:TagMap/AprilTags_20",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "arrow",
+                    "logKey": "NT:TagMap/AprilTags_4",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:Drivetrain/EstimatedAimPoint",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ffff"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:Drivetrain/EstimatedAimPoint_VelocityCompensated",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff8c00"
+                    }
                   }
                 ],
                 "field": "FRC:Evergreen",
-                "orientation": 0,
+                "orientation": 1,
                 "size": "medium"
               },
               "controllerUUID": "8w7x6wodeb0f5hyhcyrxm5mey0a7f07p",
+              "renderer": null,
+              "controlsHeight": 139
+            },
+            {
+              "type": 5,
+              "title": "SwerveFeatures",
+              "controller": "NT:/AdvantageScopeLogs/SwerveFeatures",
+              "controllerUUID": "3e5jnnqqsmpo6p37jronn6z54kma2jbf",
+              "renderer": {
+                "highlight": false
+              },
+              "controlsHeight": 0
+            },
+            {
+              "type": 10,
+              "title": "Auto-Point",
+              "controller": [
+                {
+                  "type": "mechanism",
+                  "logKey": "NT:/SmartDashboard/Aim Visualization",
+                  "logType": "Mechanism2d",
+                  "visible": true,
+                  "options": {}
+                }
+              ],
+              "controllerUUID": "kqzva0jlfr4m7jx7onw7g9augf6hhstk",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 9,
+              "title": "Swerve",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "states",
+                    "logKey": "NT:/DriveState/ModuleStates",
+                    "logType": "SwerveModuleState[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff0000",
+                      "arrangement": "0,1,2,3"
+                    }
+                  },
+                  {
+                    "type": "states",
+                    "logKey": "NT:/DriveState/ModuleTargets",
+                    "logType": "SwerveModuleState[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#0000ff",
+                      "arrangement": "0,1,2,3"
+                    }
+                  }
+                ],
+                "maxSpeed": 5,
+                "sizeX": 0.65,
+                "sizeY": 0.65,
+                "orientation": 1
+              },
+              "controllerUUID": "lo7plrce4uxy92r09o0gs5hruxyf90dz",
               "renderer": null,
               "controlsHeight": 200
             },
             {
               "type": 5,
-              "title": "Console",
+              "title": "P2P",
               "controller": "NT:/AdvantageScopeLogs/PidToPoseCommand",
               "controllerUUID": "duq44rjnoov5f1xi7ouwggyoj0c9bnjw",
+              "renderer": {
+                "highlight": false
+              },
+              "controlsHeight": 0
+            },
+            {
+              "type": 5,
+              "title": "AP",
+              "controller": "NT:/AdvantageScopeLogs/AutoPilotCommand",
+              "controllerUUID": "u0e3vw2oe95yqbvtpajjc0aqb6retxe1",
               "renderer": {
                 "highlight": false
               },
@@ -380,7 +515,7 @@
               },
               "controllerUUID": "04megcv4v00ox7uqktwm7h57xvandi82",
               "renderer": null,
-              "controlsHeight": 600
+              "controlsHeight": 207
             },
             {
               "type": 3,
