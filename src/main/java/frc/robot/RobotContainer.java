@@ -102,7 +102,8 @@ public class RobotContainer {
                         -joystick.getLeftY() * MaxSpeed,
                         -joystick.getLeftX() * MaxSpeed,
                         -joystick.getRightX() * MaxAngularRate,
-                        drivetrain.getAngleToTarget(AllianceSymmetry.flipIfRed(AprilTags.getAprilTagPose(20))))));
+                        drivetrain.getAngleToTargetWithVelocityCompensation(
+                                AllianceSymmetry.flipIfRed(AprilTags.getAprilTagPose(20))))));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

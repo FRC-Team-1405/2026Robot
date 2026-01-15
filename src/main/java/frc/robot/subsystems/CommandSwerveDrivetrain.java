@@ -57,6 +57,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final LinearFilter m_axFilter = LinearFilter.movingAverage(5); // 5-tap moving average
     private final LinearFilter m_ayFilter = LinearFilter.movingAverage(5);
 
+    /* Swerve features for aim calculations and visualization */
+    private final SwerveFeatures m_swerveFeatures;
+
     /*
      * SysId routine for characterizing translation. This is used to find PID gains
      * for the drive motors.
@@ -134,6 +137,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             SwerveDrivetrainConstants drivetrainConstants,
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, modules);
+        m_swerveFeatures = new SwerveFeatures(this);
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -159,6 +163,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             double odometryUpdateFrequency,
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, odometryUpdateFrequency, modules);
+        m_swerveFeatures = new SwerveFeatures(this);
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -199,6 +204,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation,
                 modules);
+        m_swerveFeatures = new SwerveFeatures(this);
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -259,6 +265,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+
+        // Update swerve features (handles aim visualization auto-clearing)
+        m_swerveFeatures.periodic();
+    }
+
+    /**
+     * Gets the SwerveFeatures instance for aim-related calculations.
+     * 
+     * @return The SwerveFeatures instance
+     */
+    public SwerveFeatures getFeatures() {
+        return m_swerveFeatures;
     }
 
     private void startSimThread() {
@@ -372,17 +390,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @return The angle the robot should face, relative to operator perspective
      */
     public Rotation2d getAngleToTarget(Pose2d targetPose) {
-        // System.out.print("Calculating angle to target pose: " + targetPose);
-        Pose2d currentPose = getState().Pose;
-        Rotation2d fieldAngle = targetPose.getTranslation().minus(currentPose.getTranslation()).getAngle();
-
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            // System.out.println(". Flipping angle for Red alliance");
-            fieldAngle = fieldAngle.minus(Rotation2d.k180deg);
-        }
-        // System.out.println(". Not flipping angle for Blue alliance");
-        System.out.println("Angle to target (field coords): " + fieldAngle.getDegrees() + " deg");
-
-        return fieldAngle;
+        return m_swerveFeatures.getAngleToTarget(targetPose);
     }
+
+    /**
+     * Calculates the angle from the robot to a target pose, accounting for the
+     * robot's velocity.
+     * Uses a lookup table of distances and flight times for more accurate
+     * interpolation.
+     * This is the most accurate method for accounting for varying launch angles at
+     * different distances.
+     * 
+     * The lookup table should contain actual measured flight times at various
+     * distances.
+     * The method will interpolate between the nearest data points.
+     * 
+     * @param targetPose The target pose (should be already flipped for
+     *                   alliance if needed)
+     * @return The angle the robot should face to hit the target, accounting for
+     *         robot velocity
+     */
+    public Rotation2d getAngleToTargetWithVelocityCompensation(Pose2d targetPose) {
+        return m_swerveFeatures.getAngleToTargetWithVelocityCompensation(targetPose);
+    }
+
 }
