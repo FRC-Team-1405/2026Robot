@@ -1,7 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Rotation;
-
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -126,10 +124,10 @@ public final class Constants {
     }
 
     public static final class PathFollowing {
-      public static final PIDConstants TRANSLATION_CONSTANTS = 
-        new PIDConstants(4.0, 0.0, 0.0);
-      public static final PIDConstants ROTATION_CONSTANTS = 
-        new PIDConstants(8.0,0.0, 0.8);
+      // public static final PIDConstants TRANSLATION_CONSTANTS = 
+      //   new PIDConstants(4.0, 0.0, 0.0);
+      // public static final PIDConstants ROTATION_CONSTANTS = 
+      //   new PIDConstants(8.0,0.0, 0.8);
     }
 
     public static final class FrontLeftModule {
