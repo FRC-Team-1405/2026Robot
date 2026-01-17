@@ -7,6 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 
+import com.pathplanner.lib.config.PIDConstants;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -124,12 +126,12 @@ public final class Constants {
     }
 
     public static final class PathFollowing {
-      // public static final PIDConstants TRANSLATION_CONSTANTS = 
-      //   new PIDConstants(4.0, 0.0, 0.0);
-      // public static final PIDConstants ROTATION_CONSTANTS = 
-      //   new PIDConstants(8.0,0.0, 0.8);
+      public static final PIDConstants TRANSLATION_CONSTANTS = 
+        new PIDConstants(4.0, 0.0, 0.0);
+      public static final PIDConstants ROTATION_CONSTANTS = 
+        new PIDConstants(8.0,0.0, 0.8);
     }
-
+    
     public static final class FrontLeftModule {
       @CanId(CanId.Type.MOTOR)
       public static final int DRIVE_MOTOR_ID = 14;
