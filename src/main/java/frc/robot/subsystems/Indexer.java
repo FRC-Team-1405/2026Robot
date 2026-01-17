@@ -41,6 +41,5 @@ public class Indexer extends SubsystemBase {
   @Override
   public void periodic() {
     System.out.println("indexer motor voltage =" + indexerMotor.getMotorVoltage().getValueAsDouble());
-    System.out.println("indexer motor voltage =" + indexerMotor.getMotorVoltage().getValueAsDouble());
   }
 }
