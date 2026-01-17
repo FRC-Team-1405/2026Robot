@@ -15,10 +15,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.lib.MotorSim.MotorSim_Mech;
 
 public class Climber extends SubsystemBase {
   /** Creates a new Climber. */
   private TalonFX motor = new TalonFX(45);
+  private MotorSim_Mech Climber_motorSimMech = new MotorSim_Mech("ClimberMotorSimMech");
 
   @Override
   public void periodic() {
