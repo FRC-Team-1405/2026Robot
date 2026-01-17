@@ -168,7 +168,7 @@ public final class Swerve extends AdvancedSubsystem {
       DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", e.getStackTrace());
     }
     SmartDashboard.putData("Check Swerve", systemCheckCommand());
-  }
+  } 
 
   public Command goToPoseCommand(Pose2d targetPose, Rotation2d approachAngle) {
     Rotation2d targetRotation = targetPose.getRotation();
@@ -535,7 +535,7 @@ public final class Swerve extends AdvancedSubsystem {
         Commands.runOnce(
             () -> {
               driveFieldRelative(new ChassisSpeeds());
-              if (-imu.getRate() < Units.radiansToDegrees(0.3)) {
+              if (-imu.getRate() < Units.radiansToDegrees(0.3)) { //todo
                 addFault("[System Check] IMU rate too low", false, true);
               }
             },
@@ -545,7 +545,7 @@ public final class Swerve extends AdvancedSubsystem {
         Commands.runOnce(
             () -> {
               driveFieldRelative(new ChassisSpeeds());
-              if (-imu.getRate() > Units.radiansToDegrees(-0.3)) {
+              if (-imu.getRate() > Units.radiansToDegrees(-0.3)) { //todo
                 addFault("[System Check] IMU rate too low", false, true);
               }
             },
