@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.FinneyLogger;
 
 /**
@@ -116,8 +117,7 @@ public class SwerveFeatures {
         Rotation2d fieldAngle = targetPose.getTranslation().minus(currentPose.getTranslation()).getAngle();
 
         if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            fieldAngle = fieldAngle.minus(Rotation2d.k180deg); // TODO find a way to remove this and instead better use
-                                                               // the pose/translation libraries
+            fieldAngle = AllianceSymmetry.flip(fieldAngle);
         }
         fLogger.log("Angle to target (field coords): " + fieldAngle.getDegrees() + " deg");
 
@@ -148,7 +148,8 @@ public class SwerveFeatures {
      * @param targetPose The target pose (should be already flipped for
      *                   alliance if needed)
      * @return The angle the robot should face to hit the target, accounting for
-     *         robot velocity
+     *         robot velocity, this is a field-relative angle adjusted for driver
+     *         perspective
      */
     public Rotation2d getAngleToTargetWithVelocityCompensation(Pose2d targetPose) {
         Pose2d currentPose = m_drivetrain.getState().Pose;
@@ -173,7 +174,7 @@ public class SwerveFeatures {
 
         // Apply alliance perspective transformation
         if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            standardAngle = standardAngle.minus(Rotation2d.k180deg);
+            standardAngle = AllianceSymmetry.flip(standardAngle);
         }
 
         // Interpolate flight time from lookup table
@@ -194,7 +195,8 @@ public class SwerveFeatures {
 
         // Apply alliance perspective transformation
         if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            fieldAngle = fieldAngle.minus(Rotation2d.k180deg);
+            fieldAngle = AllianceSymmetry.flip(fieldAngle);
+
         }
 
         // Update visualization
