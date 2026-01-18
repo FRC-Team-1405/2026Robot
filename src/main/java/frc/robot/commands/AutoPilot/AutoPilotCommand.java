@@ -83,11 +83,6 @@ public class AutoPilotCommand extends FinneyCommand {
     public final SwerveRequest.ApplyRobotSpeeds applyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds()
             .withDriveRequestType(DriveRequestType.Velocity);
 
-    public SwerveRequest.FieldCentricFacingAngle fieldCentricFacingAngle = new SwerveRequest.FieldCentricFacingAngle()
-            .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance)
-            .withDriveRequestType(DriveRequestType.Velocity)
-            .withHeadingPID(2, 0, 0); /* auto pilots angle PID, TUNE THIS TO YOUR ROBOT! */
-
     private static final APConstraints kConstraints = new APConstraints()
             .withAcceleration(10.0) // TUNE THIS TO YOUR ROBOT!
             .withJerk(10.0);
