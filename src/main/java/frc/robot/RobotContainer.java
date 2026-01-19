@@ -47,12 +47,17 @@ public class RobotContainer {
 
     private void configureBindings() {
         climber.setupMotors();
-        joystick.x().onTrue(Commands.runOnce(() -> climber.climbUp()));
-        joystick.rightBumper().onTrue(Commands.runOnce(() -> climber.stop()));
-        joystick.y().onTrue(Commands.runOnce(() -> climber.climbDown()));
+        joystick.rightTrigger().onTrue(Commands.runOnce(() -> climber.climbUp()));
+        joystick.x().onTrue(Commands.runOnce(() -> climber.stop()));
+        joystick.rightBumper().onTrue(Commands.runOnce(() -> climber.climbDown()));
+        // Note that the rightTrigger is defined as forward according to WPILib convention,
+        // and the rightBumper is defined as to the left according to WPILib convention.
+                
+        joystick.leftTrigger().onTrue(Commands.runOnce(() -> climber.openClaw()));
+        joystick.y().onTrue(Commands.runOnce(() -> climber.stopClaw()));
+        joystick.leftBumper().onTrue(Commands.runOnce(() -> climber.closeClaw()));
 
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
+
         drivetrain.setDefaultCommand(
                 // Drivetrain will execute this command periodically
                 drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with

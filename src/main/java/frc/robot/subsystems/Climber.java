@@ -20,6 +20,7 @@ import frc.robot.lib.MotorSim.MotorSim_Mech;
 public class Climber extends SubsystemBase {
   /** Creates a new Climber. */
   private TalonFX motor = new TalonFX(45);
+  private TalonFX grabber = new TalonFX(37)
   private MotorSim_Mech Climber_motorSimMech = new MotorSim_Mech("ClimberMotorSimMech");
 
   @Override
@@ -32,15 +33,30 @@ public class Climber extends SubsystemBase {
       // set motor position to ( current position )
       // set motor position = current position + motor voltage
     }
+
+    System.out.println("Claw motor voltage = " + grabber.getMotorVoltage().getValueAsDouble() + " Claw motor position" 
+      + grabber.getPosition().getValueAsDouble());
+    if (Utils.isSimulaion()) {
+      grabber.setPosition(grabber.getPosition().getValueAsDouble() + grabber.getMotorVoltage().getValueAsDouble());
+    }
   }
 
   public void setupMotors() {
     TalonFXConfiguration Climber_cfg = new TalonFXConfiguration();
+    TalonFXConfiguration Grabber_cfg = new TalonFXConfigration();
+
     StatusCode Climber_status_slave = StatusCode.StatusCodeNotInitialized;
+    StatusCode Grabber_status_slave = StatusCode.StatusCodeNotInitialized;
 
     SoftwareLimitSwitchConfigs soft = Climber_cfg.SoftwareLimitSwitch;
     soft.ForwardSoftLimitEnable = true;
     soft.ForwardSoftLimitThreshold = 5.1; // mechanism rotations (after gear ratio)
+    soft.ReverseSoftLimitEnable = true;
+    soft.ReverseSoftLimitThreshold = 0.0;
+
+    SoftwareLimitSwitchConfigs soft = Grabber_cfg.SoftwareLimitSwitch;
+    soft.ForwardSoftLimitEnable = true;
+    soft.ForwardSoftLimitThreshold = 3.0;
     soft.ReverseSoftLimitEnable = true;
     soft.ReverseSoftLimitThreshold = 0.0;
 
@@ -52,15 +68,22 @@ public class Climber extends SubsystemBase {
     if (!Climber_status_slave.isOK()) {
       System.out.println("Could not configure Climber slaveMotor. Error: " + Climber_status_slave.toString());
     }
+
+    for (int i = 0; i < 5; ++i) {
+      Grabber_status_slave = motor.getConfigurator().apply(Climber_cfg);
+      if (Grabber_status_slave.isOK())
+        break;
+    }
   }
 
   private double MAX_DISTANCE = 3.0;
+  // Should there be a different limit for the grabbing motor?
 
   public void move(double position) {
     // position = MAX_DISTANCE * (position);
     motor.setControl(new MotionMagicVoltage(position));
-
-  }
+    grabber.setControl(new MotionMagicVoltage(grabberPosition));
+  } 
 
   public Climber() {
     setupMotors();
@@ -78,6 +101,20 @@ public class Climber extends SubsystemBase {
 
   public void stop() {
     motor.set(0);
+  }
+  
+  // grabber motors
+
+  public void openClaw() {
+    grabber.set(0.05);
+  }
+
+  public void closeClaw() {
+    grabber.set(-0.05);
+  }
+
+  public void stopClaw(){
+    grabber.set(0);
   }
 
 }
