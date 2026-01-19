@@ -20,7 +20,7 @@ import frc.robot.lib.MotorSim.MotorSim_Mech;
 public class Climber extends SubsystemBase {
   /** Creates a new Climber. */
   private TalonFX motor = new TalonFX(45);
-  private TalonFX grabber = new TalonFX(37)
+  private TalonFX grabber = new TalonFX(37);
   private MotorSim_Mech Climber_motorSimMech = new MotorSim_Mech("ClimberMotorSimMech");
 
   @Override
@@ -34,16 +34,16 @@ public class Climber extends SubsystemBase {
       // set motor position = current position + motor voltage
     }
 
-    System.out.println("Claw motor voltage = " + grabber.getMotorVoltage().getValueAsDouble() + " Claw motor position" 
-      + grabber.getPosition().getValueAsDouble());
-    if (Utils.isSimulaion()) {
+    System.out.println("Claw motor voltage = " + grabber.getMotorVoltage().getValueAsDouble() + " Claw motor position"
+        + grabber.getPosition().getValueAsDouble());
+    if (Utils.isSimulation()) {
       grabber.setPosition(grabber.getPosition().getValueAsDouble() + grabber.getMotorVoltage().getValueAsDouble());
     }
   }
 
   public void setupMotors() {
     TalonFXConfiguration Climber_cfg = new TalonFXConfiguration();
-    TalonFXConfiguration Grabber_cfg = new TalonFXConfigration();
+    TalonFXConfiguration Grabber_cfg = new TalonFXConfiguration();
 
     StatusCode Climber_status_slave = StatusCode.StatusCodeNotInitialized;
     StatusCode Grabber_status_slave = StatusCode.StatusCodeNotInitialized;
@@ -54,7 +54,7 @@ public class Climber extends SubsystemBase {
     soft.ReverseSoftLimitEnable = true;
     soft.ReverseSoftLimitThreshold = 0.0;
 
-    SoftwareLimitSwitchConfigs soft = Grabber_cfg.SoftwareLimitSwitch;
+    SoftwareLimitSwitchConfigs softGrabber = Grabber_cfg.SoftwareLimitSwitch;
     soft.ForwardSoftLimitEnable = true;
     soft.ForwardSoftLimitThreshold = 3.0;
     soft.ReverseSoftLimitEnable = true;
@@ -70,9 +70,12 @@ public class Climber extends SubsystemBase {
     }
 
     for (int i = 0; i < 5; ++i) {
-      Grabber_status_slave = motor.getConfigurator().apply(Climber_cfg);
+      Grabber_status_slave = grabber.getConfigurator().apply(Grabber_cfg);
       if (Grabber_status_slave.isOK())
         break;
+    }
+    if (!Grabber_status_slave.isOK()) {
+      System.out.println("Could not configure Grabber slaveMotor. Error: " + Grabber_status_slave.toString());
     }
   }
 
@@ -82,8 +85,11 @@ public class Climber extends SubsystemBase {
   public void move(double position) {
     // position = MAX_DISTANCE * (position);
     motor.setControl(new MotionMagicVoltage(position));
-    grabber.setControl(new MotionMagicVoltage(grabberPosition));
-  } 
+  }
+
+  public void moveGrabber(double position) {
+    motor.setControl(new MotionMagicVoltage(position));
+  }
 
   public Climber() {
     setupMotors();
@@ -102,7 +108,7 @@ public class Climber extends SubsystemBase {
   public void stop() {
     motor.set(0);
   }
-  
+
   // grabber motors
 
   public void openClaw() {
@@ -113,7 +119,7 @@ public class Climber extends SubsystemBase {
     grabber.set(-0.05);
   }
 
-  public void stopClaw(){
+  public void stopClaw() {
     grabber.set(0);
   }
 
