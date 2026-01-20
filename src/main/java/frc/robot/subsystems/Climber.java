@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -23,6 +24,8 @@ public class Climber extends SubsystemBase {
   private TalonFX grabber = new TalonFX(37);
   private MotorSim_Mech Climber_motorSimMech = new MotorSim_Mech("ClimberMotorSimMech");
 
+  private static final double CLIMBER_CURRENT_LIMIT = 120.0;
+
   @Override
   public void periodic() {
     System.out.println("Motor voltage = " + motor.getMotorVoltage().getValueAsDouble() + " Motor position = "
@@ -33,12 +36,18 @@ public class Climber extends SubsystemBase {
       // set motor position to ( current position )
       // set motor position = current position + motor voltage
     }
-
     System.out.println("Claw motor voltage = " + grabber.getMotorVoltage().getValueAsDouble() + " Claw motor position"
         + grabber.getPosition().getValueAsDouble());
     if (Utils.isSimulation()) {
       grabber.setPosition(grabber.getPosition().getValueAsDouble() + grabber.getMotorVoltage().getValueAsDouble());
     }
+
+    if (motor.getSupplyCurrent().getValueAsDouble() > CLIMBER_CURRENT_LIMIT) {
+      stop();
+      System.out.println("CLimber current trip " + motor.getSupplyCurrent().getValueAsDouble());
+    }
+    // safety stop
+
   }
 
   public void setupMotors() {
@@ -142,5 +151,5 @@ public class Climber extends SubsystemBase {
       stopClaw();
     }
   }
-
+  // position limits
 }
