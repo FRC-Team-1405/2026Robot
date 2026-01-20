@@ -123,4 +123,16 @@ public class Climber extends SubsystemBase {
     grabber.set(0);
   }
 
+  private static final double MAX_POSITION = 5.1;
+  private static final double MAX_GRABBER_POSITION = 3.1;
+
+  public void checkLimits() {
+    if (motor.getPosition().getValueAsDouble() >= MAX_POSITION) {
+      stop();
+    }
+    if (grabber.getPosition().getValueAsDouble() >= MAX_GRABBER_POSITION) {
+      stopClaw();
+    }
+  }
+
 }
