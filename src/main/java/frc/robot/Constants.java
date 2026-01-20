@@ -1,7 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Rotation;
-
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -99,7 +97,7 @@ public final class Constants {
       public static final PIDConstants ROTATION_CONSTANTS = 
         new PIDConstants(8.0,0.0, 0.8);
     }
-
+    
     public static final class FrontLeftModule {
       @CanId(CanId.Type.MOTOR)
       public static final int DRIVE_MOTOR_ID = 14;
