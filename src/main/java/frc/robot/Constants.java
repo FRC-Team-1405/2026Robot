@@ -22,7 +22,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 
 public final class Constants {
-  public static final String CARNIVORE_BUS_NAME = "rio";
+  public static final String CARNIVORE_BUS_NAME = "Sonic";
   public static final AprilTagFieldLayout apriltagLayout;
   public static final Translation2d fieldSize;
 
@@ -113,7 +113,7 @@ public final class Constants {
 
   public static final class Swerve {
     @CanId(CanId.Type.PIGEON)
-    public static final int IMU_ID = 5;
+    public static final int IMU_ID = 1;
     public static final double TELEOP_MAX_VELOCITY = 4.6;
     public static final double TELEOP_MAX_ACCELERATION = 5.5; // todo
     public static final double TELEOP_MAX_ANGULAR_VELOCITY = Units.degreesToRadians(180);

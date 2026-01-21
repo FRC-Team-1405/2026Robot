@@ -37,7 +37,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.lib.subsystem.AdvancedSubsystem;
-import frc.lib.swerve.Mk4SwerveModuleProSparkFlex;
+import frc.lib.swerve.Mk4SwerveModulePro;
 import frc.lib.util.Vector3;
 import frc.robot.Constants;
 import frc.robot.util.RobotPoseLookup;
@@ -46,7 +46,7 @@ public final class Swerve extends AdvancedSubsystem {
   protected final SwerveDrivePoseEstimator odometry;
   public final SwerveDriveKinematics kinematics;
 
-  protected final Mk4SwerveModuleProSparkFlex[] modules;
+  protected final Mk4SwerveModulePro[] modules;
 
   protected final Pigeon2 imu;
   protected final Pigeon2SimState imuSim;
@@ -94,27 +94,27 @@ public final class Swerve extends AdvancedSubsystem {
     // imuAccelYSignal = imu.getAccelerationY();
     imuAccelZSignal = imu.getAccelerationZ();
 
-    modules = new Mk4SwerveModuleProSparkFlex[] {
-        new Mk4SwerveModuleProSparkFlex(
-            Mk4SwerveModuleProSparkFlex.ModuleCode.FL,
+    modules = new Mk4SwerveModulePro[] {
+        new Mk4SwerveModulePro(
+            Mk4SwerveModulePro.ModuleCode.FL,
             Constants.Swerve.FrontLeftModule.DRIVE_MOTOR_ID,
             Constants.Swerve.FrontLeftModule.ROTATION_MOTOR_ID,
             Constants.Swerve.FrontLeftModule.ROTATION_ENCODER_ID,
             Constants.CARNIVORE_BUS_NAME), // FL
-        new Mk4SwerveModuleProSparkFlex(
-            Mk4SwerveModuleProSparkFlex.ModuleCode.FR,
+        new Mk4SwerveModulePro(
+            Mk4SwerveModulePro.ModuleCode.FR,
             Constants.Swerve.FrontRightModule.DRIVE_MOTOR_ID,
             Constants.Swerve.FrontRightModule.ROTATION_MOTOR_ID,
             Constants.Swerve.FrontRightModule.ROTATION_ENCODER_ID,
             Constants.CARNIVORE_BUS_NAME), // FR
-        new Mk4SwerveModuleProSparkFlex(
-            Mk4SwerveModuleProSparkFlex.ModuleCode.BL,
+        new Mk4SwerveModulePro(
+            Mk4SwerveModulePro.ModuleCode.BL,
             Constants.Swerve.BackLeftModule.DRIVE_MOTOR_ID,
             Constants.Swerve.BackLeftModule.ROTATION_MOTOR_ID,
             Constants.Swerve.BackLeftModule.ROTATION_ENCODER_ID,
             Constants.CARNIVORE_BUS_NAME), // BL
-        new Mk4SwerveModuleProSparkFlex(
-            Mk4SwerveModuleProSparkFlex.ModuleCode.BR,
+        new Mk4SwerveModulePro(
+            Mk4SwerveModulePro.ModuleCode.BR,
             Constants.Swerve.BackRightModule.DRIVE_MOTOR_ID,
             Constants.Swerve.BackRightModule.ROTATION_MOTOR_ID,
             Constants.Swerve.BackRightModule.ROTATION_ENCODER_ID,
@@ -335,7 +335,7 @@ public final class Swerve extends AdvancedSubsystem {
   public void driveRobotRelative(ChassisSpeeds speeds) {
     SwerveModuleState[] targetStates = kinematics.toSwerveModuleStates(speeds);
 
-    SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, Mk4SwerveModuleProSparkFlex.DRIVE_MAX_VEL);
+    SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, Mk4SwerveModulePro.DRIVE_MAX_VEL);
 
     setModuleStates(targetStates);
   }
@@ -343,7 +343,7 @@ public final class Swerve extends AdvancedSubsystem {
   public void driveRobotRelativeWithFF(ChassisSpeeds speeds, DriveFeedforwards ff) {
     SwerveModuleState[] targetStates = kinematics.toSwerveModuleStates(speeds);
 
-    SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, Mk4SwerveModuleProSparkFlex.DRIVE_MAX_VEL);
+    SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, Mk4SwerveModulePro.DRIVE_MAX_VEL);
 
     setModuleStates(targetStates);
   }
@@ -479,7 +479,7 @@ public final class Swerve extends AdvancedSubsystem {
   }
 
   public void lockModules() {
-    for (Mk4SwerveModuleProSparkFlex module : modules) {
+    for (Mk4SwerveModulePro module : modules) {
       module.lockModule();
     }
   }
@@ -492,7 +492,7 @@ public final class Swerve extends AdvancedSubsystem {
   public Command zeroModulesCommand() {
     return Commands.runOnce(
         () -> {
-          for (Mk4SwerveModuleProSparkFlex module : modules) {
+          for (Mk4SwerveModulePro module : modules) {
             module.updateRotationOffset();
           }
         })

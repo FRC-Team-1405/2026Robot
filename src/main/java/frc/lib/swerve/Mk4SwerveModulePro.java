@@ -51,10 +51,10 @@ public class Mk4SwerveModulePro extends AdvancedSubsystem {
   // Volts to deg/sec^2
   private static final double ROTATION_KA = 0.00006;
 
-  private static final double DRIVE_GEARING = 1.0 / 6.75;
+  private static final double DRIVE_GEARING = 1.0 / 5.9;
   private static final double DRIVE_METERS_PER_ROTATION =
       DRIVE_GEARING * Units.inchesToMeters(12.375); //Math.PI * Units.inchesToMeters(4);
-  private static final double ROTATION_DEGREES_PER_ROTATION = (1.0 / 12.8) * 360.0;
+  private static final double ROTATION_DEGREES_PER_ROTATION = (1.0 / 18.75) * 360.0;
 
   // M/s - Tune (Apply full output and measure max vel. Adjust KV/KA for sim if needed)
   public static final double DRIVE_MAX_VEL = 4.65;
@@ -136,7 +136,7 @@ public class Mk4SwerveModulePro extends AdvancedSubsystem {
 
     rotationMotor = new TalonFX(rotationMotorCanID, canBus);
     TalonFXConfiguration rotationConfig = new TalonFXConfiguration();
-    rotationConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    rotationConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     rotationConfig.Slot0.kP = ROTATION_KP;
     rotationConfig.Slot0.kD = ROTATION_KD;
     rotationMotor.getConfigurator().apply(rotationConfig);
