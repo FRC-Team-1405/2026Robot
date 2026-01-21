@@ -26,6 +26,10 @@ public class AutoCommands {
         AutoPilotCommands.registerCommands(drivetrain);
 
         AutoCommands.configureAutos(autoChooser, drivetrain);
+
+        NamedCommands.registerCommand("Left - [My First Auto]",
+                Commands.print("Running [My First Auto] from the LEFT"));
+
     }
 
     public static void configureAutos(SendableChooser<Command> chooser, CommandSwerveDrivetrain drivetrain) {
@@ -39,6 +43,7 @@ public class AutoCommands {
         commandsToAddToChooser.put("AP_auto1", NamedCommands.getCommand("AP_auto1"));
         commandsToAddToChooser.put("AP_tracking_example", NamedCommands.getCommand("AP_tracking_example"));
         // endregion autopilot
+        commandsToAddToChooser.put("Left_First_Auto", NamedCommands.getCommand("Left - [My First Auto]"));
 
         chooser.setDefaultOption("P2P_auto1", commandsToAddToChooser.get("P2P_auto1"));
 
