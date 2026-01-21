@@ -4,22 +4,24 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import frc.robot.sim.SimProfiles;
 
 public class Indexer extends SubsystemBase {
   private final TalonFX indexerMotor = new TalonFX(21);
 
   private final VelocityVoltage velocityVoltage = new VelocityVoltage(0);
 
-  private void setIndexerSpeed(DoubleSupplier speed) {
-    indexerMotor.setControl(velocityVoltage.withVelocity(speed.getAsDouble()));
-    // indexerMotor.set(speed.getAsDouble());
+  private void setIndexerSpeed(Supplier<AngularVelocity> speed) {
+    indexerMotor.setControl(velocityVoltage.withVelocity(speed.get()));
   }
 
   private void indexerStop() {
@@ -28,9 +30,10 @@ public class Indexer extends SubsystemBase {
 
   /** Creates a new Indexer. */
   public Indexer() {
+    SimProfiles.initIndexer(indexerMotor);
   }
 
-  public Command runIndexer(DoubleSupplier speed) {
+  public Command runIndexer(Supplier<AngularVelocity> speed) {
     return this.runEnd(() -> {
       setIndexerSpeed(speed);
     }, () -> {
@@ -40,6 +43,5 @@ public class Indexer extends SubsystemBase {
 
   @Override
   public void periodic() {
-    System.out.println("indexer motor voltage =" + indexerMotor.getMotorVoltage().getValueAsDouble());
   }
 }

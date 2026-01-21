@@ -17,9 +17,15 @@ public class Constants {
         public static final int SHOOTER = 20;
     }
 
-    public static class ShooterVelocities {
+    public static class Prefs {
         public static final AngularVelocity SHORT;
         public static final AngularVelocity LONG;
+
+        public static final AngularVelocity INDEXER_VELOCITY;
+
+        public static final double TIGHT;
+        public static final double WIDE;
+        private static final int STABLE_COUNT;
 
         public static AngularVelocity distanceToVelocity(Distance distance) {
             double temp = distance.in(Feet);
@@ -27,10 +33,22 @@ public class Constants {
         }
 
         static {
-            Preferences.initDouble("ShooterVelocities/Short", 0);
-            SHORT = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Short", 0));
-            Preferences.initDouble("ShooterVelocities/Long", 1);
-            LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 1));
+            // Shooter Velocities
+            Preferences.initDouble("ShooterVelocities/Short", 10);
+            SHORT = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Short", 10));
+            Preferences.initDouble("ShooterVelocities/Long", 50);
+            LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 50));
+
+            // Indexer Velocities
+            Preferences.initDouble("IndexerVelocities/IndexerVelocity", 3);
+            INDEXER_VELOCITY = RotationsPerSecond.of(Preferences.getDouble("IndexerVelocities/IndexerVelocity", 3));
+
+            Preferences.initDouble("ShooterAccuracy/Tight", 1);
+            TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 1);
+            Preferences.initDouble("ShooterAccuracy/Wide", 10);
+            WIDE = Preferences.getDouble("ShooterAccuracy/Wide", 10);
+            Preferences.initInt("ShooterAccuracy/StableCount", 5);
+            STABLE_COUNT = Preferences.getInt("ShooterAccuracy/StableCount", 5);
         }
     }
 }

@@ -15,12 +15,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.Constants.Prefs;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
+        private Shooter shooter = new Shooter();
         private Indexer indexer = new Indexer();
 
         private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
@@ -92,8 +94,12 @@ public class RobotContainer {
 
                 drivetrain.registerTelemetry(logger::telemeterize);
 
-                joystickTest.b().whileTrue(indexer.runIndexer(() -> {
-                        return 1.0;
+                joystickTest.a().toggleOnTrue(shooter.runShooter(() -> {
+                        return Prefs.LONG;
+                }));
+
+                joystickTest.b().toggleOnTrue(indexer.runIndexer(() -> {
+                        return Prefs.INDEXER_VELOCITY;
                 }));
         }
 
