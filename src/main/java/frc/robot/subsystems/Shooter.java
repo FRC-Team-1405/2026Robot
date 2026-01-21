@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import java.util.function.Supplier;
+import java.lang.Math;
 
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -14,6 +15,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.Prefs;
 import frc.robot.sim.SimProfiles;
 
 public class Shooter extends SubsystemBase {
@@ -22,6 +24,14 @@ public class Shooter extends SubsystemBase {
   private final VelocityVoltage m_VelocityVoltage = new VelocityVoltage(0).withSlot(0);
 
   private final NeutralOut m_Brake = new NeutralOut();
+
+  private int SettleCount = 0;
+
+  private boolean locked = false;
+
+  public boolean isReadyToFire() {
+    return locked;
+  }
 
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
     shooterMotor.setControl(m_VelocityVoltage.withVelocity(speed.get()));
@@ -46,6 +56,15 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+    double error = shooterMotor.getClosedLoopError().getValueAsDouble();
+    double range = locked ? Prefs.WIDE : Prefs.TIGHT;
+    if (Math.abs(error) < range) {
+      SettleCount += 1;
+    } else {
+      SettleCount = 0;
+    }
 
+    locked = SettleCount >= Prefs.STABLE_COUNT;
   }
+
 }

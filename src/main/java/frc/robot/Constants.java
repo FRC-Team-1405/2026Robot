@@ -25,7 +25,7 @@ public class Constants {
 
         public static final double TIGHT;
         public static final double WIDE;
-        private static final int STABLE_COUNT;
+        public static final int STABLE_COUNT;
 
         public static AngularVelocity distanceToVelocity(Distance distance) {
             double temp = distance.in(Feet);
