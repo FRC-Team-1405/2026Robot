@@ -98,9 +98,7 @@ public class RobotContainer {
                         return Prefs.LONG;
                 }));
 
-                joystickTest.b().toggleOnTrue(indexer.runIndexer(() -> {
-                        return Prefs.INDEXER_VELOCITY;
-                }));
+                joystickTest.b().toggleOnTrue(indexer.runIndexer());
         }
 
         public Command getAutonomousCommand() {

@@ -4,15 +4,13 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.units.measure.AngularVelocity;
+import com.ctre.phoenix6.controls.NeutralOut;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import frc.robot.Constants.Prefs;
 import frc.robot.sim.SimProfiles;
 
 public class Indexer extends SubsystemBase {
@@ -20,12 +18,14 @@ public class Indexer extends SubsystemBase {
 
   private final VelocityVoltage velocityVoltage = new VelocityVoltage(0);
 
-  private void setIndexerSpeed(Supplier<AngularVelocity> speed) {
-    indexerMotor.setControl(velocityVoltage.withVelocity(speed.get()));
+  private final NeutralOut m_Brake = new NeutralOut();
+
+  private void setIndexerSpeed() {
+    indexerMotor.setControl(velocityVoltage.withVelocity(Prefs.INDEXER_VELOCITY));
   }
 
   private void indexerStop() {
-    indexerMotor.setControl(new VelocityVoltage(0.0));
+    indexerMotor.setControl(m_Brake);
   }
 
   /** Creates a new Indexer. */
@@ -33,12 +33,16 @@ public class Indexer extends SubsystemBase {
     SimProfiles.initIndexer(indexerMotor);
   }
 
-  public Command runIndexer(Supplier<AngularVelocity> speed) {
+  public Command runIndexer() {
     return this.runEnd(() -> {
-      setIndexerSpeed(speed);
+      setIndexerSpeed();
     }, () -> {
       indexerStop();
     });
+  }
+
+  public Command runStopIndexer() {
+    return runOnce(this::indexerStop);
   }
 
   @Override
