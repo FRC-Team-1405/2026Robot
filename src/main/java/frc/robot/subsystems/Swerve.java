@@ -266,7 +266,8 @@ public final class Swerve extends AdvancedSubsystem {
             modules[3].getTargetState().angle.getDegrees(),
             modules[3].getTargetState().speedMetersPerSecond,
         });
-
+    
+    SmartDashboard.putNumber("Swerve/ModuleDifference", modules[0].getTargetState().speedMetersPerSecond - modules[0].getDriveVelocityMetersPerSecond());
     // Rotation3d orientation = getOrientation();
     // SmartDashboard.putNumberArray(
     // "Swerve/Orientation",
@@ -511,7 +512,7 @@ public final class Swerve extends AdvancedSubsystem {
 
   );
  }
-  // @SuppressWarnings("removal")
+
   @Override
   protected Command systemCheckCommand() {
     return Commands.sequence(
