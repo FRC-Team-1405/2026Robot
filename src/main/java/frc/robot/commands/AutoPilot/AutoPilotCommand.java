@@ -128,7 +128,7 @@ public class AutoPilotCommand extends FinneyCommand {
         this.commandName = builder.commandName;
 
         m_thetaController = new ProfiledPIDController(
-                30, 0.0, 0.5, // PID gains, TUNE THIS TO YOUR ROBOT!
+                6, 0.0, 0, // PID gains, TUNE THIS TO YOUR ROBOT!
                 new TrapezoidProfile.Constraints(20, 25) // max velocity (rad/s) and acceleration (rad/s^2)
         );
         m_thetaController.enableContinuousInput(-Math.PI, Math.PI); // Enable angle wrapping

@@ -38,6 +38,13 @@ public class AutoCommands {
         // region autopilot
         commandsToAddToChooser.put("AP_auto1", NamedCommands.getCommand("AP_auto1"));
         commandsToAddToChooser.put("AP_tracking_example", NamedCommands.getCommand("AP_tracking_example"));
+        commandsToAddToChooser.put("AP_blueCenter", NamedCommands.getCommand("AP_blueCenter"));
+        commandsToAddToChooser.put("AP_blueCenterToDepot", NamedCommands.getCommand("AP_blueCenterToDepot"));
+        commandsToAddToChooser.put("AP_blueCenterToOriginToRightBump",
+                NamedCommands.getCommand("AP_blueCenterToOriginToRightBump"));
+        commandsToAddToChooser.put("AP_blueScoreBumpFeed", NamedCommands.getCommand("AP_blueScoreBumpFeed"));
+        commandsToAddToChooser.put("AP_FEEDME", NamedCommands.getCommand("AP_FEEDME"));
+
         // endregion autopilot
 
         chooser.setDefaultOption("P2P_auto1", commandsToAddToChooser.get("P2P_auto1"));
