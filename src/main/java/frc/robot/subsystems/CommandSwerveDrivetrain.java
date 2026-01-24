@@ -325,10 +325,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public void testMethod_ApplyCoastMode() {
-        super.configNeutralMode(NeutralModeValue.Coast);
+        this.getModule(0).getSteerMotor().setNeutralMode(NeutralModeValue.Coast);
+        this.getModule(1).getSteerMotor().setNeutralMode(NeutralModeValue.Coast);
+        this.getModule(2).getSteerMotor().setNeutralMode(NeutralModeValue.Coast);
+        this.getModule(3).getSteerMotor().setNeutralMode(NeutralModeValue.Coast);
     }
 
     public void testMethod_ApplyBrakeMode() {
-        super.configNeutralMode(NeutralModeValue.Brake);
+        this.getModule(0).getSteerMotor().setNeutralMode(NeutralModeValue.Brake);
+        this.getModule(1).getSteerMotor().setNeutralMode(NeutralModeValue.Brake);
+        this.getModule(2).getSteerMotor().setNeutralMode(NeutralModeValue.Brake);
+        this.getModule(3).getSteerMotor().setNeutralMode(NeutralModeValue.Brake);
     }
 }
