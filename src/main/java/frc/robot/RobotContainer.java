@@ -7,12 +7,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.input.controllers.XboxControllerWrapper;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.SwerveDriveWithGamepad;
 import frc.robot.subsystems.*;
+import frc.robot.util.FireControl;
 
 
 public class RobotContainer {
@@ -52,6 +54,9 @@ public class RobotContainer {
               Rotation2d.fromDegrees(90)
       )));
     }, swerve));
+
+    // FireControl fc = new FireControl(swerve::getPose, DriverStation::getAlliance)
+    // DriverStation.
   }
   
 
