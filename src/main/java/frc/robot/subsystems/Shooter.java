@@ -4,14 +4,22 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.*;
+
 import java.util.function.Supplier;
 import java.lang.Math;
+import java.security.spec.DSAPrivateKeySpec;
 
 import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -19,7 +27,9 @@ import frc.robot.Constants.Prefs;
 import frc.robot.sim.SimProfiles;
 
 public class Shooter extends SubsystemBase {
-  private final TalonFX shooterMotor = new TalonFX(Constants.CANBus.SHOOTER);
+  private final TalonFX shooterMotor1 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_1);
+  // private final TalonFX shooterMotor2 = new
+  // TalonFX(Constants.CANBus.SHOOTER_MOTOR_2);
 
   private final VelocityVoltage m_VelocityVoltage = new VelocityVoltage(0).withSlot(0);
 
@@ -33,17 +43,42 @@ public class Shooter extends SubsystemBase {
     return locked;
   }
 
+  public void setShooterMotor() {
+    TalonFXConfiguration configs = new TalonFXConfiguration();
+    configs.Slot0.kP = 0.0;
+    configs.Slot0.kI = 0.0;
+    configs.Slot0.kD = 0.0;
+    configs.Slot0.kV = 0.05;
+    configs.Slot0.kS = 0.0;
+
+    configs.Voltage.withPeakForwardVoltage(Volts.of(8)).withPeakReverseVoltage(Volts.of(-8));
+
+    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status = shooterMotor1.getConfigurator().apply(configs);
+      if (status.isOK())
+        break;
+    }
+    if (!status.isOK()) {
+      System.out.println("Could not apply configs, error code: " + status.toString());
+
+      shooterMotor1.setPosition(0);
+    }
+
+  }
+
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
-    shooterMotor.setControl(m_VelocityVoltage.withVelocity(speed.get()));
+    shooterMotor1.setControl(m_VelocityVoltage.withVelocity(speed.get()));
   }
 
   private void shooterStop() {
-    shooterMotor.setControl(m_Brake);
+    shooterMotor1.setControl(m_Brake);
   }
 
   /** Creates a new Shooter. */
   public Shooter() {
-    SimProfiles.initShooter(shooterMotor);
+    SimProfiles.initShooter(shooterMotor1);
+    setShooterMotor();
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
@@ -56,7 +91,7 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double error = shooterMotor.getClosedLoopError().getValueAsDouble();
+    double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
     double range = locked ? Prefs.WIDE : Prefs.TIGHT;
     if (Math.abs(error) < range) {
       SettleCount += 1;
@@ -65,6 +100,10 @@ public class Shooter extends SubsystemBase {
     }
 
     locked = SettleCount >= Prefs.STABLE_COUNT;
+
+    SmartDashboard.putNumber("Shooter/RPM", shooterMotor1.getVelocity().getValueAsDouble() * 60);
+    SmartDashboard.putNumber("Shooter/CurrentDraw", shooterMotor1.getSupplyCurrent().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter/Error", shooterMotor1.getClosedLoopError().getValueAsDouble());
   }
 
 }

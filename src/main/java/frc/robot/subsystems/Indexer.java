@@ -14,38 +14,38 @@ import frc.robot.Constants.Prefs;
 import frc.robot.sim.SimProfiles;
 
 public class Indexer extends SubsystemBase {
-  private final TalonFX indexerMotor = new TalonFX(21);
+  // private final TalonFX indexerMotor = new TalonFX(22);
 
-  private final VelocityVoltage velocityVoltage = new VelocityVoltage(0);
+  // private final VelocityVoltage velocityVoltage = new VelocityVoltage(0);
 
-  private final NeutralOut m_Brake = new NeutralOut();
+  // private final NeutralOut m_Brake = new NeutralOut();
 
-  private void setIndexerSpeed() {
-    indexerMotor.setControl(velocityVoltage.withVelocity(Prefs.INDEXER_VELOCITY));
-  }
+  // private void setIndexerSpeed() {
+  // indexerMotor.setControl(velocityVoltage.withVelocity(Prefs.INDEXER_VELOCITY));
+  // }
 
-  private void indexerStop() {
-    indexerMotor.setControl(m_Brake);
-  }
+  // private void indexerStop() {
+  // indexerMotor.setControl(m_Brake);
+  // }
 
-  /** Creates a new Indexer. */
-  public Indexer() {
-    SimProfiles.initIndexer(indexerMotor);
-  }
+  // /** Creates a new Indexer. */
+  // public Indexer() {
+  // SimProfiles.initIndexer(indexerMotor);
+  // }
 
-  public Command runIndexer() {
-    return this.runEnd(() -> {
-      setIndexerSpeed();
-    }, () -> {
-      indexerStop();
-    });
-  }
+  // public Command runIndexer() {
+  // return this.runEnd(() -> {
+  // setIndexerSpeed();
+  // }, () -> {
+  // indexerStop();
+  // });
+  // }
 
-  public Command runStopIndexer() {
-    return runOnce(this::indexerStop);
-  }
+  // public Command runStopIndexer() {
+  // return runOnce(this::indexerStop);
+  // }
 
-  @Override
-  public void periodic() {
-  }
+  // @Override
+  // public void periodic() {
+  // }
 }

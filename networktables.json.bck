@@ -14,5 +14,13 @@
     "properties": {
       "persistent": true
     }
+  },
+  {
+    "name": "/Preferences/IndexerVelocities/IndexerVelocity",
+    "type": "double",
+    "value": 3.0,
+    "properties": {
+      "persistent": true
+    }
   }
 ]

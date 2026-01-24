@@ -84,6 +84,7 @@ public class TalonFXSimProfile extends SimProfile {
         _talonFXSim.setSupplyVoltage(12 - _talonFXSim.getSupplyCurrent() * kMotorResistance);
     }
 
+    int num;
     private double loadPercent = 1.0;
     private int loadCount = 0;
 

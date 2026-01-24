@@ -21,13 +21,15 @@ public class AutoFire extends SequentialCommandGroup {
   public AutoFire(Shooter shooterSubsytem, Indexer indexerSubsystem, Supplier<AngularVelocity> velocity) {
 
     addCommands(
-        shooterSubsytem.runShooter(velocity),
-        Commands.waitUntil(() -> {
-          return shooterSubsytem.isReadyToFire();
-        }),
-        indexerSubsystem.runIndexer().until(() -> {
-          return !shooterSubsytem.isReadyToFire();
-        }),
-        indexerSubsystem.runStopIndexer());
+        shooterSubsytem.runShooter(velocity)
+    // Commands.waitUntil(() -> {
+    // return shooterSubsytem.isReadyToFire();
+    // }),
+    // // indexerSubsystem.runIndexer().until(() -> {
+    // // return !shooterSubsytem.isReadyToFire();
+    // // }),
+    // // indexerSubsystem.runStopIndexer());
+    // }
+    );
   }
 }
