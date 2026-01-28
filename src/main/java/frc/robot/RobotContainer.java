@@ -7,11 +7,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.input.controllers.XboxControllerWrapper;
 import edu.wpi.first.wpilibj2.command.*;
+import frc.robot.commands.SwerveDriveWithGamepad;
 import frc.robot.subsystems.*;
+import frc.robot.util.FireControl;
 
 
 public class RobotContainer {
@@ -23,12 +26,7 @@ public class RobotContainer {
 
   // Subsystems
   public static final Swerve swerve = new Swerve();// new Swerve();
-  // public static final LEDs LEDs = new LEDs();
-  // Other Hardware
   public static final PowerDistribution powerDistribution = new PowerDistribution();
-
-  // Vision clients
-  // public static final JetsonClient jetson = new JetsonClient();
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
@@ -37,7 +35,7 @@ public class RobotContainer {
   public RobotContainer() {
     SmartDashboard.putData(swerve.zeroModulesCommand());
     configureButtonBindings();
-    // LEDs.setDefaultCommand(new Notifications());
+    swerve.setDefaultCommand(new SwerveDriveWithGamepad(false));
 
     SmartDashboard.putData("Reset position",Commands.runOnce(() -> {
       swerve.resetOdometry(Pose2d.kZero);
@@ -57,46 +55,12 @@ public class RobotContainer {
       )));
     }, swerve));
 
-
-    // SmartDashboard.putData(intake.getIntakePivotTuner());
-    // SmartDashboard.putData(intake.getIntakeTuner());
-    //SmartDashboard.putData("Tune Elevation", shooterWrist.getElevationTunerCommand());
-    //SmartDashboard.putData("Tune Shooter", shooter.getShooterTunerCommand());
-    //SmartDashboard.putData("Tune Shooter Intake", shooter.getIntakeTunerCommand());
-    //SmartDashboard.putData("Tune Intake", intake.getIntakeTuner());
-    // SmartDashboard.putData(Commands.runOnce(() -> {
-    // intake.updateRotationOffset();}, intake));
-
-    //SmartDashboard.putData("Tune Elevator Motor", elevator.getHeightTunerCommand());
-    //SmartDashboard.putData("Elevator Extents", new FindMotorExtents());
-
-    // SmartDashboard.putData("Robot At Center Blue Ring", Commands.runOnce(() -> {
-    //   swerve.resetOdometry(new Pose2d(new Translation2d(2.9, 5.55), Rotation2d.fromDegrees(0)));
-    // }, swerve));
-    // SmartDashboard.putData("Robot At Red Speaker", new AtRedSubWoofer());
-
-    // Register Named Commands for pathplanner
-    //NamedCommands.registerCommand("ReadyToShootInSpeaker", new ShootInSpeaker());
-    //NamedCommands.registerCommand("SpeakerShot", new Shoot(false));
-    //NamedCommands.registerCommand("New AutoSpeakerShot", newAutoShootInSpeaker());
-    // NamedCommands.registerCommand("", );
-    
-    //PPHolonomicDriveController.setRotationTargetOverride(this::overrideAngle);
+    // FireControl fc = new FireControl(swerve::getPose, DriverStation::getAlliance)
+    // DriverStation.
   }
   
 
   private void configureButtonBindings() {    
-        //Commands.waitSeconds(.5).andThen(new Shoot().andThen(Commands.waitSeconds(0.5).andThen(Commands.runOnce(() -> {
-          //shooter.stopMotors();
-       // }, shooter))))));
-   
-    //coDriver.X().onTrue(new ElevatorToMin());
     coDriver.START();
-  /*   
-        }, shooter))).andThen(new Shoot().andThen(Commands.waitSeconds(0.5).andThen(Commands.runOnce(() -> {
-          shooter.stopMotors();
-
-        }))))); */
-  
   }
 }
