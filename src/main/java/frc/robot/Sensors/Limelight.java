@@ -2,7 +2,7 @@
    hacking away because I don't know if the
    Limelight stuff should be in another file */
 
-package frc.robot.sensors;
+package frc.robot.Sensors;
 
 //import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.NetworkTable;
