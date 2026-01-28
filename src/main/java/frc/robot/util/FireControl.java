@@ -24,7 +24,7 @@ public class FireControl {
         Translation2d toTarget = targetPose.getTranslation().minus(robotPose.getTranslation());
         Rotation2d targetAngle = toTarget.getAngle();
         Rotation2d relativeAngle = targetAngle.minus(robotPose.getRotation());
-
+        
         return relativeAngle;
     }
 }
