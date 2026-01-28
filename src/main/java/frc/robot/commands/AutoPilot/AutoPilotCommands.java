@@ -18,7 +18,7 @@ public class AutoPilotCommands {
         // https://frcdocs.wpi.edu/en/latest/docs/software/advanced-controls/geometry/pose.html#rotation
         public static final Rotation2d CW_30deg = Rotation2d.fromDegrees(-30);
         public static final Rotation2d CCW_30deg = Rotation2d.fromDegrees(30);
-
+        // TODO: Test origin auto
         // Poses
         public static Supplier<Pose2d> pos1 = () -> AprilTags.getAprilTagPose(28);
         public static Supplier<Pose2d> examplePose = () -> new Pose2d(0, 0, Rotation2d.fromDegrees(90));
@@ -94,6 +94,9 @@ public class AutoPilotCommands {
                 Command AP_blueCenter = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get());
 
+                Command AP_origin = new SequentialCommandGroup(
+                                MoveTo_origin.get());
+
                 Command AP_blueCenterToDepot = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get(),
                                 MoveTo_depot.get());
@@ -123,5 +126,6 @@ public class AutoPilotCommands {
                 NamedCommands.registerCommand("AP_blueCenterToOriginToRightBump", AP_blueCenterToOriginToRightBump);
                 NamedCommands.registerCommand("AP_blueScoreBumpFeed", AP_blueScoreBumpFeed);
                 NamedCommands.registerCommand("AP_FEEDME", AP_FEEDME);
+                NamedCommands.registerCommand("AP_origin", AP_origin);
         }
 }

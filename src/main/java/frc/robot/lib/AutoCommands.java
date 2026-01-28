@@ -44,6 +44,7 @@ public class AutoCommands {
                 NamedCommands.getCommand("AP_blueCenterToOriginToRightBump"));
         commandsToAddToChooser.put("AP_blueScoreBumpFeed", NamedCommands.getCommand("AP_blueScoreBumpFeed"));
         commandsToAddToChooser.put("AP_FEEDME", NamedCommands.getCommand("AP_FEEDME"));
+        commandsToAddToChooser.put("AP_origin", NamedCommands.getCommand("AP_origin"));
 
         // endregion autopilot
 
