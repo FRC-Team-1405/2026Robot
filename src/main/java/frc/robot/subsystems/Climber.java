@@ -4,10 +4,13 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -19,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.FinneyLogger;
 import frc.robot.lib.MotorSim.MotorSim_Mech;
+import frc.robot.lib.MotorSim.PhysicsSim;
 import frc.robot.sim.SimProfiles;
 
 public class Climber extends SubsystemBase {
@@ -34,12 +38,13 @@ public class Climber extends SubsystemBase {
   public void periodic() {
 
     // SmartDashboard.putNumber("Climber Position", getMotorPos());
-    // SmartDashboard.putNumber("Climber Velocity",
-    // getMotorVelocity.getValueAsDouble)
+    Climber_motorSimMech.update(motor.getPosition(), motor.getVelocity());
+    SmartDashboard.putNumber("Climber Voltage", motor.getMotorVoltage().getValueAsDouble());
     fLogger.log("Motor voltage = " + motor.getMotorVoltage().getValueAsDouble() + " Motor position = "
         + motor.getPosition().getValueAsDouble());
     if (Utils.isSimulation()) {
-      motor.setPosition(motor.getPosition().getValueAsDouble() + motor.getMotorVoltage().getValueAsDouble());
+      // motor.setPosition(motor.getPosition().getValueAsDouble() +
+      // motor.getMotorVoltage().getValueAsDouble());
       // set motor position to ( motor position as decimal )
       // set motor position to ( current position )
       // set motor position = current position + motor voltage
@@ -51,10 +56,11 @@ public class Climber extends SubsystemBase {
       grabber.setPosition(grabber.getPosition().getValueAsDouble() + grabber.getMotorVoltage().getValueAsDouble());
     }
 
-    if (motor.getSupplyCurrent().getValueAsDouble() > CLIMBER_CURRENT_LIMIT) {
-      stop();
-      fLogger.log("CLimber current trip " + motor.getSupplyCurrent().getValueAsDouble());
-    }
+    // if (motor.getSupplyCurrent().getValueAsDouble() > CLIMBER_CURRENT_LIMIT) {
+    // stop();
+    // fLogger.log("CLimber current trip " +
+    // motor.getSupplyCurrent().getValueAsDouble());
+    // }
     // safety stop
 
   }
@@ -63,20 +69,58 @@ public class Climber extends SubsystemBase {
     TalonFXConfiguration Climber_cfg = new TalonFXConfiguration();
     TalonFXConfiguration Grabber_cfg = new TalonFXConfiguration();
 
+    MotionMagicConfigs Climber_mm = Climber_cfg.MotionMagic;
+    // Climber_mm.withMotionMagicCruiseVelocity(RotationsPerSecond.of(10))
+    // .withMotionMagicAcceleration(RotationsPerSecond.of(15));
+
     StatusCode Climber_status_slave = StatusCode.StatusCodeNotInitialized;
     StatusCode Grabber_status_slave = StatusCode.StatusCodeNotInitialized;
 
-    SoftwareLimitSwitchConfigs soft = Climber_cfg.SoftwareLimitSwitch;
-    soft.ForwardSoftLimitEnable = true;
-    soft.ForwardSoftLimitThreshold = 5.1; // mechanism rotations (after gear ratio)
-    soft.ReverseSoftLimitEnable = true;
-    soft.ReverseSoftLimitThreshold = 0.0;
+    // SoftwareLimitSwitchConfigs soft = Climber_cfg.SoftwareLimitSwitch;
+    // soft.ForwardSoftLimitEnable = true;
+    // soft.ForwardSoftLimitThreshold = 5.1; // mechanism rotations (after gear
+    // ratio)
+    // soft.ReverseSoftLimitEnable = true;
+    // soft.ReverseSoftLimitThreshold = 0.0;
 
-    SoftwareLimitSwitchConfigs softGrabber = Grabber_cfg.SoftwareLimitSwitch;
-    soft.ForwardSoftLimitEnable = true;
-    soft.ForwardSoftLimitThreshold = 3.0;
-    soft.ReverseSoftLimitEnable = true;
-    soft.ReverseSoftLimitThreshold = 0.0;
+    // SoftwareLimitSwitchConfigs softGrabber = Grabber_cfg.SoftwareLimitSwitch;
+    // softGrabber.ForwardSoftLimitEnable = true;
+    // softGrabber.ForwardSoftLimitThreshold = 3.0;
+    // softGrabber.ReverseSoftLimitEnable = true;
+    // softGrabber.ReverseSoftLimitThreshold = 0.0;
+
+    Slot0Configs Climber_slot0 = Climber_cfg.Slot0;
+    Climber_slot0.kS = 0;
+    Climber_slot0.kV = 0.0;
+    Climber_slot0.kA = 0.0;
+    Climber_slot0.kP = 3; // proportional
+    Climber_slot0.kI = 0;
+    Climber_slot0.kD = 0.0;
+    Climber_slot0.kG = 0;
+
+    Slot0Configs Grabber_slot0 = Grabber_cfg.Slot0;
+    Grabber_slot0.kS = 0;
+    Grabber_slot0.kV = 0.0;
+    Grabber_slot0.kA = 0.0;
+    Grabber_slot0.kP = 3;
+    Grabber_slot0.kI = 0;
+    Grabber_slot0.kD = 0.0;
+    Grabber_slot0.kG = 0;
+
+    // CurrentLimitsConfigs limits = Climber_cfg.CurrentLimits;
+    // limits.SupplyCurrentLimitEnable = true;
+    // limits.SupplyCurrentLimit = 30;
+    // limits.StatorCurrentLimitEnable = true;
+    // limits.StatorCurrentLimit = 40;
+
+    CurrentLimitsConfigs grabberLimits = Grabber_cfg.CurrentLimits;
+    grabberLimits.SupplyCurrentLimitEnable = true;
+    grabberLimits.SupplyCurrentLimit = 30;
+    grabberLimits.StatorCurrentLimitEnable = true;
+    grabberLimits.StatorCurrentLimit = 40;
+    grabberLimits.SupplyCurrentLimit = 30;
+    grabberLimits.StatorCurrentLimitEnable = true;
+    grabberLimits.StatorCurrentLimit = 40;
 
     for (int i = 0; i < 5; ++i) {
       Climber_status_slave = motor.getConfigurator().apply(Climber_cfg);
@@ -96,39 +140,15 @@ public class Climber extends SubsystemBase {
       fLogger.log("Could not configure Grabber slaveMotor. Error: " + Grabber_status_slave.toString());
     }
 
-    Slot0Configs Climber_slot0 = Climber_cfg.Slot0;
-    Climber_slot0.kS = 0;
-    Climber_slot0.kV = 0.0;
-    Climber_slot0.kA = 0.0;
-    Climber_slot0.kP = 3;
-    Climber_slot0.kI = 0;
-    Climber_slot0.kD = 0.0;
-    Climber_slot0.kG = 0;
+  }
 
-    Slot0Configs Grabber_slot0 = Grabber_cfg.Slot0;
-    Grabber_slot0.kS = 0;
-    Grabber_slot0.kV = 0.0;
-    Grabber_slot0.kA = 0.0;
-    Grabber_slot0.kP = 3;
-    Grabber_slot0.kI = 0;
-    Grabber_slot0.kD = 0.0;
-    Grabber_slot0.kG = 0;
+  public void simulationInit() {
+    PhysicsSim.getInstance().addTalonFX(motor, 0.001);// , 0.0, 0.0, 0.0, 2, 1.0);
+  }
 
-    CurrentLimitsConfigs limits = Climber_cfg.CurrentLimits;
-    limits.SupplyCurrentLimitEnable = true;
-    limits.SupplyCurrentLimit = 30;
-    limits.StatorCurrentLimitEnable = true;
-    limits.StatorCurrentLimit = 40;
-
-    CurrentLimitsConfigs grabberLimits = Grabber_cfg.CurrentLimits;
-    grabberLimits.SupplyCurrentLimitEnable = true;
-    grabberLimits.SupplyCurrentLimit = 30;
-    grabberLimits.StatorCurrentLimitEnable = true;
-    grabberLimits.StatorCurrentLimit = 40;
-    grabberLimits.SupplyCurrentLimit = 30;
-    grabberLimits.StatorCurrentLimitEnable = true;
-    grabberLimits.StatorCurrentLimit = 40;
-
+  @Override
+  public void simulationPeriodic() {
+    PhysicsSim.getInstance().run();
   }
 
   private double MAX_DISTANCE = 5.1;
@@ -137,11 +157,13 @@ public class Climber extends SubsystemBase {
 
   public void move(double position) {
     // position = MAX_DISTANCE * (position);
-    motor.setControl(new MotionMagicVoltage(position));
+    // motor.setControl(new MotionMagicVoltage(position));
+    motor.set(0.5);
   }
 
   public void moveGrabber(double position) {
-    motor.setControl(new MotionMagicVoltage(position));
+    // motor.setControl(new MotionMagicVoltage(position));
+    motor.set(0.2);
   }
 
   public Climber() {
