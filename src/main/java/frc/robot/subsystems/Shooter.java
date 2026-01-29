@@ -32,7 +32,6 @@ public class Shooter extends SubsystemBase {
   // TalonFX(Constants.CANBus.SHOOTER_MOTOR_2);
 
   private final VelocityVoltage m_VelocityVoltage = new VelocityVoltage(0).withSlot(0);
-
   private final NeutralOut m_Brake = new NeutralOut();
 
   private int SettleCount = 0;

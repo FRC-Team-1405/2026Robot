@@ -16,6 +16,8 @@ public class Constants {
     public static class CANBus {
         public static final int SHOOTER_MOTOR_1 = 20;
         public static final int SHOOTER_MOTOR_2 = 21;
+
+        public static final int ADJUSTABLE_SHOOTER_MOTOR = 24;
     }
 
     public static class Prefs {
