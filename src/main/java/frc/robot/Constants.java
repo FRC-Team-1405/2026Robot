@@ -163,6 +163,26 @@ public final class Constants {
       public static Translation2d moduleOffset = new Translation2d(-Units.inchesToMeters(12.375),
           -Units.inchesToMeters(10.125));
     }
+
+    public static final class Shooter {
+      @CanId(CanId.Type.MOTOR)
+      public static final int FRONT_TOP_SHOOTER_ID = 30;
+      @CanId(CanId.Type.MOTOR)
+      public static final int FRONT_BOTTOM_SHOOTER_ID = 31;
+      @CanId(CanId.Type.MOTOR)
+      public static final int BACK_TOP_SHOOTER_ID = 32;
+      @CanId(CanId.Type.MOTOR)
+      public static final int BACK_BOTTOM_SHOOTER_ID = 33;
+      @CanId(CanId.Type.ENCODER)
+      public static final int FRONT_TOP_ENCODER_ID = 30;
+      @CanId(CanId.Type.ENCODER)
+      public static final int FRONT_BOTTOM_ENCODER_ID = 31;
+      @CanId(CanId.Type.ENCODER)
+      public static final int BACK_TOP_ENCODER_ID = 32;
+      @CanId(CanId.Type.ENCODER)
+      public static final int BACK_BOTTOM_ENCODER_ID = 33;
+    }
+    }
   }
 
-}
+
