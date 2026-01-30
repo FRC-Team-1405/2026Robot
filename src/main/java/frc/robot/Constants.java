@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 public final class Constants {
   public static final String CARNIVORE_BUS_NAME = "rio";
@@ -75,6 +76,15 @@ public final class Constants {
   public static final class LEDs {
     public static final int PWM_PIN = 0;
     public static final int LENGTH = 150;
+  }
+
+  public static final class Intake {
+    @CanId(CanId.Type.MOTOR)
+    public static final int INTAKE_LIFT_MOTOR_ID = 0;
+    public static final int INTAKE_MOTOR_ID = 0;
+    public static final double INTAKE_LIFT_SPEED = 0.5;
+    public static final int LIFT_LIMIT_SWITCH_UP_ID = 0;
+    public static final int LIFT_LIMIT_SWITCH_DOWN_ID = 0; 
   }
 
   public static final class Swerve {
