@@ -17,23 +17,21 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.lib.FinneyLogger;
 import frc.robot.sim.SimProfiles;
 
 public class Climber extends SubsystemBase {
   private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
   /** Creates a new Climber. */
-  private TalonFX motor = new TalonFX(45);
+  private TalonFX motor = new TalonFX(Constants.CANBus.CLIMBER_MOTOR);
   private final PositionVoltage motorPosition = new PositionVoltage(0);
   private final NeutralOut stop = new NeutralOut();
-  private TalonFX grabber = new TalonFX(37);
+  private TalonFX grabber = new TalonFX(Constants.CANBus.CLIMBER_GRABBER);
   private final PositionVoltage grabberPosition = new PositionVoltage(0);
 
   private int climberSettleCount = 0;
   private int grabberSettleCount = 0;
-
-  private final double POSITION_TOLERANCE = 1.0;
-  private final int SETTLE_MAX = 3;
 
   private static final double CLIMBER_CURRENT_LIMIT = 40.0;
 
@@ -44,13 +42,13 @@ public class Climber extends SubsystemBase {
     fLogger.log("Motor voltage = " + motor.getMotorVoltage().getValueAsDouble() + " Motor position = "
         + motor.getPosition().getValueAsDouble());
 
-    if (Math.abs(motor.getClosedLoopError().getValueAsDouble()) < POSITION_TOLERANCE) {
+    if (Math.abs(motor.getClosedLoopError().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
       climberSettleCount += 1;
     } else {
       climberSettleCount = 0;
     }
 
-    if (Math.abs(grabber.getClosedLoopError().getValueAsDouble()) < POSITION_TOLERANCE) {
+    if (Math.abs(grabber.getClosedLoopError().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
       grabberSettleCount += 1;
     } else {
       grabberSettleCount = 0;
@@ -58,11 +56,11 @@ public class Climber extends SubsystemBase {
   }
 
   private boolean isClimberAtTarget() {
-    return (climberSettleCount >= SETTLE_MAX);
+    return (climberSettleCount >= Constants.ClimberPreferences.SETTLE_MAX);
   }
 
   private boolean isGrabberAtTarget() {
-    return (grabberSettleCount >= SETTLE_MAX);
+    return (grabberSettleCount >= Constants.ClimberPreferences.SETTLE_MAX);
   }
 
   public void setupMotors() {
@@ -145,11 +143,6 @@ public class Climber extends SubsystemBase {
   public void simulationPeriodic() {
   }
 
-  private double MAX_DISTANCE = 100.0;
-  private double MIN_DISTANCE = 0.0;
-  private double MAX_GRABBER_DISTANCE = 50.0;
-  private double MIN_GRABBER_DISTANCE = 0.0;
-
   public void move(double position) {
     // position = MAX_DISTANCE * (position);
     // motor.setControl(new MotionMagicVoltage(position));
@@ -169,7 +162,7 @@ public class Climber extends SubsystemBase {
 
   // function to climb up - motor forward direction
   private void climbUp() {
-    move(MAX_DISTANCE);
+    move(Constants.ClimberPreferences.CLIMBER_EXTEND_POSITION);
     fLogger.log("Climb up ");
     // motor.set(0.25);
   }
@@ -177,7 +170,7 @@ public class Climber extends SubsystemBase {
   // function to climb down -- motor backwards direction
   private void climbDown() {
     // motor.set(-0.25);
-    move(MIN_DISTANCE);
+    move(Constants.ClimberPreferences.CLIMBER_RETRACT_POSITION);
     fLogger.log("Climb down ");
   }
 
@@ -230,16 +223,18 @@ public class Climber extends SubsystemBase {
   // grabber motors
 
   private void openClaw() {
-    grabber.setControl(grabberPosition.withPosition(MAX_GRABBER_DISTANCE));
+    grabber.setControl(grabberPosition.withPosition(Constants.ClimberPreferences.GRABBER_OPEN_POSITION));
     fLogger.log("Open Claw ");
   }
 
   private void closeClaw() {
-    grabber.setControl(grabberPosition.withPosition(MIN_GRABBER_POSITION));
+    grabber.setControl(grabberPosition.withPosition(Constants.ClimberPreferences.GRABBER_CLOSED_POSITION));
+    fLogger.log("Close Claw ");
   }
 
   private void stopClaw() {
     grabber.setControl(stop);
+    fLogger.log("Stop Claw ");
   }
 
   /**
