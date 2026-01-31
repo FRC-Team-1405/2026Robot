@@ -14,6 +14,8 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.FinneyLogger;
 import frc.robot.sim.SimProfiles;
@@ -25,6 +27,13 @@ public class Climber extends SubsystemBase {
   private final PositionVoltage motorPosition = new PositionVoltage(0);
   private final NeutralOut stop = new NeutralOut();
   private TalonFX grabber = new TalonFX(37);
+  private final PositionVoltage grabberPosition = new PositionVoltage(0);
+
+  private int climberSettleCount = 0;
+  private int grabberSettleCount = 0;
+
+  private final double POSITION_TOLERANCE = 1.0;
+  private final int SETTLE_MAX = 3;
 
   private static final double CLIMBER_CURRENT_LIMIT = 40.0;
 
@@ -34,6 +43,26 @@ public class Climber extends SubsystemBase {
     SmartDashboard.putNumber("Climber Voltage", motor.getMotorVoltage().getValueAsDouble());
     fLogger.log("Motor voltage = " + motor.getMotorVoltage().getValueAsDouble() + " Motor position = "
         + motor.getPosition().getValueAsDouble());
+
+    if (Math.abs(motor.getClosedLoopError().getValueAsDouble()) < POSITION_TOLERANCE) {
+      climberSettleCount += 1;
+    } else {
+      climberSettleCount = 0;
+    }
+
+    if (Math.abs(grabber.getClosedLoopError().getValueAsDouble()) < POSITION_TOLERANCE) {
+      grabberSettleCount += 1;
+    } else {
+      grabberSettleCount = 0;
+    }
+  }
+
+  private boolean isClimberAtTarget() {
+    return (climberSettleCount >= SETTLE_MAX);
+  }
+
+  private boolean isGrabberAtTarget() {
+    return (grabberSettleCount >= SETTLE_MAX);
   }
 
   public void setupMotors() {
@@ -118,7 +147,8 @@ public class Climber extends SubsystemBase {
 
   private double MAX_DISTANCE = 100.0;
   private double MIN_DISTANCE = 0.0;
-  private double STOP_CLIMBER = 0.0;
+  private double MAX_GRABBER_DISTANCE = 50.0;
+  private double MIN_GRABBER_DISTANCE = 0.0;
 
   public void move(double position) {
     // position = MAX_DISTANCE * (position);
@@ -134,39 +164,134 @@ public class Climber extends SubsystemBase {
   public Climber() {
     setupMotors();
     SimProfiles.initClimber(motor);
+    SimProfiles.initGrabber(grabber);
   }
 
   // function to climb up - motor forward direction
-  public void climbUp() {
+  private void climbUp() {
     move(MAX_DISTANCE);
     fLogger.log("Climb up ");
     // motor.set(0.25);
   }
 
   // function to climb down -- motor backwards direction
-  public void climbDown() {
+  private void climbDown() {
     // motor.set(-0.25);
     move(MIN_DISTANCE);
     fLogger.log("Climb down ");
   }
 
-  public void stop() {
+  private void stop() {
     motor.setControl(stop);
     fLogger.log("Stop ");
   }
 
+  /**
+   * This command runs the climb up action
+   * by extending the climber arm.
+   * 
+   * @return Command
+   */
+  public Command runClimbUp() {
+    Command cmd = runOnce(() -> climbUp())
+        .andThen(Commands.waitUntil(() -> isClimberAtTarget()))
+        .withName("Climb Up");
+    SmartDashboard.putData(cmd);
+    return cmd;
+  }
+
+  /**
+   * This command runs the climb down action
+   * by retracting the climber arm.
+   * 
+   * @return Command
+   */
+  public Command runClimbDown() {
+    Command cmd = runOnce(() -> climbDown())
+        .andThen(Commands.waitUntil(() -> isClimberAtTarget()))
+        .withName("Climb Down");
+    SmartDashboard.putData(cmd);
+    return cmd;
+  }
+
+  /**
+   * This command runs the stop action.
+   * 
+   * @return Command
+   */
+  public Command runStop() {
+    Command cmd = runOnce(() -> stop())
+        .andThen(Commands.waitUntil(() -> isClimberAtTarget()))
+        .withName("Climb Stop");
+    SmartDashboard.putData(cmd);
+    return cmd;
+  }
+
   // grabber motors
 
-  public void openClaw() {
-    grabber.set(0.5);
+  private void openClaw() {
+    grabber.setControl(grabberPosition.withPosition(MAX_GRABBER_DISTANCE));
+    fLogger.log("Open Claw ");
   }
 
-  public void closeClaw() {
-    grabber.set(-0.5);
+  private void closeClaw() {
+    grabber.setControl(grabberPosition.withPosition(MIN_GRABBER_POSITION));
   }
 
-  public void stopClaw() {
-    grabber.set(0);
+  private void stopClaw() {
+    grabber.setControl(stop);
+  }
+
+  /**
+   * This command runs the open claw action.
+   * 
+   * @return Command
+   */
+  public Command runOpenClaw() {
+    Command cmd = runOnce(() -> openClaw())
+        .andThen(Commands.waitUntil(() -> isGrabberAtTarget()))
+        .withName("Open Claw");
+    SmartDashboard.putData(cmd);
+    return cmd;
+  }
+
+  /**
+   * This command runs the close claw action.
+   * 
+   * @return Command
+   */
+  public Command runCloseClaw() {
+    Command cmd = runOnce(() -> closeClaw())
+        .andThen(Commands.waitUntil(() -> isGrabberAtTarget()))
+        .withName("Close Claw");
+    SmartDashboard.putData(cmd);
+    return cmd;
+  }
+
+  /**
+   * This command runs the stop claw action.
+   * 
+   * @return Command
+   */
+  public Command runStopClaw() {
+    Command cmd = runOnce(() -> stopClaw())
+        .andThen(Commands.waitUntil(() -> isClimberAtTarget()))
+        .withName("Stop Claw");
+    SmartDashboard.putData(cmd);
+    return cmd;
+  }
+
+  /**
+   * This command will extend the climber and then open the claw.
+   * 
+   * @return
+   */
+  public Command runExtendClimber() {
+    return runClimbUp().andThen(runOpenClaw()).withName("Extend Climber");
+  }
+
+  public Command runRetractClimber() {
+    return runCloseClaw().andThen(runClimbDown()).withName("Retract Climber");
   }
 
   private static final double MAX_POSITION = 5.1;

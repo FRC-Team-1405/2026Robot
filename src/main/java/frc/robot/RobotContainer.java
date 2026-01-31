@@ -56,16 +56,18 @@ public class RobotContainer {
                 // return joystick.getLeftTriggerAxis() >= 0.5;
                 // });
                 // leftTrigger.onTrue(Commands.runOnce(() -> climber.climbUp()));
-                joystickClimber.a().toggleOnTrue(Commands.runOnce(() -> climber.climbUp()));
-                joystickClimber.x().onTrue(Commands.runOnce(() -> climber.stop()));
-                joystickClimber.b().toggleOnTrue(Commands.runOnce(() -> climber.climbDown()));
+                joystickClimber.a().toggleOnTrue(climber.runClimbUp());
+                joystickClimber.x().onTrue(climber.runClimbDown());
+                joystickClimber.b().toggleOnTrue(climber.runStop());
+                joystickClimber.y().toggleOnTrue(climber.runExtendClimber());
                 // Note that the rightTrigger is defined as forward according to WPILib
                 // convention,
                 // and the rightBumper is defined as to the left according to WPILib convention.
 
-                joystickGrabber.a().toggleOnTrue(Commands.runOnce(() -> climber.openClaw()));
-                joystickGrabber.y().onTrue(Commands.runOnce(() -> climber.stopClaw()));
-                joystickGrabber.b().toggleOnTrue(Commands.runOnce(() -> climber.closeClaw()));
+                joystickGrabber.a().toggleOnTrue(climber.runOpenClaw());
+                joystickGrabber.x().onTrue(climber.runStopClaw());
+                joystickGrabber.b().toggleOnTrue(climber.runCloseClaw());
+                joystickGrabber.y().toggleOnTrue(climber.runRetractClimber());
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
