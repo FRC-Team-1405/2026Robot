@@ -1,7 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Meter;
-
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,13 +12,11 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 
 public final class Constants {
   public static final String CARNIVORE_BUS_NAME = "Sonic";
@@ -39,26 +35,6 @@ public final class Constants {
       throw new RuntimeException(e);
     }
   }
-
-  public static final Distance X_CLEAR_OFFSET = Distance.ofBaseUnits(Math.abs(
-                                                                              apriltagLayout.getTagPose(12).get().getMeasureX().in(Meter)
-                                                                              - apriltagLayout.getTagPose(13).get().getMeasureX().in(Meter)) / 2.0,
-                                                                    Meter);
-
-  public static final Distance Y_CLEAR_OFFSET = Distance.ofBaseUnits(Math.abs(
-                                                                              apriltagLayout.getTagPose(7).get().getMeasureY().in(Meter)
-                                                                              - apriltagLayout.getTagPose(8).get().getMeasureY().in(Meter)) / 2.0,
-                                                                    Meter);
-
-  public static final Pose2d HUB_RED = new Pose2d(apriltagLayout.getTagPose(8).get().getMeasureX(), apriltagLayout.getTagPose(9).get().getMeasureY(), new Rotation2d(0.0));
-  public static final Pose2d HUB_BLUE = new Pose2d(apriltagLayout.getTagPose(27).get().getMeasureX(), apriltagLayout.getTagPose(26).get().getMeasureY(), new Rotation2d(0.0));
-
-  public static final Pose2d RED_FEED_TOP = new Pose2d(apriltagLayout.getTagPose(7).get().getMeasureX().plus(X_CLEAR_OFFSET), apriltagLayout.getTagPose(7).get().getMeasureY().plus(Y_CLEAR_OFFSET), new Rotation2d(0.0));
-  public static final Pose2d RED_FEED_BOT = new Pose2d(apriltagLayout.getTagPose(12).get().getMeasureX().plus(X_CLEAR_OFFSET), apriltagLayout.getTagPose(12).get().getMeasureY().minus(Y_CLEAR_OFFSET), new Rotation2d(0.0));
-  
-  public static final Pose2d BLUE_FEED_TOP = new Pose2d(apriltagLayout.getTagPose(28).get().getMeasureX().minus(X_CLEAR_OFFSET), apriltagLayout.getTagPose(28).get().getMeasureY().plus(Y_CLEAR_OFFSET), new Rotation2d(0.0));
-  public static final Pose2d BLUE_FEED_BOT = new Pose2d(apriltagLayout.getTagPose(23).get().getMeasureX().minus(X_CLEAR_OFFSET), apriltagLayout.getTagPose(23).get().getMeasureY().minus(Y_CLEAR_OFFSET), new Rotation2d(0.0));
-  
   /**
    * Annotate CAN ID fields with this annotation so we can detect duplicates in a
    * unit test
@@ -99,6 +75,15 @@ public final class Constants {
     public static final int LENGTH = 150;
   }
 
+  public static final class Vision {
+    public static final Transform3d robotToCam1 = new Transform3d(); //TODO find values for robotToCam (add more if needed)
+    public static final Transform3d robotToCam2 = new Transform3d();
+    
+    public static final Matrix<N3, N1> singleTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0); //TODO emperically tune Single Tag StdDevs
+    public static final Matrix<N3, N1> multiTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0); //TODO emperically tune Multi Tag StdDevs
+
+  }
+  
   public static final class Swerve {
     @CanId(CanId.Type.PIGEON)
     public static final int IMU_ID = 1;
@@ -109,8 +94,8 @@ public final class Constants {
     public static final double TELEOP_ANGLE_HOLD_FACTOR = 3.0;
 
     public static final class Odometry {
-      public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.05);
-      public static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
+      public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.05); //TODO change state StdDev for Odom
+      public static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.9, 0.9, 0.9); //TODO change vision StdDev for Odom
     }
 
     public static final class PathFollowing {
@@ -120,7 +105,7 @@ public final class Constants {
         new PIDConstants(8.0,0.0, 0.8);
     }
     
-    public static final class FrontLeftModule {
+    public static final class FrontLeftModule { //TODO need to change where the "front" CAN-IDs are
       @CanId(CanId.Type.MOTOR)
       public static final int DRIVE_MOTOR_ID = 14;
       @CanId(CanId.Type.MOTOR)
