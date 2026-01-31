@@ -40,6 +40,8 @@ public class RobotContainer {
         private final Telemetry logger = new Telemetry(MaxSpeed);
 
         private final CommandXboxController joystick = new CommandXboxController(0);
+        private final CommandXboxController joystickGrabber = new CommandXboxController(3);
+        private final CommandXboxController joystickClimber = new CommandXboxController(4);
 
         public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -54,19 +56,16 @@ public class RobotContainer {
                 // return joystick.getLeftTriggerAxis() >= 0.5;
                 // });
                 // leftTrigger.onTrue(Commands.runOnce(() -> climber.climbUp()));
-                joystick.a().onTrue(Commands.runOnce(() -> climber.climbUp()));
-                joystick.x().onTrue(Commands.runOnce(() -> climber.stop()));
-                joystick.rightBumper().onTrue(Commands.runOnce(() -> climber.climbDown()));
+                joystickClimber.a().toggleOnTrue(Commands.runOnce(() -> climber.climbUp()));
+                joystickClimber.x().onTrue(Commands.runOnce(() -> climber.stop()));
+                joystickClimber.b().toggleOnTrue(Commands.runOnce(() -> climber.climbDown()));
                 // Note that the rightTrigger is defined as forward according to WPILib
                 // convention,
                 // and the rightBumper is defined as to the left according to WPILib convention.
 
-                Trigger rightTrigger = new Trigger(() -> {
-                        return joystick.getRightTriggerAxis() >= 0.5;
-                });
-                rightTrigger.onTrue(Commands.runOnce(() -> climber.openClaw()));
-                joystick.y().onTrue(Commands.runOnce(() -> climber.stopClaw()));
-                joystick.leftBumper().onTrue(Commands.runOnce(() -> climber.closeClaw()));
+                joystickGrabber.a().toggleOnTrue(Commands.runOnce(() -> climber.openClaw()));
+                joystickGrabber.y().onTrue(Commands.runOnce(() -> climber.stopClaw()));
+                joystickGrabber.b().toggleOnTrue(Commands.runOnce(() -> climber.closeClaw()));
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically

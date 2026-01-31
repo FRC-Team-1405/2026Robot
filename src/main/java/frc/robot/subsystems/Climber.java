@@ -4,65 +4,36 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.FinneyLogger;
-import frc.robot.lib.MotorSim.MotorSim_Mech;
-import frc.robot.lib.MotorSim.PhysicsSim;
 import frc.robot.sim.SimProfiles;
 
 public class Climber extends SubsystemBase {
   private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
   /** Creates a new Climber. */
   private TalonFX motor = new TalonFX(45);
+  private final PositionVoltage motorPosition = new PositionVoltage(0);
+  private final NeutralOut stop = new NeutralOut();
   private TalonFX grabber = new TalonFX(37);
-  private MotorSim_Mech Climber_motorSimMech = new MotorSim_Mech("ClimberMotorSimMech");
 
   private static final double CLIMBER_CURRENT_LIMIT = 40.0;
 
   @Override
   public void periodic() {
 
-    // SmartDashboard.putNumber("Climber Position", getMotorPos());
-    Climber_motorSimMech.update(motor.getPosition(), motor.getVelocity());
     SmartDashboard.putNumber("Climber Voltage", motor.getMotorVoltage().getValueAsDouble());
     fLogger.log("Motor voltage = " + motor.getMotorVoltage().getValueAsDouble() + " Motor position = "
         + motor.getPosition().getValueAsDouble());
-    if (Utils.isSimulation()) {
-      // motor.setPosition(motor.getPosition().getValueAsDouble() +
-      // motor.getMotorVoltage().getValueAsDouble());
-      // set motor position to ( motor position as decimal )
-      // set motor position to ( current position )
-      // set motor position = current position + motor voltage
-    }
-    // System.out.println("Claw motor voltage = " +
-    // grabber.getMotorVoltage().getValueAsDouble() + " Claw motor position"
-    // + grabber.getPosition().getValueAsDouble());
-    if (Utils.isSimulation()) {
-      grabber.setPosition(grabber.getPosition().getValueAsDouble() + grabber.getMotorVoltage().getValueAsDouble());
-    }
-
-    // if (motor.getSupplyCurrent().getValueAsDouble() > CLIMBER_CURRENT_LIMIT) {
-    // stop();
-    // fLogger.log("CLimber current trip " +
-    // motor.getSupplyCurrent().getValueAsDouble());
-    // }
-    // safety stop
-
   }
 
   public void setupMotors() {
@@ -139,36 +110,30 @@ public class Climber extends SubsystemBase {
     if (!Grabber_status_slave.isOK()) {
       fLogger.log("Could not configure Grabber slaveMotor. Error: " + Grabber_status_slave.toString());
     }
-
-  }
-
-  public void simulationInit() {
-    PhysicsSim.getInstance().addTalonFX(motor, 0.001);// , 0.0, 0.0, 0.0, 2, 1.0);
   }
 
   @Override
   public void simulationPeriodic() {
-    PhysicsSim.getInstance().run();
   }
 
-  private double MAX_DISTANCE = 5.1;
-  private double MIN_DISTANCE = -5.1;
+  private double MAX_DISTANCE = 100.0;
+  private double MIN_DISTANCE = 0.0;
   private double STOP_CLIMBER = 0.0;
 
   public void move(double position) {
     // position = MAX_DISTANCE * (position);
     // motor.setControl(new MotionMagicVoltage(position));
-    motor.set(0.5);
+    motor.setControl(motorPosition.withPosition(position));
   }
 
   public void moveGrabber(double position) {
     // motor.setControl(new MotionMagicVoltage(position));
-    motor.set(0.2);
+    grabber.set(0.2);
   }
 
   public Climber() {
-    SimProfiles.initClimber(motor);
     setupMotors();
+    SimProfiles.initClimber(motor);
   }
 
   // function to climb up - motor forward direction
@@ -186,18 +151,18 @@ public class Climber extends SubsystemBase {
   }
 
   public void stop() {
-    move(STOP_CLIMBER);
+    motor.setControl(stop);
     fLogger.log("Stop ");
   }
 
   // grabber motors
 
   public void openClaw() {
-    grabber.set(0.05);
+    grabber.set(0.5);
   }
 
   public void closeClaw() {
-    grabber.set(-0.05);
+    grabber.set(-0.5);
   }
 
   public void stopClaw() {

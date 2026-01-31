@@ -62,7 +62,7 @@ public class SimProfiles {
 
         motor.getConfigurator().apply(configs);
 
-        simClimber = new TalonFXSimProfile(motor).withRotorInertia(0.1).build();
+        simClimber = new TalonFXSimProfile(motor).withRotorInertia(0.001).build();
         PhysicsSim.getInstance().addTalonFX(simClimber);
     }
 
