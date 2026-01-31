@@ -4,8 +4,12 @@
 
 package frc.robot.sim;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -62,6 +66,11 @@ public class SimProfiles {
         configs.Voltage.withPeakForwardVoltage(Volts.of(8))
                 .withPeakReverseVoltage(Volts.of(-8));
 
+        configs.MotionMagic
+                .withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
+                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(10))
+                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
+
         motor.getConfigurator().apply(configs);
 
         simClimber = new TalonFXSimProfile(motor).withRotorInertia(0.001).build();
@@ -83,6 +92,11 @@ public class SimProfiles {
         // Peak output of 8 volts
         configs.Voltage.withPeakForwardVoltage(Volts.of(8))
                 .withPeakReverseVoltage(Volts.of(-8));
+
+        configs.MotionMagic
+                .withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
+                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(10))
+                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
 
         motor.getConfigurator().apply(configs);
 

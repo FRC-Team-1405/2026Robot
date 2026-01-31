@@ -9,8 +9,8 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,13 +25,15 @@ public class Climber extends SubsystemBase {
   private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
   /** Creates a new Climber. */
   private TalonFX motor = new TalonFX(Constants.CANBus.CLIMBER_MOTOR);
-  private final PositionVoltage motorPosition = new PositionVoltage(0);
+  private final MotionMagicVoltage motorPosition = new MotionMagicVoltage(0);
   private final NeutralOut stop = new NeutralOut();
   private TalonFX grabber = new TalonFX(Constants.CANBus.CLIMBER_GRABBER);
-  private final PositionVoltage grabberPosition = new PositionVoltage(0);
+  private final MotionMagicVoltage grabberPosition = new MotionMagicVoltage(0);
 
   private int climberSettleCount = 0;
+  private double climberPositionTarget = 0;
   private int grabberSettleCount = 0;
+  private double grabberPositionTarget = 0;
 
   private static final double CLIMBER_CURRENT_LIMIT = 40.0;
 
@@ -42,14 +44,24 @@ public class Climber extends SubsystemBase {
     fLogger.log("Motor voltage = " + motor.getMotorVoltage().getValueAsDouble() + " Motor position = "
         + motor.getPosition().getValueAsDouble());
 
-    if (Math.abs(motor.getClosedLoopError().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
-      climberSettleCount += 1;
+    if (Math.abs(climberPositionTarget
+        - motor.getClosedLoopReference().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
+      if (Math.abs(motor.getClosedLoopError().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
+        climberSettleCount += 1;
+      } else {
+        climberSettleCount = 0;
+      }
     } else {
       climberSettleCount = 0;
     }
 
-    if (Math.abs(grabber.getClosedLoopError().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
-      grabberSettleCount += 1;
+    if (Math.abs(grabberPositionTarget
+        - grabber.getClosedLoopReference().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
+      if (Math.abs(grabber.getClosedLoopError().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
+        grabberSettleCount += 1;
+      } else {
+        grabberSettleCount = 0;
+      }
     } else {
       grabberSettleCount = 0;
     }
@@ -147,11 +159,13 @@ public class Climber extends SubsystemBase {
     // position = MAX_DISTANCE * (position);
     // motor.setControl(new MotionMagicVoltage(position));
     motor.setControl(motorPosition.withPosition(position));
+    climberPositionTarget = position;
   }
 
   public void moveGrabber(double position) {
     // motor.setControl(new MotionMagicVoltage(position));
-    grabber.set(0.2);
+    grabber.setControl(grabberPosition.withPosition(position));
+    grabberPositionTarget = position;
   }
 
   public Climber() {
@@ -223,12 +237,12 @@ public class Climber extends SubsystemBase {
   // grabber motors
 
   private void openClaw() {
-    grabber.setControl(grabberPosition.withPosition(Constants.ClimberPreferences.GRABBER_OPEN_POSITION));
+    moveGrabber(Constants.ClimberPreferences.GRABBER_OPEN_POSITION);
     fLogger.log("Open Claw ");
   }
 
   private void closeClaw() {
-    grabber.setControl(grabberPosition.withPosition(Constants.ClimberPreferences.GRABBER_CLOSED_POSITION));
+    moveGrabber(Constants.ClimberPreferences.GRABBER_CLOSED_POSITION);
     fLogger.log("Close Claw ");
   }
 
