@@ -49,7 +49,9 @@ public class FireControl {
         redList.add(Constants.RED_FEED_BOT); redList.add(Constants.RED_FEED_TOP);
     }
     
-    //Finds the target angle off of the robot position and the target position 
+    /**
+     * @return Finds the target angle off of the robot position and the target position
+     */
     public static Rotation2d getTargetRotation(Pose2d robotPose, Pose2d targetPose) {
         Translation2d toTarget = targetPose.getTranslation().minus(robotPose.getTranslation());
         Rotation2d targetAngle = toTarget.getAngle();
@@ -58,7 +60,7 @@ public class FireControl {
         return relativeAngle;
     }
     /**
-     * @return 
+     * @return A list of current available targets
      */
     private ArrayList<Pose2d> getValidTargets() {
         ArrayList<Pose2d> validTargets = new ArrayList<>();
@@ -82,8 +84,7 @@ public class FireControl {
      * @param robotPose
      * @return TargetLocation with lowest distance to robot
      */
-    // RobotPose - TargetLocation = Distance to location
-    public Pose2d getClosestTarget(Pose2d robotPose) { //TODO
+    public Pose2d getClosestTarget(Pose2d robotPose) {
         ArrayList<Pose2d> targets = getValidTargets();
         Pose2d closestTarget = null;
         double smallestValue = 1000.0;
@@ -96,7 +97,11 @@ public class FireControl {
         }
         return closestTarget;
     }
-    
+    /**
+     * @param x
+     * @param y
+     * @return Get distance from the robot to the target
+     */
     private double getDistance(Pose2d x, Pose2d y) {
         double d = x.getTranslation().getDistance(y.getTranslation());
         return d;
@@ -110,20 +115,32 @@ public class FireControl {
         currentChassisSpeed = swerveModule.getCurrentSpeeds();
     }   
 
+    /**
+     * @return The offset needed to aim while moving
+     */
     public double getOffset() { //TODO
         double offset;
         offset = 0.0;
         return offset;
     }
 
+    /**
+     * @return The current target on field
+     */
     public Rotation2d getCurrentTarget() {
         return currentTarget;
     }
-
+    
+    /**
+     * @return The distance from the current target
+     */
     public double getDistanceFromTarget() {
         return distanceFromTarget;
     }
 
+    /**
+     * @return The Pose2d of the current target
+     */
     public Pose2d getTargetPose() {
         return target;
     }
