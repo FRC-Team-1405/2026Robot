@@ -27,6 +27,8 @@ public class RobotContainer {
   // Other Hardware
   public static final PowerDistribution powerDistribution = new PowerDistribution();
 
+  public static final Intake intake = new Intake();
+
   // Vision clients
   // public static final JetsonClient jetson = new JetsonClient();
 
@@ -92,6 +94,10 @@ public class RobotContainer {
    
     //coDriver.X().onTrue(new ElevatorToMin());
     coDriver.START();
+    driver.A().whileTrue(intake.intakeFuel());
+    driver.B().whileTrue(intake.extakeFuel());
+    driver.X().onTrue(intake.putUpIntake());
+    driver.Y().onTrue(intake.putDownIntake());
   /*   
         }, shooter))).andThen(new Shoot().andThen(Commands.waitSeconds(0.5).andThen(Commands.runOnce(() -> {
           shooter.stopMotors();

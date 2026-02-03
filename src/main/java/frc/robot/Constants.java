@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.ArrayList;
 
 import com.pathplanner.lib.config.PIDConstants;
 
@@ -13,14 +12,10 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DigitalInput;
 
 public final class Constants {
   public static final String CARNIVORE_BUS_NAME = "rio";
@@ -81,10 +76,20 @@ public final class Constants {
   public static final class Intake {
     @CanId(CanId.Type.MOTOR)
     public static final int INTAKE_LIFT_MOTOR_ID = 0;
-    public static final int INTAKE_MOTOR_ID = 0;
+    public static final int INTAKE_MOTOR_ID = 1;
     public static final double INTAKE_LIFT_SPEED = 0.5;
     public static final int LIFT_LIMIT_SWITCH_UP_ID = 0;
     public static final int LIFT_LIMIT_SWITCH_DOWN_ID = 0; 
+    public static final int CURRENT_LIMIT = 50;
+    public static final int VOLTAGE_LIMIT = 10;
+    public static final double INTAKE_SPEED = 0.5;
+    public static final double LIFT_JKMETERS_SQUARED = 0.00006;
+    public static final double LIFT_MOTOR_GEARING = 1.0/100.0;
+    public static final double INTAKE_REACH_METERS = 0.30;
+    public static final double LIFT_MIN_RADIANS = 0;
+    public static final double LIFT_MAX_RADIANS = Math.PI/2.0;
+    public static final double WHEEL_MOMENT_OF_INERTIA = 0.00006;
+    public static final double INTAKE_GEAR_RATIO = 1.0/3.0;
   }
 
   public static final class Swerve {
