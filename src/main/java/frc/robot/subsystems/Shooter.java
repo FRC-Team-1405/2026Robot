@@ -10,15 +10,18 @@ import java.util.function.Supplier;
 import java.lang.Math;
 import java.security.spec.DSAPrivateKeySpec;
 
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,8 +31,7 @@ import frc.robot.sim.SimProfiles;
 
 public class Shooter extends SubsystemBase {
   private final TalonFX shooterMotor1 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_1);
-  // private final TalonFX shooterMotor2 = new
-  // TalonFX(Constants.CANBus.SHOOTER_MOTOR_2);
+  private final TalonFX shooterMotor2 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_2);
 
   private final VelocityVoltage m_VelocityVoltage = new VelocityVoltage(0).withSlot(0);
   private final NeutralOut m_Brake = new NeutralOut();
@@ -76,7 +78,9 @@ public class Shooter extends SubsystemBase {
 
   /** Creates a new Shooter. */
   public Shooter() {
+    shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Aligned));
     SimProfiles.initShooter(shooterMotor1);
+    SimProfiles.initShooter(shooterMotor2);
     setShooterMotor();
   }
 
