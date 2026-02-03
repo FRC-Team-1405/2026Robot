@@ -31,7 +31,7 @@ import frc.robot.util.RobotPoseLookup;
 
 
 
-public class FireControl {
+public class FireControl extends SubsystemBase{
     private Supplier<Pose2d> robotSupplier;
     private Supplier<Alliance> allianceSupplier;
     private Swerve swerveModule;
@@ -42,9 +42,10 @@ public class FireControl {
     private Pose2d target;
     private ChassisSpeeds currentChassisSpeed;
 
-    public FireControl(Supplier<Pose2d> robSupplier, Supplier<Alliance> allSupplier) {
+    public FireControl(Supplier<Pose2d> robSupplier, Supplier<Alliance> allSupplier, Swerve swerMod) {
         robotSupplier = robSupplier;
         allianceSupplier = allSupplier;
+        swerveModule = swerMod;
         blueList.add(Constants.BLUE_FEED_BOT); blueList.add(Constants.BLUE_FEED_TOP);
         redList.add(Constants.RED_FEED_BOT); redList.add(Constants.RED_FEED_TOP);
     }
