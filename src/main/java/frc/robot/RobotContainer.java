@@ -36,10 +36,10 @@ public class RobotContainer {
     configureButtonBindings();
 
     vision.addCamera("name", Constants.Vision.robotToCam1);
-
+    
     SmartDashboard.putData(swerve.zeroModulesCommand());
     
-    swerve.setDefaultCommand(new SwerveDriveWithGamepad(false));
+    swerve.setDefaultCommand(new SwerveDriveWithGamepad(swerve));
 
     SmartDashboard.putData("Reset position", Commands.runOnce(() -> {
       swerve.resetOdometry(Pose2d.kZero);

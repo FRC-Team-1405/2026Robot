@@ -12,6 +12,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
@@ -22,7 +23,10 @@ public final class Constants {
   public static final String CARNIVORE_BUS_NAME = "Sonic";
   public static final AprilTagFieldLayout apriltagLayout;
   public static final Translation2d fieldSize;
-
+  public static final Rectangle2d RED_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(445.61), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(492.61), Units.inchesToMeters(267.85)));
+  public static final Rectangle2d BLUE_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(158.61), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(205.61), Units.inchesToMeters(267.85)));
+  //Can get rid of these constants when comparing branches^^ (make sure other branch has though plz)
+  
   static {
     try {
       apriltagLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2026RebuiltAndymark.m_resourceFile);
