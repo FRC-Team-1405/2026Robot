@@ -92,6 +92,13 @@ public final class Constants {
     public static final double INTAKE_GEAR_RATIO = 1.0/3.0;
   }
 
+  public static final class Indexer {
+    public static final int INDEXER_MOTOR_ID = 10;
+    public static final int CURRENT_LIMIT = 50;
+    public static final double VOLTAGE_LIMIT = 10;
+    public static final double SPEED = 0.5;
+  }
+
   public static final class Swerve {
     @CanId(CanId.Type.PIGEON)
     public static final int IMU_ID = 5;
