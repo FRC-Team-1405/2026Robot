@@ -107,7 +107,8 @@ public class FireControl extends SubsystemBase{
         double d = x.getTranslation().getDistance(y.getTranslation());
         return d;
     } 
-
+    
+    @Override
     //Checks every cycle for the correct target loctation, distance, and robot sped
     public void periodic() { 
         target = getClosestTarget(robotSupplier.get());

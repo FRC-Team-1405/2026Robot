@@ -22,7 +22,8 @@ public class FireControlTest {
     public void testGetCurrentTarget_initiallyNull() {
         Supplier<Pose2d> robotSupplier =  () -> new Pose2d();
         Supplier<Alliance> allianceSupplier = () -> Alliance.Blue;
-        FireControl fc = new FireControl(robotSupplier, allianceSupplier);
+        Swerve robotSwerve = new Swerve();
+        FireControl fc = new FireControl(robotSupplier, allianceSupplier, robotSwerve);
 
         assertNull(fc.getCurrentTarget(), "currentTarget should be null before being set");
     }
@@ -32,7 +33,8 @@ public class FireControlTest {
     public void testGetCurrentTarget_red_hub() {
         Supplier<Pose2d> robotSupplier = () -> new Pose2d(Constants.HUB_RED.getX() + 2.0, Constants.HUB_RED.getY() + 2.0, new Rotation2d());
         Supplier<Alliance> allianceSupplier = () -> Alliance.Red;
-        FireControl fc = new FireControl(robotSupplier, allianceSupplier);
+        Swerve robotSwerve = new Swerve();
+        FireControl fc = new FireControl(robotSupplier, allianceSupplier, robotSwerve);
 
         fc.periodic();
         Rotation2d target = fc.getCurrentTarget();
@@ -53,7 +55,8 @@ public class FireControlTest {
     public void testGetCurrentTarget_blue_hub() {
         Supplier<Pose2d> robotSupplier = () -> new Pose2d(Constants.HUB_BLUE.getX() - 2.0, Constants.HUB_BLUE.getY() - 2.0, new Rotation2d());
         Supplier<Alliance> allianceSupplier = () -> Alliance.Blue;
-        FireControl fc = new FireControl(robotSupplier, allianceSupplier);
+        Swerve robotSwerve = new Swerve();
+        FireControl fc = new FireControl(robotSupplier, allianceSupplier, robotSwerve);
 
         fc.periodic();
         Rotation2d target = fc.getCurrentTarget();
@@ -74,7 +77,8 @@ public class FireControlTest {
     public void testGetCurrentTarget_red_top_feed() {
         Supplier<Pose2d> robotSupplier = () -> new Pose2d(Constants.HUB_RED.getX() - 3.5, Constants.RED_FEED_TOP.getMeasureY().in(Meters), new Rotation2d());
         Supplier<Alliance> allianceSupplier = () -> Alliance.Red;
-        FireControl fc = new FireControl(robotSupplier, allianceSupplier);
+        Swerve robotSwerve = new Swerve();
+        FireControl fc = new FireControl(robotSupplier, allianceSupplier, robotSwerve);
 
         fc.periodic();
         Rotation2d target = fc.getCurrentTarget();
@@ -95,7 +99,8 @@ public class FireControlTest {
     public void testGetCurrentTarget_red_bot_feed() {
         Supplier<Pose2d> robotSupplier = () -> new Pose2d(Constants.HUB_RED.getX() - 3.5, Constants.RED_FEED_BOT.getMeasureY().in(Meters), new Rotation2d());
         Supplier<Alliance> allianceSupplier = () -> Alliance.Red;
-        FireControl fc = new FireControl(robotSupplier, allianceSupplier);
+        Swerve robotSwerve = new Swerve();
+        FireControl fc = new FireControl(robotSupplier, allianceSupplier, robotSwerve);
 
         fc.periodic();
         Rotation2d target = fc.getCurrentTarget();
@@ -116,7 +121,8 @@ public class FireControlTest {
     public void testGetCurrentTarget_blue_top_feed() {
         Supplier<Pose2d> robotSupplier = () -> new Pose2d(Constants.HUB_BLUE.getX() + 3.5, Constants.BLUE_FEED_TOP.getMeasureY().in(Meters), new Rotation2d());
         Supplier<Alliance> allianceSupplier = () -> Alliance.Blue;
-        FireControl fc = new FireControl(robotSupplier, allianceSupplier);
+        Swerve robotSwerve = new Swerve();
+        FireControl fc = new FireControl(robotSupplier, allianceSupplier, robotSwerve);
 
         fc.periodic();
         Rotation2d target = fc.getCurrentTarget();
@@ -138,7 +144,8 @@ public class FireControlTest {
     public void testGetCurrentTarget_blue_bot_feed() {
         Supplier<Pose2d> robotSupplier = () -> new Pose2d(Constants.HUB_BLUE.getX() + 3.5, Constants.BLUE_FEED_BOT.getMeasureY().in(Meters), new Rotation2d());
         Supplier<Alliance> allianceSupplier = () -> Alliance.Blue;
-        FireControl fc = new FireControl(robotSupplier, allianceSupplier);
+        Swerve robotSwerve = new Swerve();
+        FireControl fc = new FireControl(robotSupplier, allianceSupplier, robotSwerve);
 
         fc.periodic();
         Rotation2d target = fc.getCurrentTarget();

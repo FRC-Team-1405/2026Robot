@@ -106,7 +106,12 @@ public final class Constants {
     public static final int PWM_PIN = 0;
     public static final int LENGTH = 150;
   }
-
+  public static final class Turret {
+    public static final int TURRET_MOTOR_ID = 10;
+    public static final double VOLTAGE = 10.0;
+    public static final int CURRENT = 50;
+  }
+  
   public static final class Swerve {
     @CanId(CanId.Type.PIGEON)
     public static final int IMU_ID = 1;
