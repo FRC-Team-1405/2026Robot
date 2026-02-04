@@ -82,7 +82,9 @@ public class RobotContainer {
                 joystick.b().whileTrue(drivetrain.applyRequest(
                                 () -> point.withModuleDirection(
                                                 new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-                joystick.x().whileTrue(Commands.run(() -> controllerOutput.startVibration(joystick)));
+                joystick.x().onTrue(controllerOutput.gamePeriodChange(joystick));
+                // joystick.x().whileFalse(Commands.run(() ->
+                // controllerOutput.stopVibration(joystick)));
                 // Run SysId routines when holding back/start and X/Y.
                 // Note that each routine should be run exactly once in a single log.
                 joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
