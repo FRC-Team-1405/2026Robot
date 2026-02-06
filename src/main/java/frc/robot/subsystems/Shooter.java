@@ -35,6 +35,7 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Preferences;
@@ -147,6 +148,7 @@ public class Shooter extends SubsystemBase {
   public double getBottomTargetRPM(double distance) {
     return bottomMotorTable.get(distance);
   }
+
 //find out if motors are at correct speeds :) will be important in testing trust
   public boolean frontBottomIsAtSpeed(double distance) {
     double tolerance = 50.0; //idk if this is too much/little who knows who knows 
@@ -170,7 +172,7 @@ public class Shooter extends SubsystemBase {
   }
 
 
- // setting the shoote rpm based off of the table
+ // setting the shoote rpm based off of the table 
   public void setShooterRPM(double distanceMeters) {
   double topRPM = getTopTargetRPM(distanceMeters);
   double bottomRPM = getBottomTargetRPM(distanceMeters);
@@ -192,7 +194,34 @@ public class Shooter extends SubsystemBase {
         }));
   }
  
-  
+ public Command shootCommand(double distanceMeters) {
+  return Commands.sequence(
+    
+      Commands.runOnce(() -> setShooterRPM(distanceMeters), this),
+
+      
+      Commands.waitUntil(() ->
+          frontTopIsAtSpeed(distanceMeters)
+          && frontBottomIsAtSpeed(distanceMeters)
+          && backBottomIsAtSpeed(distanceMeters)
+          && backTopsAtSpeed(distanceMeters)
+      )
+  );
+}
+public Command spinUp(double distanceMeters) {
+  return Commands.run(
+      () -> setShooterRPM(distanceMeters),
+      this
+  );
+}
+public boolean shooterAtSpeed(double distance) {
+  return frontTopIsAtSpeed(distance)
+      && frontBottomIsAtSpeed(distance)
+      && backBottomIsAtSpeed(distance)
+      && backTopsAtSpeed(distance);
+}
+
+ 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -201,6 +230,7 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Front Top Shooter Motor Velocity", shooterFrontTopEncoder.getVelocity());
     SmartDashboard.putNumber("Back Bottom Shooter Motor Velocity", shooterBackBottomEncoder.getVelocity());
     SmartDashboard.putNumber("Back Top Shooter Motor Velocity", shooterBackTopEncoder.getVelocity());
+
 
   }
 }
