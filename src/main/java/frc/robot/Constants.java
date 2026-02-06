@@ -93,10 +93,12 @@ public final class Constants {
   }
 
   public static final class Indexer {
-    public static final int INDEXER_MOTOR_ID = 10;
+    public static final int INDEXER_MOTOR_ID = 55;
     public static final int CURRENT_LIMIT = 50;
     public static final double VOLTAGE_LIMIT = 10;
     public static final double SPEED = 0.5;
+    public static final double WHEEL_MOMENT_OF_INERTIA = 3.8;
+    public static final double INDEXER_GEAR_RATIO = 1.0/10.0;
   }
 
   public static final class Swerve {
