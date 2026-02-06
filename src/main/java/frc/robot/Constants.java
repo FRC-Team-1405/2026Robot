@@ -67,11 +67,12 @@ public final class Constants {
   
   public static final Rectangle2d RED_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(445.61), 49.84), new Translation2d(Units.inchesToMeters(492.61), 267.85));
   public static final Rectangle2d BLUE_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(158.61), 49.84), new Translation2d(Units.inchesToMeters(205.61), Units.inchesToMeters(267.85)));
+  
+  public static final double TURRET_GEAR_RATIO_IO = 28/200;
   /**
    * Annotate CAN ID fields with this annotation so we can detect duplicates in a
    * unit test
    */
-  
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.FIELD)
   public @interface CanId {
@@ -111,7 +112,7 @@ public final class Constants {
     public static final double VOLTAGE = 10.0;
     public static final int CURRENT = 50;
   }
-  
+
   public static final class Swerve {
     @CanId(CanId.Type.PIGEON)
     public static final int IMU_ID = 1;

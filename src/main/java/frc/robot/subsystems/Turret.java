@@ -58,7 +58,7 @@ public class Turret extends SubsystemBase{
 
     private SparkMax turretMotor;
     private RelativeEncoder turretEncoder;
-    private AbsoluteEncoder turretAbsEncoder;
+    //private AbsoluteEncoder turretAbsEncoder;
     private SparkClosedLoopController turretMotorController;
     private SparkMaxConfig turretMotorConfig;
 
@@ -73,8 +73,13 @@ public class Turret extends SubsystemBase{
         turretEncoder = turretMotor.getEncoder();
         turretMotorController = turretMotor.getClosedLoopController();
     }
+    public double getNumRotations(Rotation2d targetAngle) {
+        double numRotations = 0.0;
+        numRotations = turretEncoder.getPosition() - targetAngle.getRotations() * Constants.TURRET_GEAR_RATIO_IO;
+        return numRotations;
+    }
 
-    public void pointToTarget() { //TODO
-        turretMotorController.setSetpoint(0.0, ControlType.kPosition);
+    public void pointToTarget(Rotation2d targetAngle) { //TODO
+        double numRotations = getNumRotations(targetAngle);
     }
 }
