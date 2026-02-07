@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -44,7 +45,7 @@ public class RobotContainer {
 
         private final CommandXboxController joystick = new CommandXboxController(0);
 
-        private ControllerOutput controllerOutput = new ControllerOutput();
+        private ControllerOutput controllerOutput = new ControllerOutput(joystick);
 
         public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -82,7 +83,9 @@ public class RobotContainer {
                 joystick.b().whileTrue(drivetrain.applyRequest(
                                 () -> point.withModuleDirection(
                                                 new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-                joystick.x().onTrue(controllerOutput.gamePeriodChange(joystick));
+                // joystick.x().onTrue(controllerOutput.startRumble(joystick,
+                // RumbleType.kBothRumble, 1.0));
+                joystick.x().onTrue(controllerOutput.gamePeriodChangeGroup);
                 // joystick.x().whileFalse(Commands.run(() ->
                 // controllerOutput.stopVibration(joystick)));
                 // Run SysId routines when holding back/start and X/Y.
