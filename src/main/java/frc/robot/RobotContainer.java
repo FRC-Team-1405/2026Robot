@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -40,8 +41,7 @@ public class RobotContainer {
         private final Telemetry logger = new Telemetry(MaxSpeed);
 
         private final CommandXboxController joystick = new CommandXboxController(0);
-        private final CommandXboxController joystickGrabber = new CommandXboxController(3);
-        private final CommandXboxController joystickClimber = new CommandXboxController(4);
+        private final CommandXboxController operator = new CommandXboxController(1);
 
         public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -52,22 +52,20 @@ public class RobotContainer {
         }
 
         private void configureBindings() {
-                // Trigger leftTrigger = new Trigger(() -> {
-                // return joystick.getLeftTriggerAxis() >= 0.5;
-                // });
-                // leftTrigger.onTrue(Commands.runOnce(() -> climber.climbUp()));
-                joystickClimber.a().toggleOnTrue(climber.runClimbUp());
-                joystickClimber.x().onTrue(climber.runClimbDown());
-                joystickClimber.b().toggleOnTrue(climber.runStop());
-                joystickClimber.y().toggleOnTrue(climber.runExtendClimber());
-                // Note that the rightTrigger is defined as forward according to WPILib
-                // convention,
-                // and the rightBumper is defined as to the left according to WPILib convention.
+                // configure operator controls
+                Command cmd;
 
-                joystickGrabber.a().toggleOnTrue(climber.runOpenClaw());
-                joystickGrabber.x().onTrue(climber.runStopClaw());
-                joystickGrabber.b().toggleOnTrue(climber.runCloseClaw());
-                joystickGrabber.y().toggleOnTrue(climber.runRetractClimber());
+                cmd = climber.runExtendClimber();
+                SmartDashboard.putData(cmd);
+                operator.povUp().onTrue(cmd);
+
+                cmd = climber.runRetractClimber();
+                SmartDashboard.putData(cmd);
+                operator.povDown().onTrue(cmd);
+
+                cmd = Commands.sequence(climber.runStop(), climber.runStopClaw()).withName("Climber Stop");
+                SmartDashboard.putData(cmd);
+                operator.x().onTrue(cmd);
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically

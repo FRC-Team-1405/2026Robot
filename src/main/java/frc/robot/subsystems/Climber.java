@@ -4,11 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -39,11 +34,6 @@ public class Climber extends SubsystemBase {
 
   @Override
   public void periodic() {
-
-    SmartDashboard.putNumber("Climber Voltage", motor.getMotorVoltage().getValueAsDouble());
-    fLogger.log("Motor voltage = " + motor.getMotorVoltage().getValueAsDouble() + " Motor position = "
-        + motor.getPosition().getValueAsDouble());
-
     if (Math.abs(climberPositionTarget
         - motor.getClosedLoopReference().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
       if (Math.abs(motor.getClosedLoopError().getValueAsDouble()) < Constants.ClimberPreferences.POSITION_TOLERANCE) {
@@ -75,101 +65,17 @@ public class Climber extends SubsystemBase {
     return (grabberSettleCount >= Constants.ClimberPreferences.SETTLE_MAX);
   }
 
-  public void setupMotors() {
-    TalonFXConfiguration Climber_cfg = new TalonFXConfiguration();
-    TalonFXConfiguration Grabber_cfg = new TalonFXConfiguration();
-
-    MotionMagicConfigs Climber_mm = Climber_cfg.MotionMagic;
-    // Climber_mm.withMotionMagicCruiseVelocity(RotationsPerSecond.of(10))
-    // .withMotionMagicAcceleration(RotationsPerSecond.of(15));
-
-    StatusCode Climber_status_slave = StatusCode.StatusCodeNotInitialized;
-    StatusCode Grabber_status_slave = StatusCode.StatusCodeNotInitialized;
-
-    // SoftwareLimitSwitchConfigs soft = Climber_cfg.SoftwareLimitSwitch;
-    // soft.ForwardSoftLimitEnable = true;
-    // soft.ForwardSoftLimitThreshold = 5.1; // mechanism rotations (after gear
-    // ratio)
-    // soft.ReverseSoftLimitEnable = true;
-    // soft.ReverseSoftLimitThreshold = 0.0;
-
-    // SoftwareLimitSwitchConfigs softGrabber = Grabber_cfg.SoftwareLimitSwitch;
-    // softGrabber.ForwardSoftLimitEnable = true;
-    // softGrabber.ForwardSoftLimitThreshold = 3.0;
-    // softGrabber.ReverseSoftLimitEnable = true;
-    // softGrabber.ReverseSoftLimitThreshold = 0.0;
-
-    Slot0Configs Climber_slot0 = Climber_cfg.Slot0;
-    Climber_slot0.kS = 0;
-    Climber_slot0.kV = 0.0;
-    Climber_slot0.kA = 0.0;
-    Climber_slot0.kP = 3; // proportional
-    Climber_slot0.kI = 0;
-    Climber_slot0.kD = 0.0;
-    Climber_slot0.kG = 0;
-
-    Slot0Configs Grabber_slot0 = Grabber_cfg.Slot0;
-    Grabber_slot0.kS = 0;
-    Grabber_slot0.kV = 0.0;
-    Grabber_slot0.kA = 0.0;
-    Grabber_slot0.kP = 3;
-    Grabber_slot0.kI = 0;
-    Grabber_slot0.kD = 0.0;
-    Grabber_slot0.kG = 0;
-
-    // CurrentLimitsConfigs limits = Climber_cfg.CurrentLimits;
-    // limits.SupplyCurrentLimitEnable = true;
-    // limits.SupplyCurrentLimit = 30;
-    // limits.StatorCurrentLimitEnable = true;
-    // limits.StatorCurrentLimit = 40;
-
-    CurrentLimitsConfigs grabberLimits = Grabber_cfg.CurrentLimits;
-    grabberLimits.SupplyCurrentLimitEnable = true;
-    grabberLimits.SupplyCurrentLimit = 30;
-    grabberLimits.StatorCurrentLimitEnable = true;
-    grabberLimits.StatorCurrentLimit = 40;
-    grabberLimits.SupplyCurrentLimit = 30;
-    grabberLimits.StatorCurrentLimitEnable = true;
-    grabberLimits.StatorCurrentLimit = 40;
-
-    for (int i = 0; i < 5; ++i) {
-      Climber_status_slave = motor.getConfigurator().apply(Climber_cfg);
-      if (Climber_status_slave.isOK())
-        break;
-    }
-    if (!Climber_status_slave.isOK()) {
-      fLogger.log("Could not configure Climber slaveMotor. Error: " + Climber_status_slave.toString());
-    }
-
-    for (int i = 0; i < 5; ++i) {
-      Grabber_status_slave = grabber.getConfigurator().apply(Grabber_cfg);
-      if (Grabber_status_slave.isOK())
-        break;
-    }
-    if (!Grabber_status_slave.isOK()) {
-      fLogger.log("Could not configure Grabber slaveMotor. Error: " + Grabber_status_slave.toString());
-    }
-  }
-
-  @Override
-  public void simulationPeriodic() {
-  }
-
   public void move(double position) {
-    // position = MAX_DISTANCE * (position);
-    // motor.setControl(new MotionMagicVoltage(position));
     motor.setControl(motorPosition.withPosition(position));
     climberPositionTarget = position;
   }
 
   public void moveGrabber(double position) {
-    // motor.setControl(new MotionMagicVoltage(position));
     grabber.setControl(grabberPosition.withPosition(position));
     grabberPositionTarget = position;
   }
 
   public Climber() {
-    setupMotors();
     SimProfiles.initClimber(motor);
     SimProfiles.initGrabber(grabber);
   }
@@ -178,12 +84,10 @@ public class Climber extends SubsystemBase {
   private void climbUp() {
     move(Constants.ClimberPreferences.CLIMBER_EXTEND_POSITION);
     fLogger.log("Climb up ");
-    // motor.set(0.25);
   }
 
   // function to climb down -- motor backwards direction
   private void climbDown() {
-    // motor.set(-0.25);
     move(Constants.ClimberPreferences.CLIMBER_RETRACT_POSITION);
     fLogger.log("Climb down ");
   }
@@ -200,11 +104,7 @@ public class Climber extends SubsystemBase {
    * @return Command
    */
   public Command runClimbUp() {
-    Command cmd = runOnce(() -> climbUp())
-        .andThen(Commands.waitUntil(() -> isClimberAtTarget()))
-        .withName("Climb Up");
-    SmartDashboard.putData(cmd);
-    return cmd;
+    return runOnce(() -> climbUp()).andThen(Commands.waitUntil(() -> isClimberAtTarget())).withName("Climb Up");
   }
 
   /**
@@ -214,11 +114,7 @@ public class Climber extends SubsystemBase {
    * @return Command
    */
   public Command runClimbDown() {
-    Command cmd = runOnce(() -> climbDown())
-        .andThen(Commands.waitUntil(() -> isClimberAtTarget()))
-        .withName("Climb Down");
-    SmartDashboard.putData(cmd);
-    return cmd;
+    return runOnce(() -> climbDown()).andThen(Commands.waitUntil(() -> isClimberAtTarget())).withName("Climb Down");
   }
 
   /**
@@ -227,11 +123,8 @@ public class Climber extends SubsystemBase {
    * @return Command
    */
   public Command runStop() {
-    Command cmd = runOnce(() -> stop())
-        .andThen(Commands.waitUntil(() -> isClimberAtTarget()))
-        .withName("Climb Stop");
-    SmartDashboard.putData(cmd);
-    return cmd;
+    return runOnce(() -> stop()).andThen(Commands.waitUntil(() -> isClimberAtTarget())).withName("Climb Stop");
+
   }
 
   // grabber motors
@@ -257,11 +150,7 @@ public class Climber extends SubsystemBase {
    * @return Command
    */
   public Command runOpenClaw() {
-    Command cmd = runOnce(() -> openClaw())
-        .andThen(Commands.waitUntil(() -> isGrabberAtTarget()))
-        .withName("Open Claw");
-    SmartDashboard.putData(cmd);
-    return cmd;
+    return runOnce(() -> openClaw()).andThen(Commands.waitUntil(() -> isGrabberAtTarget())).withName("Open Claw");
   }
 
   /**
@@ -270,11 +159,7 @@ public class Climber extends SubsystemBase {
    * @return Command
    */
   public Command runCloseClaw() {
-    Command cmd = runOnce(() -> closeClaw())
-        .andThen(Commands.waitUntil(() -> isGrabberAtTarget()))
-        .withName("Close Claw");
-    SmartDashboard.putData(cmd);
-    return cmd;
+    return runOnce(() -> closeClaw()).andThen(Commands.waitUntil(() -> isGrabberAtTarget())).withName("Close Claw");
   }
 
   /**
@@ -283,11 +168,7 @@ public class Climber extends SubsystemBase {
    * @return Command
    */
   public Command runStopClaw() {
-    Command cmd = runOnce(() -> stopClaw())
-        .andThen(Commands.waitUntil(() -> isClimberAtTarget()))
-        .withName("Stop Claw");
-    SmartDashboard.putData(cmd);
-    return cmd;
+    return runOnce(() -> stopClaw()).andThen(Commands.waitUntil(() -> isClimberAtTarget())).withName("Stop Claw");
   }
 
   /**
@@ -302,26 +183,4 @@ public class Climber extends SubsystemBase {
   public Command runRetractClimber() {
     return runCloseClaw().andThen(runClimbDown()).withName("Retract Climber");
   }
-
-  private static final double MAX_POSITION = 5.1;
-  private static final double MAX_GRABBER_POSITION = 3.0;
-  private static final double MIN_POSITION = -5.1;
-  private static final double MIN_GRABBER_POSITION = 0.0;
-
-  public void checkLimits() {
-    if (motor.getPosition().getValueAsDouble() >= MAX_POSITION) {
-      stop();
-    }
-    if (grabber.getPosition().getValueAsDouble() >= MAX_GRABBER_POSITION) {
-      stopClaw();
-    }
-    if (motor.getPosition().getValueAsDouble() <= MIN_POSITION) {
-      stop();
-    }
-    if (grabber.getPosition().getValueAsDouble() <= MIN_GRABBER_POSITION) {
-      stopClaw();
-    }
-  }
-  // position limits
-
 }
