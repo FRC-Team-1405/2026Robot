@@ -27,7 +27,7 @@ public class ControllerOutput {
     public CommandXboxController joystick;
 
     public SequentialCommandGroup gamePeriodChangeGroup = new SequentialCommandGroup(
-            startRumble(joystick, RumbleType.kBothRumble, 0.0),
+            startRumble(joystick, RumbleType.kBothRumble, 1.0),
             new WaitCommand(2.0),
             stopRumble(joystick));
 
@@ -37,6 +37,16 @@ public class ControllerOutput {
         });
     }
 
+    public Command stopRumble(CommandXboxController joystick) {
+
+        return startRumble(joystick, RumbleType.kBothRumble, 0.0);
+    }
+
+    public Command startRumble(CommandXboxController joystick, RumbleType rumbleType, double rumbleStrength) {
+        return Commands.runOnce(() -> {
+            joystick.setRumble(rumbleType, rumbleStrength);
+        });
+    }
     // public void rumbleConfigurator(CommandXboxController joystick, RumbleType
     // rumbleType, double rumbleStrength, long rumbleTime) {
     // System.out.println("rumbleType" + rumbleType + "rumbleStrength" +
@@ -57,14 +67,4 @@ public class ControllerOutput {
     // double rumbleStrength, RumbleType rumbleType, double rumbleStrength) {
     // startRumble(joystick, rumbleType.kBothRumble, 0.0);
     // }
-    public Command stopRumble(CommandXboxController joystick) {
-
-        return startRumble(joystick, RumbleType.kBothRumble, 0.0);
-    }
-
-    public Command startRumble(CommandXboxController joystick, RumbleType rumbleType, double rumbleStrength) {
-        return Commands.runOnce(() -> {
-            joystick.setRumble(rumbleType, rumbleStrength);
-        });
-    }
 }
