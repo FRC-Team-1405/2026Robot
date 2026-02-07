@@ -47,8 +47,17 @@ public class AutoCommands {
         commandsToAddToChooser.put("AP_blueCenterToOriginToRightBump",
                 NamedCommands.getCommand("AP_blueCenterToOriginToRightBump"));
         commandsToAddToChooser.put("AP_blueScoreBumpFeed", NamedCommands.getCommand("AP_blueScoreBumpFeed"));
-        commandsToAddToChooser.put("AP_FEEDME", NamedCommands.getCommand("AP_FEEDME"));
+        commandsToAddToChooser.put("AP_DepotFaceIn", NamedCommands.getCommand("AP_DepotFaceIn"));
         commandsToAddToChooser.put("AP_origin", NamedCommands.getCommand("AP_origin"));
+        commandsToAddToChooser.put("AP_ShootFromDepot", NamedCommands.getCommand("AP_ShootFromDepot"));
+        commandsToAddToChooser.put("AP_rightBump", NamedCommands.getCommand("AP_rightBump"));
+        commandsToAddToChooser.put("AP_CenterHarvest", NamedCommands.getCommand("AP_CenterHarvest"));
+        commandsToAddToChooser.put("AP_LeftStartDepotScore", NamedCommands.getCommand("AP_LeftStartDepotScore"));
+        commandsToAddToChooser.put("AP_RightStartDepotScore", NamedCommands.getCommand("AP_RightStartDepotScore"));
+        commandsToAddToChooser.put("AP_RightStartFeedingStationScore",
+                NamedCommands.getCommand("AP_RightStartFeedingStationScore"));
+        commandsToAddToChooser.put("AP_RightStartCenterHarvestInLeft",
+                NamedCommands.getCommand("AP_RightStartCenterHarvestInLeft"));
 
         // endregion autopilot
         commandsToAddToChooser.put("Left_First_Auto", NamedCommands.getCommand("Left - [My First Auto]"));
