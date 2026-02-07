@@ -22,6 +22,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Hopper;
 
 public class RobotContainer {
         private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
@@ -48,6 +49,7 @@ public class RobotContainer {
 
         public final Climber climber = new Climber();
         public final AdjustableHood hood = new AdjustableHood();
+        public final Hopper hopper = new Hopper();
 
         public RobotContainer() {
                 configureBindings();
@@ -80,6 +82,14 @@ public class RobotContainer {
                 cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed Long");
                 SmartDashboard.putData(cmd);
                 joystick.y().onTrue(cmd);
+
+                cmd = hopper.runForwardHopper();
+                SmartDashboard.putData(cmd);
+                joystick.leftBumper().onTrue(cmd);
+
+                cmd = hopper.runReverseHopper();
+                SmartDashboard.putData(cmd);
+                joystick.rightBumper().onTrue(cmd);
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
