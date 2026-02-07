@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -46,6 +47,7 @@ public class RobotContainer {
         public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
         public final Climber climber = new Climber();
+        public final AdjustableHood hood = new AdjustableHood();
 
         public RobotContainer() {
                 configureBindings();
@@ -66,6 +68,18 @@ public class RobotContainer {
                 cmd = Commands.sequence(climber.runStop(), climber.runStopClaw()).withName("Climber Stop");
                 SmartDashboard.putData(cmd);
                 operator.x().onTrue(cmd);
+
+                cmd = hood.runSet(Constants.HoodPreferences.SERVO_SHORT).withName("Hood Speed Short");
+                SmartDashboard.putData(cmd);
+                joystick.a().onTrue(cmd);
+
+                cmd = hood.runSet(Constants.HoodPreferences.SERVO_MEDIUM).withName("Hood Speed Medium");
+                SmartDashboard.putData(cmd);
+                joystick.b().onTrue(cmd);
+
+                cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed Long");
+                SmartDashboard.putData(cmd);
+                joystick.y().onTrue(cmd);
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically

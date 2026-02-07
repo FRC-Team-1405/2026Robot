@@ -42,4 +42,27 @@ public class Constants {
             SETTLE_MAX = Preferences.getDouble("Climber/SettleMax", 3);
         }
     }
+
+    public static class HoodPreferences {
+
+        public static final double SERVO_SPEED_SECONDS;
+        public static final double SERVO_SHORT;
+        public static final double SERVO_MEDIUM;
+        public static final double SERVO_LONG;
+
+        static {
+            Preferences.initDouble("Hood/Servo Speed Seconds", 0.5);
+            SERVO_SPEED_SECONDS = Preferences.getDouble("Hood/Servo Speed Seconds", 0.5);
+
+            Preferences.initDouble("Hood/Servo Speed Short", 0.3);
+            SERVO_SHORT = Preferences.getDouble("Hood/Servo Speed Short", 0.3);
+
+            Preferences.initDouble("Hood/Servo Speed Medium", 0.6);
+            SERVO_MEDIUM = Preferences.getDouble("Hood/Servo Speed Medium", 0.6);
+
+            Preferences.initDouble("Hood/Servo Speed Long", 1.0);
+            SERVO_LONG = Preferences.getDouble("Hood/Servo Speed Long", 1.0);
+        }
+
+    }
 }
