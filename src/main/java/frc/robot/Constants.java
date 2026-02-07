@@ -101,7 +101,6 @@ public final class Constants {
     }
   }
 
-
   public static final class LEDs {
     public static final int PWM_PIN = 0;
     public static final int LENGTH = 150;
@@ -174,6 +173,4 @@ public final class Constants {
     }
   }
 
-  // Class to access the coordinates of the coral on the field.
-  
 }

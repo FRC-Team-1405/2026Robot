@@ -108,7 +108,7 @@ public final class Vision extends AdvancedSubsystem {
                 RobotPoseLookup<Pose3d> AprilTagLookup = new RobotPoseLookup<>();
                 AprilTagLookup.addPose(robotPose);
                 aprilField.setRobotPose(robotPose.toPose2d());
-                ChassisSpeeds speeds = RobotContainer.swerve.getCurrentSpeeds();
+                ChassisSpeeds speeds = RobotContainer.swerve.getCurrentSpeeds(); 
                 // Very rough estimate
                 isStopped = speeds.omegaRadiansPerSecond / 10 + speeds.vxMetersPerSecond
                         + speeds.vyMetersPerSecond < 0.3;

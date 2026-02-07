@@ -43,9 +43,9 @@ public class Mk4SwerveModulePro extends AdvancedSubsystem {
   }
 
   // Volts to meters/sec
-  private static final double DRIVE_KV = 3.4;
+  private static final double DRIVE_KV = 1.0482;
   // Volts to meters/sec^2
-  private static final double DRIVE_KA = 0.27;
+  private static final double DRIVE_KA = 0.017468;
 
   // Volts to deg/sec
   private static final double ROTATION_KV = 12.0 / 900;
@@ -60,7 +60,7 @@ public class Mk4SwerveModulePro extends AdvancedSubsystem {
   // M/s - Tune (Apply full output and measure max vel. Adjust KV/KA for sim if needed)
   public static final double DRIVE_MAX_VEL = 4.65;
 
-  private static final double DRIVE_KP = 0.3;
+  private static final double DRIVE_KP = 0.14979;
   private static final double DRIVE_KD = 0.0;
   private static final double DRIVE_KI = 0.0;
 
