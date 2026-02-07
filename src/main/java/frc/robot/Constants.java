@@ -43,8 +43,8 @@ public class Constants {
             LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 50));
 
             // Indexer Velocities
-            Preferences.initDouble("IndexerVelocities/IndexerVelocity", 3);
-            INDEXER_VELOCITY = RotationsPerSecond.of(Preferences.getDouble("IndexerVelocities/IndexerVelocity", 3));
+            Preferences.initDouble("IndexerVelocities/IndexerVelocity", 20);
+            INDEXER_VELOCITY = RotationsPerSecond.of(Preferences.getDouble("IndexerVelocities/IndexerVelocity", 20));
 
             Preferences.initDouble("ShooterAccuracy/Tight", 1);
             TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 1);

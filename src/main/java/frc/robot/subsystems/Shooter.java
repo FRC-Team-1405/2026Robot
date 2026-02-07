@@ -78,7 +78,7 @@ public class Shooter extends SubsystemBase {
 
   /** Creates a new Shooter. */
   public Shooter() {
-    shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Aligned));
+    shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     SimProfiles.initShooter(shooterMotor1);
     SimProfiles.initShooter(shooterMotor2);
     setShooterMotor();
@@ -104,7 +104,7 @@ public class Shooter extends SubsystemBase {
 
     locked = SettleCount >= Prefs.STABLE_COUNT;
 
-    SmartDashboard.putNumber("Shooter/RPM", shooterMotor1.getVelocity().getValueAsDouble() * 60);
+    SmartDashboard.putNumber("Shooter/RPS", shooterMotor1.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/CurrentDraw", shooterMotor1.getSupplyCurrent().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/Error", shooterMotor1.getClosedLoopError().getValueAsDouble());
   }
