@@ -14,7 +14,7 @@ import frc.lib.input.controllers.XboxControllerWrapper;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.SwerveDriveWithGamepad;
 import frc.robot.subsystems.*;
-import frc.robot.util.FireControl;
+import frc.robot.subsystems.FireControl;
 
 
 public class RobotContainer {
