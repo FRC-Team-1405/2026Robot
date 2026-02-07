@@ -74,7 +74,7 @@ public class Turret extends SubsystemBase{
         turretMotorController = turretMotor.getClosedLoopController();
     }
     public double getNumRotations(Rotation2d targetAngle) {
-        double numRotations = 0.0;
+        double numRotations;
         numRotations = turretEncoder.getPosition() - targetAngle.getRotations() * Constants.TURRET_GEAR_RATIO_IO;
         return numRotations;
     }
