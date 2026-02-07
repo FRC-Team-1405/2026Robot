@@ -31,12 +31,6 @@ public class ControllerOutput {
             new WaitCommand(2.0),
             stopRumble(joystick));
 
-    public Command gamePeriodChange(CommandXboxController joystick) {
-        return Commands.runOnce(() -> {
-            startRumble(joystick, RumbleType.kBothRumble, 1.0);
-        });
-    }
-
     public Command stopRumble(CommandXboxController joystick) {
 
         return startRumble(joystick, RumbleType.kBothRumble, 0.0);
@@ -45,6 +39,7 @@ public class ControllerOutput {
     public Command startRumble(CommandXboxController joystick, RumbleType rumbleType, double rumbleStrength) {
         return Commands.runOnce(() -> {
             joystick.setRumble(rumbleType, rumbleStrength);
+            System.out.println("x pressed");
         });
     }
     // public void rumbleConfigurator(CommandXboxController joystick, RumbleType
