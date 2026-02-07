@@ -160,5 +160,4 @@ public class FireControlTest {
 
         assertEquals(expectedDistance, distanceFrom, 0.02, "The distance to the target is incorrect");
     }
-   
 }
