@@ -23,10 +23,9 @@ public final class Constants {
   public static final String CARNIVORE_BUS_NAME = "Sonic";
   public static final AprilTagFieldLayout apriltagLayout;
   public static final Translation2d fieldSize;
-  public static final Rectangle2d RED_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(445.61), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(492.61), Units.inchesToMeters(267.85)));
-  public static final Rectangle2d BLUE_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(158.61), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(205.61), Units.inchesToMeters(267.85)));
-  //Can get rid of these constants when comparing branches^^ (make sure other branch has though plz)
-  
+  public static final Rectangle2d RED_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(445.61 - 13.0), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(492.61 + 13.0), Units.inchesToMeters(267.85)));
+  public static final Rectangle2d BLUE_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(158.61 - 13.0), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(205.61 + 13.0), Units.inchesToMeters(267.85)));
+  //Bump Field Constants manipulated to work with 45 degree robot lock^^ (keep when merging branches plz)
   static {
     try {
       apriltagLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2026RebuiltAndymark.m_resourceFile);
@@ -72,7 +71,14 @@ public final class Constants {
       PCM_CONTROLLER,
     }
   }
+  public static final class Joystick {
 
+    //PID Constants for bump angle constraint
+    public static final double kP = 2;
+    public static final double kI = 0;
+    public static final double kD = 0;
+
+  }
 
   public static final class LEDs {
     public static final int PWM_PIN = 0;

@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import java.util.Optional;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -16,6 +17,7 @@ public class SwerveDriveWithGamepad extends Command {
   private final SlewRateLimiter xVelLimiter;
   private final SlewRateLimiter yVelLimiter;
   private final SlewRateLimiter angularVelLimiter;
+  private final PIDController pidController;
   private final Swerve swerve;
   private static double speedSet = 1;
 
@@ -23,6 +25,7 @@ public class SwerveDriveWithGamepad extends Command {
     this.xVelLimiter = new SlewRateLimiter(Constants.Swerve.TELEOP_MAX_ACCELERATION);
     this.yVelLimiter = new SlewRateLimiter(Constants.Swerve.TELEOP_MAX_ACCELERATION);
     this.angularVelLimiter = new SlewRateLimiter(Constants.Swerve.TELEOP_MAX_ANGULAR_ACCELERATION);
+    this.pidController = new PIDController(Constants.Joystick.kP, Constants.Joystick.kI, Constants.Joystick.kD);
     this.swerve = swerve;
     addRequirements(RobotContainer.swerve);
   }
@@ -43,7 +46,7 @@ public class SwerveDriveWithGamepad extends Command {
     double rot;
     double angularVel;
     speedSet = SmartDashboard.getNumber("Speed Dial", 0);
-    double maxSpeedForChild = speedSet * (0.25 + 0.75);
+    double maxSpeedForChild = speedSet;
     double x = -RobotContainer.driver.getLeftY() * maxSpeedForChild;
 
     x = Math.copySign(x * x, x);
@@ -62,13 +65,12 @@ public class SwerveDriveWithGamepad extends Command {
       double currentAngleDeg = swerve.getPose().getRotation().getDegrees();
       double nearest45Deg = Math.round(currentAngleDeg / 45.0) * 45.0;
       double target45Deg = nearest45Deg;
-      double angleError =  target45Deg - currentAngleDeg;
 
-      double kP = 2.0; // TODO tune 45 angle lock PID
-      rot = angleError * kP;
+      rot = pidController.calculate(currentAngleDeg, target45Deg); // TODO tune 45 angle lock PID
 
       rot = Math.copySign(Math.min(Math.abs(rot), Constants.Swerve.TELEOP_MAX_ANGULAR_VELOCITY), rot);
       angularVel = this.angularVelLimiter.calculate(rot);
+
     } else {
       rot = -RobotContainer.driver.getRightX() * maxSpeedForChild;
       rot = Math.copySign(rot * rot, rot);
@@ -89,7 +91,7 @@ public class SwerveDriveWithGamepad extends Command {
       RobotContainer.swerve.driveFieldRelative(new ChassisSpeeds(xVel, yVel, angularVel));
 
     RobotContainer.swerve.driveFieldRelative(new ChassisSpeeds(xVel, yVel, angularVel));
-    
+
   }
 
   @Override

@@ -46,7 +46,7 @@ public final class Vision extends AdvancedSubsystem {
 
     public static interface VisionConsumer {
         public void accept(Pose2d visionRobotPoseMeters, double timestampSeconds,
-                Matrix<N3, N1> visionMeasurementStdDevs);
+                Matrix<N3, N1> visionMeasurementStdDevs); //TODO latency between photonvision timestamp and Roborio clock
     }
 
     private class VisionCamera {
