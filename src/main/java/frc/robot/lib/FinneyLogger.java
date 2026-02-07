@@ -14,21 +14,38 @@ public class FinneyLogger {
     // Instance-specific log entry
     private final NetworkTableEntry logEntry;
 
+    // Feature switch is optionally passed in to toggle logging
+    private final boolean loggingEnabled;
+
     // Constructor takes a string to determine the log entry key
     public FinneyLogger(String entryKey) {
+        this.loggingEnabled = true;
+        this.logEntry = logTable.getEntry(entryKey);
+        log("loggerInit");
+    }
+
+    /*
+     * Pass in feature switch from FeatureSwitches
+     */
+    public FinneyLogger(String entryKey, boolean enableLogging) {
+        this.loggingEnabled = enableLogging;
         this.logEntry = logTable.getEntry(entryKey);
         log("loggerInit");
     }
 
     // Logs a message to the specific log entry
     public void log(String message) {
-        System.out.println(message);
-        logEntry.setString(message);
+        if (loggingEnabled) {
+            System.out.println(message);
+            logEntry.setString(message);
+        }
     }
 
     // Overloaded log method for formatted messages
     public void log(String format, Object... args) {
-        String message = String.format(format, args);
-        log(message);
+        if (loggingEnabled) {
+            String message = String.format(format, args);
+            log(message);
+        }
     }
 }
