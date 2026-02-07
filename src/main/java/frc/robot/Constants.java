@@ -76,6 +76,7 @@ public final class Constants {
   public static final class Intake {
     @CanId(CanId.Type.MOTOR)
     public static final int INTAKE_LIFT_MOTOR_ID = 0;
+    @CanId(CanId.Type.MOTOR)
     public static final int INTAKE_MOTOR_ID = 1;
     public static final double INTAKE_LIFT_SPEED = 0.5;
     public static final int LIFT_LIMIT_SWITCH_UP_ID = 0;
