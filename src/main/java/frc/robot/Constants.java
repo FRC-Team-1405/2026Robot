@@ -203,7 +203,20 @@ public final class Constants {
       public static final double BOTTOM_SHOOTER_I = 0.0;
       public static final double BOTTOM_SHOOTER_D = 0.0;
        public static final double BOTTOM_SHOOTER_FF = 0.0;
+
+      public static final double shooterMotorTolerance = 50.0;
+      public static final int SHOOTER_CURRENT_LIMIT = 100;
+      public static final double SHOOTER_VOLTAGE_LIMIT = 0.0;
+
+      public static final double TOP_kV = 0.0;   
+      public static final double BOTTOM_kV = 0.0;
+      public static final double TOP_kS = 0.0;        
+      public static final double BOTTOM_kS = 0.0;
+
+      public static final double TOP_kA = 0.0;        //what values
+      public static final double BOTTOM_kA = 0.0;
     }
+
     }
   
   
