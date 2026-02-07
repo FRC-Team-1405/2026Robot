@@ -62,8 +62,6 @@ public class Turret extends SubsystemBase{
     private SparkClosedLoopController turretMotorController;
     private SparkMaxConfig turretMotorConfig;
 
-    
-
     public Turret(final int TURRET_MOTOR_ID, final int TURRET_ABS_ENCODER_ID, final int TURRET_CALLI_SWITCH_ID, Transform3d roboToTur) { //TODO
         robotToTurret = roboToTur;
         turretMotor = new SparkMax(TURRET_MOTOR_ID, MotorType.kBrushless);
@@ -73,6 +71,7 @@ public class Turret extends SubsystemBase{
         turretEncoder = turretMotor.getEncoder();
         turretMotorController = turretMotor.getClosedLoopController();
     }
+
     public double getNumRotations(Rotation2d targetAngle) {
         double numRotations;
         numRotations = turretEncoder.getPosition() - targetAngle.getRotations() * Constants.TURRET_GEAR_RATIO_IO;

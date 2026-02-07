@@ -53,7 +53,7 @@ public class FireControl extends SubsystemBase{
     /**
      * @return Finds the target angle off of the robot position and the target position
      */
-    public static Rotation2d getTargetRotation(Pose2d robotPose, Pose2d targetPose) {
+    private static Rotation2d getTargetRotation(Pose2d robotPose, Pose2d targetPose) {
         Translation2d toTarget = targetPose.getTranslation().minus(robotPose.getTranslation());
         Rotation2d targetAngle = toTarget.getAngle();
         Rotation2d relativeAngle = targetAngle.minus(robotPose.getRotation());
@@ -85,7 +85,7 @@ public class FireControl extends SubsystemBase{
      * @param robotPose
      * @return TargetLocation with lowest distance to robot
      */
-    public Pose2d getClosestTarget(Pose2d robotPose) {
+    private Pose2d getClosestTarget(Pose2d robotPose) {
         ArrayList<Pose2d> targets = getValidTargets();
         Pose2d closestTarget = null;
         double smallestValue = 1000.0;
@@ -120,7 +120,7 @@ public class FireControl extends SubsystemBase{
     /**
      * @return The offset needed to aim while moving
      */
-    public double getOffset() { //TODO
+    private double getOffset() { //TODO
         double offset;
         offset = 0.0;
         return offset;
