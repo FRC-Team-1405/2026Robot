@@ -172,5 +172,61 @@ public final class Constants {
           -Units.inchesToMeters(10.125));
     }
   }
+    public static final class Shooter {
+      // front top motor
+      @CanId(CanId.Type.MOTOR)
+      public static final int FRONT_TOP_SHOOTER_ID = 30;
+      @CanId(CanId.Type.ENCODER)
+      public static final int FRONT_TOP_ENCODER_ID = 30;
 
-}
+
+      //front bottom motor
+      @CanId(CanId.Type.MOTOR)
+      public static final int FRONT_BOTTOM_SHOOTER_ID = 31;
+      @CanId(CanId.Type.ENCODER)
+      public static final int FRONT_BOTTOM_ENCODER_ID = 31;
+
+      //back top motor
+      @CanId(CanId.Type.MOTOR)
+      public static final int BACK_TOP_SHOOTER_ID = 32;
+       @CanId(CanId.Type.ENCODER)
+      public static final int BACK_TOP_ENCODER_ID = 32;
+
+      //back bottom motor
+      @CanId(CanId.Type.MOTOR)
+      public static final int BACK_BOTTOM_SHOOTER_ID = 33;
+      @CanId(CanId.Type.ENCODER)
+      public static final int BACK_BOTTOM_ENCODER_ID = 33;
+
+      //top motor controlling stuff
+      public static final double TOP_TARGET_SHOOTER_RPM = 0.0;
+      public static final double TOP_SHOOTER_P = 0.0;
+      public static final double TOP_SHOOTER_I = 0.0;
+      public static final double TOP_SHOOTER_D = 0.0;
+      public static final double TOP_SHOOTER_FF = 0.0;
+
+      //bottom motor controlling stuff
+      public static final double BOTTOM_TARGET_SHOOTER_RPM = 0.0;
+      public static final double BOTTOM_SHOOTER_P = 0.0;
+      public static final double BOTTOM_SHOOTER_I = 0.0;
+      public static final double BOTTOM_SHOOTER_D = 0.0;
+       public static final double BOTTOM_SHOOTER_FF = 0.0;
+
+      public static final double shooterMotorTolerance = 50.0;
+      public static final int SHOOTER_CURRENT_LIMIT = 100;
+      public static final double SHOOTER_VOLTAGE_LIMIT = 0.0;
+
+      public static final double TOP_kV = 0.0;   
+      public static final double BOTTOM_kV = 0.0;
+      public static final double TOP_kS = 0.0;        
+      public static final double BOTTOM_kS = 0.0;
+
+      public static final double TOP_kA = 0.0;        //what values
+      public static final double BOTTOM_kA = 0.0;
+    }
+
+    }
+  
+  
+
+
