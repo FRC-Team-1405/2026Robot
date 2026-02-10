@@ -8,14 +8,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.opencv.core.Rect;
-
 import com.pathplanner.lib.config.PIDConstants;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rectangle2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -29,7 +29,9 @@ public final class Constants {
   public static final String CARNIVORE_BUS_NAME = "Sonic";
   public static final AprilTagFieldLayout apriltagLayout;
   public static final Translation2d fieldSize;
-
+  public static final Rectangle2d RED_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(445.61 - 13.0), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(492.61 + 13.0), Units.inchesToMeters(267.85)));
+  public static final Rectangle2d BLUE_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(158.61 - 13.0), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(205.61 + 13.0), Units.inchesToMeters(267.85)));
+  //Bump Field Constants manipulated to work with 45 degree robot lock^^ (keep when merging branches plz)
   static {
     try {
       apriltagLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2026RebuiltAndymark.m_resourceFile);
@@ -64,11 +66,6 @@ public final class Constants {
   
   public static final Rectangle2d BLUE_ALLIANCE_ZONE = new Rectangle2d(new Translation2d(0.0, 0.0), new Translation2d(Units.inchesToMeters(156.61), Units.inchesToMeters(317.69)));
   public static final Rectangle2d RED_ALLIANCE_ZONE = new Rectangle2d(new Translation2d(Units.inchesToMeters(494.61),0.0), new Translation2d(Units.inchesToMeters(651.22), Units.inchesToMeters(317.69)));
-  
-  public static final Rectangle2d RED_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(445.61), 49.84), new Translation2d(Units.inchesToMeters(492.61), 267.85));
-  public static final Rectangle2d BLUE_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(158.61), 49.84), new Translation2d(Units.inchesToMeters(205.61), Units.inchesToMeters(267.85)));
-  
-  public static final double TURRET_GEAR_RATIO_IO = 28/200;
   /**
    * Annotate CAN ID fields with this annotation so we can detect duplicates in a
    * unit test
@@ -101,7 +98,14 @@ public final class Constants {
       PCM_CONTROLLER,
     }
   }
+  public static final class Joystick {
 
+    //PID Constants for bump angle constraint
+    public static final double kP = 2;
+    public static final double kI = 0;
+    public static final double kD = 0;
+
+  }
 
   public static final class LEDs {
     public static final int PWM_PIN = 0;
@@ -111,6 +115,45 @@ public final class Constants {
     public static final int TURRET_MOTOR_ID = 10;
     public static final double VOLTAGE = 10.0;
     public static final int CURRENT = 50;
+    public static final double TURRET_GEAR_RATIO_IO = 0;
+  }
+
+  public static final class Vision {
+    public static final Transform3d robotToCam1 = new Transform3d(); //TODO find values for robotToCam (add more if needed)
+    public static final Transform3d robotToCam2 = new Transform3d();
+    
+    public static final Matrix<N3, N1> singleTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0); //TODO emperically tune Single Tag StdDevs
+    public static final Matrix<N3, N1> multiTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0); //TODO emperically tune Multi Tag StdDevs
+
+  }
+  
+  public static final class Intake {
+    @CanId(CanId.Type.MOTOR)
+    public static final int INTAKE_LIFT_MOTOR_ID = 0;
+    @CanId(CanId.Type.MOTOR)
+    public static final int INTAKE_MOTOR_ID = 1;
+    public static final double INTAKE_LIFT_SPEED = 0.5;
+    public static final int LIFT_LIMIT_SWITCH_UP_ID = 0;
+    public static final int LIFT_LIMIT_SWITCH_DOWN_ID = 0; 
+    public static final int CURRENT_LIMIT = 50;
+    public static final int VOLTAGE_LIMIT = 10;
+    public static final double INTAKE_SPEED = 0.5;
+    public static final double LIFT_JKMETERS_SQUARED = 0.00006;
+    public static final double LIFT_MOTOR_GEARING = 1.0/100.0;
+    public static final double INTAKE_REACH_METERS = 0.30;
+    public static final double LIFT_MIN_RADIANS = 0;
+    public static final double LIFT_MAX_RADIANS = Math.PI/2.0;
+    public static final double WHEEL_MOMENT_OF_INERTIA = 0.00006;
+    public static final double INTAKE_GEAR_RATIO = 1.0/3.0;
+  }
+
+  public static final class Indexer {
+    public static final int INDEXER_MOTOR_ID = 55;
+    public static final int CURRENT_LIMIT = 50;
+    public static final double VOLTAGE_LIMIT = 10;
+    public static final double SPEED = 0.5;
+    public static final double WHEEL_MOMENT_OF_INERTIA = 3.8;
+    public static final double INDEXER_GEAR_RATIO = 1.0/10.0;
   }
 
   public static final class Swerve {
@@ -123,8 +166,8 @@ public final class Constants {
     public static final double TELEOP_ANGLE_HOLD_FACTOR = 3.0;
 
     public static final class Odometry {
-      public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.05);
-      public static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
+      public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.05); //TODO change state StdDev for Odom
+      public static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.9, 0.9, 0.9); //TODO change vision StdDev for Odom
     }
 
     public static final class PathFollowing {
@@ -134,7 +177,7 @@ public final class Constants {
         new PIDConstants(8.0,0.0, 0.8);
     }
     
-    public static final class FrontLeftModule {
+    public static final class FrontLeftModule { //TODO need to change where the "front" CAN-IDs are
       @CanId(CanId.Type.MOTOR)
       public static final int DRIVE_MOTOR_ID = 14;
       @CanId(CanId.Type.MOTOR)
@@ -179,7 +222,61 @@ public final class Constants {
           -Units.inchesToMeters(10.125));
     }
   }
+    public static final class Shooter {
+      // front top motor
+      @CanId(CanId.Type.MOTOR)
+      public static final int FRONT_TOP_SHOOTER_ID = 30;
+      @CanId(CanId.Type.ENCODER)
+      public static final int FRONT_TOP_ENCODER_ID = 30;
 
-  // Class to access the coordinates of the coral on the field.
+
+      //front bottom motor
+      @CanId(CanId.Type.MOTOR)
+      public static final int FRONT_BOTTOM_SHOOTER_ID = 31;
+      @CanId(CanId.Type.ENCODER)
+      public static final int FRONT_BOTTOM_ENCODER_ID = 31;
+
+      //back top motor
+      @CanId(CanId.Type.MOTOR)
+      public static final int BACK_TOP_SHOOTER_ID = 32;
+       @CanId(CanId.Type.ENCODER)
+      public static final int BACK_TOP_ENCODER_ID = 32;
+
+      //back bottom motor
+      @CanId(CanId.Type.MOTOR)
+      public static final int BACK_BOTTOM_SHOOTER_ID = 33;
+      @CanId(CanId.Type.ENCODER)
+      public static final int BACK_BOTTOM_ENCODER_ID = 33;
+
+      //top motor controlling stuff
+      public static final double TOP_TARGET_SHOOTER_RPM = 0.0;
+      public static final double TOP_SHOOTER_P = 0.0;
+      public static final double TOP_SHOOTER_I = 0.0;
+      public static final double TOP_SHOOTER_D = 0.0;
+      public static final double TOP_SHOOTER_FF = 0.0;
+
+      //bottom motor controlling stuff
+      public static final double BOTTOM_TARGET_SHOOTER_RPM = 0.0;
+      public static final double BOTTOM_SHOOTER_P = 0.0;
+      public static final double BOTTOM_SHOOTER_I = 0.0;
+      public static final double BOTTOM_SHOOTER_D = 0.0;
+       public static final double BOTTOM_SHOOTER_FF = 0.0;
+
+      public static final double shooterMotorTolerance = 50.0;
+      public static final int SHOOTER_CURRENT_LIMIT = 100;
+      public static final double SHOOTER_VOLTAGE_LIMIT = 0.0;
+
+      public static final double TOP_kV = 0.0;   
+      public static final double BOTTOM_kV = 0.0;
+      public static final double TOP_kS = 0.0;        
+      public static final double BOTTOM_kS = 0.0;
+
+      public static final double TOP_kA = 0.0;        //what values
+      public static final double BOTTOM_kA = 0.0;
+    }
+
+    }
   
-}
+  
+
+

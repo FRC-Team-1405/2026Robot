@@ -43,14 +43,14 @@ public class Mk4SwerveModulePro extends AdvancedSubsystem {
   }
 
   // Volts to meters/sec
-  private static final double DRIVE_KV = 3.4;
+  private static final double DRIVE_KV = 1.0482;
   // Volts to meters/sec^2
-  private static final double DRIVE_KA = 0.27;
+  private static final double DRIVE_KA = 0.017468;
 
   // Volts to deg/sec
-  private static final double ROTATION_KV = 12.0 / 900;
+  private static final double ROTATION_KV = 12.0 / 900; //TODO Change Via Sysid
   // Volts to deg/sec^2
-  private static final double ROTATION_KA = 0.00006;
+  private static final double ROTATION_KA = 0.00006; //TODO Change Via Sysid
 
   private static final double DRIVE_GEARING = 1.0 / 5.9;
   private static final double DRIVE_METERS_PER_ROTATION =
@@ -60,13 +60,13 @@ public class Mk4SwerveModulePro extends AdvancedSubsystem {
   // M/s - Tune (Apply full output and measure max vel. Adjust KV/KA for sim if needed)
   public static final double DRIVE_MAX_VEL = 4.65;
 
-  private static final double DRIVE_KP = 0.3;
+  private static final double DRIVE_KP = 0.14979;
   private static final double DRIVE_KD = 0.0;
   private static final double DRIVE_KI = 0.0;
 
-  private static final double ROTATION_KP = 4.0;
-  private static final double ROTATION_KD = 0.0;
-  private static final double ROTATION_KI = 0.5;
+  private static final double ROTATION_KP = 4.0; //TODO Change Via Sysid
+  private static final double ROTATION_KD = 0.0; //TODO Change Via Sysid
+  private static final double ROTATION_KI = 0.5; //TODO Change Via Sysid
 
   public final ModuleCode moduleCode;
   private final LinearSystemSim<N1, N1, N1> driveSim;

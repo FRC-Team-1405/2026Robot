@@ -52,7 +52,7 @@ public class Turret extends SubsystemBase{
     }
 
     private void pointToTarget(Rotation2d targetAngle) {
-        numRotations = turretEncoder.getPosition() - targetAngle.getRotations() * Constants.TURRET_GEAR_RATIO_IO;
+        numRotations = turretEncoder.getPosition() - targetAngle.getRotations() * Constants.Turret.TURRET_GEAR_RATIO_IO;
         turretMotorController.setSetpoint(numRotations, ControlType.kPosition);
     }
 
