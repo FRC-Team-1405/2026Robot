@@ -1,7 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Meter;
-
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,6 +12,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rectangle2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,13 +21,14 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 
 public final class Constants {
   public static final String CARNIVORE_BUS_NAME = "Sonic";
   public static final AprilTagFieldLayout apriltagLayout;
   public static final Translation2d fieldSize;
-
+  public static final Rectangle2d RED_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(445.61 - 13.0), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(492.61 + 13.0), Units.inchesToMeters(267.85)));
+  public static final Rectangle2d BLUE_ALLIANCE_BUMP = new Rectangle2d(new Translation2d(Units.inchesToMeters(158.61 - 13.0), Units.inchesToMeters(49.84)), new Translation2d(Units.inchesToMeters(205.61 + 13.0), Units.inchesToMeters(267.85)));
+  //Bump Field Constants manipulated to work with 45 degree robot lock^^ (keep when merging branches plz)
   static {
     try {
       apriltagLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2026RebuiltAndymark.m_resourceFile);
@@ -98,12 +99,29 @@ public final class Constants {
       PCM_CONTROLLER,
     }
   }
+  public static final class Joystick {
+
+    //PID Constants for bump angle constraint
+    public static final double kP = 2;
+    public static final double kI = 0;
+    public static final double kD = 0;
+
+  }
 
   public static final class LEDs {
     public static final int PWM_PIN = 0;
     public static final int LENGTH = 150;
   }
 
+  public static final class Vision {
+    public static final Transform3d robotToCam1 = new Transform3d(); //TODO find values for robotToCam (add more if needed)
+    public static final Transform3d robotToCam2 = new Transform3d();
+    
+    public static final Matrix<N3, N1> singleTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0); //TODO emperically tune Single Tag StdDevs
+    public static final Matrix<N3, N1> multiTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0); //TODO emperically tune Multi Tag StdDevs
+
+  }
+  
   public static final class Intake {
     @CanId(CanId.Type.MOTOR)
     public static final int INTAKE_LIFT_MOTOR_ID = 0;
@@ -143,8 +161,8 @@ public final class Constants {
     public static final double TELEOP_ANGLE_HOLD_FACTOR = 3.0;
 
     public static final class Odometry {
-      public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.05);
-      public static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
+      public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.05); //TODO change state StdDev for Odom
+      public static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.9, 0.9, 0.9); //TODO change vision StdDev for Odom
     }
 
     public static final class PathFollowing {
@@ -154,7 +172,7 @@ public final class Constants {
         new PIDConstants(8.0,0.0, 0.8);
     }
     
-    public static final class FrontLeftModule {
+    public static final class FrontLeftModule { //TODO need to change where the "front" CAN-IDs are
       @CanId(CanId.Type.MOTOR)
       public static final int DRIVE_MOTOR_ID = 14;
       @CanId(CanId.Type.MOTOR)
