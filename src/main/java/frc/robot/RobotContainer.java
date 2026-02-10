@@ -11,6 +11,8 @@ import frc.lib.input.controllers.XboxControllerWrapper;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.SwerveDriveWithGamepad;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.FireControl;
+
 
 public class RobotContainer {
   // Controllers
@@ -27,6 +29,12 @@ public class RobotContainer {
             timestamp,
             VecBuilder.fill(stdDevs.get(0, 0), stdDevs.get(1, 0), stdDevs.get(2, 0)));
       });
+
+  public static final Intake intake = new Intake();
+  public static final Indexer funnyName = new Indexer();
+
+  // Vision clients
+  // public static final JetsonClient jetson = new JetsonClient();
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
@@ -48,5 +56,17 @@ public class RobotContainer {
 
   private void configureButtonBindings() {
     coDriver.START();
+    driver.A().whileTrue(intake.intakeFuel());
+    driver.B().whileTrue(intake.extakeFuel());
+    driver.X().onTrue(intake.putUpIntake());
+    driver.Y().onTrue(intake.putDownIntake());
+    driver.DUp().whileTrue(funnyName.shootFuel());
+    driver.DDown().whileTrue(funnyName.clearFuel());
+  /*   
+        }, shooter))).andThen(new Shoot().andThen(Commands.waitSeconds(0.5).andThen(Commands.runOnce(() -> {
+          shooter.stopMotors();
+
+        }))))); */
+  
   }
 }
