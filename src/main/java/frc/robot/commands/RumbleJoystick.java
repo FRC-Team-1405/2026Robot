@@ -22,9 +22,10 @@ public class RumbleJoystick extends SequentialCommandGroup {
   /**
    * Give a description of the class
    * 
-   * @param joystick
-   * @param rumbleType
-   * @param rumbleStrength
+   * @param runRumbleStart(joystick,_RumbleType.kBothRumble,_1.0),
+   * @param new_WaitCommand(2.0),
+   * @param runRumbleStop(joystick));
+   * 
    */
   public RumbleJoystick(CommandXboxController joystick, RumbleType rumbleType, double rumbleStrength) {
     addCommands(
