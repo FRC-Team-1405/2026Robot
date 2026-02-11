@@ -20,46 +20,36 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /** Add your docs here. */
 public class ControllerOutput {
-    public ControllerOutput(CommandXboxController myjoystick) {
-        joystick = myjoystick;
-    }
-
-    public CommandXboxController joystick;
-
-    public SequentialCommandGroup gamePeriodChangeGroup = new SequentialCommandGroup(
-            startRumble(joystick, RumbleType.kBothRumble, 1.0),
-            new WaitCommand(2.0),
-            stopRumble(joystick));
-
-    public Command stopRumble(CommandXboxController joystick) {
-
-        return startRumble(joystick, RumbleType.kBothRumble, 0.0);
-    }
-
-    public Command startRumble(CommandXboxController joystick, RumbleType rumbleType, double rumbleStrength) {
-        return Commands.runOnce(() -> {
-            joystick.setRumble(rumbleType, rumbleStrength);
-            System.out.println("x pressed");
-        });
-    }
-    // public void rumbleConfigurator(CommandXboxController joystick, RumbleType
-    // rumbleType, double rumbleStrength, long rumbleTime) {
-    // System.out.println("rumbleType" + rumbleType + "rumbleStrength" +
-    // rumbleStrength + "rumbleTime" + rumbleTime);
+    //
+    // Not Needed better code is in RumbleJoystick.java
+    //
+    // public ControllerOutput(CommandXboxController myjoystick) {
+    // joystick = myjoystick;
+    // }
+    //
+    // public CommandXboxController joystick;
+    //
+    // public SequentialCommandGroup gamePeriodChangeGroup = new
+    // SequentialCommandGroup(
+    // startRumble(joystick, RumbleType.kBothRumble, 1.0),
+    // new WaitCommand(2.0),
+    // stopRumble(joystick));
+    //
+    // public Command gamePeriodChange(CommandXboxController joystick) {
+    // return Commands.runOnce(() -> {
+    // startRumble(joystick, RumbleType.kBothRumble, 1.0);
+    // });
+    // }
+    //
+    // public Command stopRumble(CommandXboxController joystick) {
+    //
+    // return startRumble(joystick, RumbleType.kBothRumble, 0.0);
+    // }
+    //
+    // public Command startRumble(CommandXboxController joystick, RumbleType
+    // rumbleType, double rumbleStrength) {
+    // return Commands.runOnce(() -> {
     // joystick.setRumble(rumbleType, rumbleStrength);
-    // long start = System.currentTimeMillis();
-    // long timeElapsed = 0;
-    // while (timeElapsed < rumbleTime) {
-    // long finish = System.currentTimeMillis();
-    // timeElapsed = finish - start;
-    // // System.out.println("timeElapsed" + timeElapsed);
-    // }
-    // joystick.setRumble(rumbleType, 0.0);
-    // System.out.println("rumble set to 0");
-    // }
-
-    // public void stopRumble(CommandXboxController joystick, RumbleType rumbleType,
-    // double rumbleStrength, RumbleType rumbleType, double rumbleStrength) {
-    // startRumble(joystick, rumbleType.kBothRumble, 0.0);
+    // });
     // }
 }
