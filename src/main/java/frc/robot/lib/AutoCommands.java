@@ -56,6 +56,8 @@ public class AutoCommands {
         commandsToAddToChooser.put("AP_RightStartDepotScore", NamedCommands.getCommand("AP_RightStartDepotScore"));
         commandsToAddToChooser.put("AP_RightStartFeedingStationScore",
                 NamedCommands.getCommand("AP_RightStartFeedingStationScore"));
+        commandsToAddToChooser.put("AP_TheShowboater", NamedCommands.getCommand("AP_TheShowboater"));
+        // TODO: Fix rotation and ask Stephen about position/rotations
         commandsToAddToChooser.put("AP_RightStartCenterHarvestInLeft",
                 NamedCommands.getCommand("AP_RightStartCenterHarvestInLeft"));
 

@@ -7,8 +7,10 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Constants;
 import frc.robot.lib.AprilTags;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -248,7 +250,9 @@ public class AutoPilotCommands {
                 Command AP_RightStartFeedingStationScore = new SequentialCommandGroup(
                                 MoveTo_startRightFaceIn.get(),
                                 MoveTo_feedingStation.get(),
+                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
                                 MoveTo_blueShootCenter.get());
+                // Commands.print("climbing").andThen(Commands.waitSeconds(3)));
                 Command AP_RightStartCenterHarvestInLeft = new SequentialCommandGroup(
                                 MoveTo_startRightFaceIn.get(),
                                 MoveTo_beforeRightBump.get(),
@@ -259,6 +263,27 @@ public class AutoPilotCommands {
                                 MoveTo_afterLeftBump.get(),
                                 MoveTo_onLeftBump.get(),
                                 MoveTo_beforeLeftBump.get());
+                // TODO:Edit and refine
+                Command AP_TheShowboater = new SequentialCommandGroup(
+                                MoveTo_blueCenter.get(),
+                                MoveTo_startLeftFaceIn.get(),
+                                MoveTo_leftOfDepotFaceIn.get(),
+                                MoveTo_depotFaceIn.get(),
+                                MoveTo_midOfDepotFaceIn.get(),
+                                MoveTo_rightOfDepotFaceIn.get(),
+                                MoveTo_blueShootCenter.get(),
+                                MoveTo_feedingStation.get(),
+                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
+                                MoveTo_blueShootCenter.get(),
+                                MoveTo_beforeRightBump.get(),
+                                MoveTo_onRightBump.get(),
+                                MoveTo_afterRightBump.get(),
+                                MoveTo_farRightLeft.get(),
+                                MoveTo_farLeftLeft.get(),
+                                MoveTo_afterLeftBump.get(),
+                                MoveTo_onLeftBump.get(),
+                                MoveTo_beforeLeftBump.get(),
+                                MoveTo_blueShootCenter.get());
 
                 /* Register Commands */ // any auto added here needs to be registered in AutoCommands to show up on
                                         // Elastic
@@ -277,5 +302,6 @@ public class AutoPilotCommands {
                 NamedCommands.registerCommand("AP_RightStartDepotScore", AP_RightStartDepotScore);
                 NamedCommands.registerCommand("AP_RightStartFeedingStationScore", AP_RightStartFeedingStationScore);
                 NamedCommands.registerCommand("AP_RightStartCenterHarvestInLeft", AP_RightStartCenterHarvestInLeft);
+                NamedCommands.registerCommand("AP_TheShowboater", AP_TheShowboater);
         }
 }
