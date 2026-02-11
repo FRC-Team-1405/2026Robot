@@ -6,10 +6,12 @@ import java.util.Set;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public final class CommandTracker {
+public class CommandTracker {
+
     private static final Set<Command> running = new HashSet<>();
 
-    private CommandTracker() {}
+    private CommandTracker() {
+    }
 
     public static void onStart(Command cmd) {
         running.add(cmd);

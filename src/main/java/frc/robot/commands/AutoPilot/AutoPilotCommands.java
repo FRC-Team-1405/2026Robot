@@ -6,12 +6,15 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.lib.AprilTags;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class AutoPilotCommands {
@@ -63,7 +66,7 @@ public class AutoPilotCommands {
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> origin = () -> new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
-        public static void registerCommands(CommandSwerveDrivetrain drivetrain) {
+        public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber) {
                 /* Commands */
                 // Uses command suppliers instead of commands so that we can reuse the same
                 // command in an autonomous
@@ -247,11 +250,14 @@ public class AutoPilotCommands {
                                 MoveTo_depotFaceOut.get(),
                                 MoveTo_leftOfDepotFaceOut.get(),
                                 MoveTo_blueShootCenter.get());
+                Command cmd = climber.runExtendClimber().withName("Auto Climb");
+                SmartDashboard.putData(cmd);
                 Command AP_RightStartFeedingStationScore = new SequentialCommandGroup(
                                 MoveTo_startRightFaceIn.get(),
                                 MoveTo_feedingStation.get(),
                                 Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
-                                MoveTo_blueShootCenter.get());
+                                MoveTo_blueShootCenter.get(),
+                                Commands.parallel(MoveTo_afterLeftBump.get(), cmd));
                 // Commands.print("climbing").andThen(Commands.waitSeconds(3)));
                 Command AP_RightStartCenterHarvestInLeft = new SequentialCommandGroup(
                                 MoveTo_startRightFaceIn.get(),

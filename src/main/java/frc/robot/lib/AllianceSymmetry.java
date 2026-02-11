@@ -154,11 +154,9 @@ public final class AllianceSymmetry {
                     2022, new YearInfo(SymmetryStrategy.ROTATIONAL, 16.4592, 8.2296),
                     2023, new YearInfo(SymmetryStrategy.VERTICAL, 16.54175, 8.0137),
                     2024, new YearInfo(SymmetryStrategy.VERTICAL, 16.54175, 8.211),
-                    2025, new YearInfo(SymmetryStrategy.ROTATIONAL, 17.548, 8.052),
-                    2026, new YearInfo(SymmetryStrategy.ROTATIONAL, 16.54099, 8.069326) // this might be wrong
-            ));
+                    2025, new YearInfo(SymmetryStrategy.ROTATIONAL, 17.548, 8.052)));
 
-    private static YearInfo activeYear = flipperMap.get(2026);
+    private static YearInfo activeYear = flipperMap.get(2025);
 
     /**
      * Get the flipper that is currently active for flipping coordinates. It's
@@ -174,7 +172,7 @@ public final class AllianceSymmetry {
     /**
      * Set the year to determine the Alliance Coordinate Flipper to use.
      *
-     * @param year The year to set the flipper to. [2022 - 2026]
+     * @param year The year to set the flipper to. [2022 - 2024]
      */
     public static void setYear(int year) {
         if (!flipperMap.containsKey(year)) {
@@ -311,13 +309,5 @@ public final class AllianceSymmetry {
      */
     public static Pose2d flip(Pose2d pose) {
         return flip(pose, getStrategy());
-    }
-
-    public static Pose2d flipIfRed(Pose2d pose) {
-        if (isRed()) {
-            return flip(pose);
-        } else {
-            return pose;
-        }
     }
 }
