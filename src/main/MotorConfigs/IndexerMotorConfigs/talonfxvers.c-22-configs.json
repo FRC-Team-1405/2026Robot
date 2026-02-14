@@ -1,41 +1,6 @@
 {
   "Device": [
     {
-      "name": "Motor Output",
-      "summary": "",
-      "description": "",
-      "ordinal": 0,
-      "configs": [
-        {
-          "name": "Inverted",
-          "summary": "Invert state of the device as seen from the front of the motor.",
-          "ordinal": 0,
-          "type": "InvertedValue",
-          "description": "",
-          "units": "",
-          "min_value": -1.7976931348623157E+308,
-          "max_value": 1.7976931348623157E+308,
-          "signal_id": 1901,
-          "signal_name": "Config_Inverted",
-          "default_value": 0,
-          "value": 1,
-          "param_value": "Clockwise_Positive",
-          "enum_values": [
-            {
-              "name": "CounterClockwise_Positive",
-              "comment": "Positive motor output results in counter-clockwise motion.",
-              "value": 0
-            },
-            {
-              "name": "Clockwise_Positive",
-              "comment": "Positive motor output results in clockwise motion.",
-              "value": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Slot 0",
       "summary": "",
       "description": "",
@@ -53,8 +18,24 @@
           "signal_id": 1878,
           "signal_name": "Slot0_kI",
           "default_value": 0,
-          "value": 0.05,
-          "param_value": 0.05,
+          "value": 0.12,
+          "param_value": 0.12,
+          "enum_values": []
+        },
+        {
+          "name": "kD",
+          "summary": "Derivative gain.",
+          "ordinal": 2,
+          "type": "double",
+          "description": "The units for this gain is dependent on the control mode. Since this gain is multiplied by the derivative of error in the input with respect to time (in units of seconds), the units should be defined as units of output per unit of the differentiated input error. For example, when controlling velocity using a duty cycle closed loop, the derivative of velocity with respect to time is rot per sec\u00B2, which is acceleration. Therefore, the units for the derivative gain will be duty cycle per unit of acceleration error, or 1/(rot per sec\u00B2).",
+          "units": "",
+          "min_value": 0,
+          "max_value": 3.4E+38,
+          "signal_id": 1879,
+          "signal_name": "Slot0_kD",
+          "default_value": 0,
+          "value": 0.02,
+          "param_value": 0.02,
           "enum_values": []
         },
         {
@@ -71,6 +52,46 @@
           "default_value": 0,
           "value": 0.12,
           "param_value": 0.12,
+          "enum_values": []
+        }
+      ]
+    },
+    {
+      "name": "Hardware Limit Switch",
+      "summary": "",
+      "description": "",
+      "ordinal": 0,
+      "configs": [
+        {
+          "name": "Forward Limit Enable",
+          "summary": "If enabled, motor output is set to neutral when the forward limit switch is asserted and positive output is requested.",
+          "ordinal": -2,
+          "type": "bool",
+          "description": "",
+          "units": "",
+          "min_value": -1.7976931348623157E+308,
+          "max_value": 1.7976931348623157E+308,
+          "signal_id": 1931,
+          "signal_name": "Config_ForwardLimitEnable",
+          "default_value": 1,
+          "value": 0,
+          "param_value": false,
+          "enum_values": []
+        },
+        {
+          "name": "Reverse Limit Enable",
+          "summary": "If enabled, motor output is set to neutral when reverse limit switch is asseted and negative output is requested.",
+          "ordinal": 0,
+          "type": "bool",
+          "description": "",
+          "units": "",
+          "min_value": -1.7976931348623157E+308,
+          "max_value": 1.7976931348623157E+308,
+          "signal_id": 1937,
+          "signal_name": "Config_ReverseLimitEnable",
+          "default_value": 1,
+          "value": 0,
+          "param_value": false,
           "enum_values": []
         }
       ]
@@ -111,46 +132,6 @@
           "default_value": 0.1,
           "value": 0.10000000149011612,
           "param_value": 0.10000000149011612,
-          "enum_values": []
-        }
-      ]
-    },
-    {
-      "name": "Torque Current",
-      "summary": "",
-      "description": "",
-      "ordinal": 0,
-      "configs": [
-        {
-          "name": "Peak Forward Torque Current",
-          "summary": "Maximum (forward) output during torque current based control modes.",
-          "ordinal": 0,
-          "type": "double",
-          "description": "",
-          "units": "A",
-          "min_value": -800,
-          "max_value": 800,
-          "signal_id": 1914,
-          "signal_name": "Config_PeakForTorqCurr",
-          "default_value": 800,
-          "value": 120,
-          "param_value": 120,
-          "enum_values": []
-        },
-        {
-          "name": "Peak Reverse Torque Current",
-          "summary": "Minimum (reverse) output during torque current based control modes.",
-          "ordinal": 0,
-          "type": "double",
-          "description": "",
-          "units": "A",
-          "min_value": -800,
-          "max_value": 800,
-          "signal_id": 1915,
-          "signal_name": "Config_PeakRevTorqCurr",
-          "default_value": -800,
-          "value": -120,
-          "param_value": -120,
           "enum_values": []
         }
       ]

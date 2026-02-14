@@ -63,7 +63,7 @@ public class Shooter extends SubsystemBase {
     if (!status.isOK()) {
       System.out.println("Could not apply configs, error code: " + status.toString());
 
-      shooterMotor1.setPosition(0);
+      shooterMotor1.setControl(m_Brake);
     }
 
   }
@@ -81,7 +81,7 @@ public class Shooter extends SubsystemBase {
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     SimProfiles.initShooter(shooterMotor1);
     SimProfiles.initShooter(shooterMotor2);
-    setShooterMotor();
+    // setShooterMotor();
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
