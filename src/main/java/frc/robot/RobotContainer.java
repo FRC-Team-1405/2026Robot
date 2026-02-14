@@ -23,6 +23,7 @@ import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Hopper;
+import frc.robot.subsystems.Intake;
 
 public class RobotContainer {
         private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
@@ -44,12 +45,14 @@ public class RobotContainer {
 
         private final CommandXboxController joystick = new CommandXboxController(0);
         private final CommandXboxController operator = new CommandXboxController(1);
+        private final CommandXboxController driver = new CommandXboxController(2);
 
         public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-        public final Climber climber = new Climber();
-        public final AdjustableHood hood = new AdjustableHood();
-        public final Hopper hopper = new Hopper();
+        // public final Climber climber = new Climber();
+        // public final AdjustableHood hood = new AdjustableHood();
+        // public final Hopper hopper = new Hopper();
+        public final Intake intake = new Intake();
 
         public RobotContainer() {
                 configureBindings();
@@ -59,37 +62,55 @@ public class RobotContainer {
                 // configure operator controls
                 Command cmd;
 
-                cmd = climber.runExtendClimber();
-                SmartDashboard.putData(cmd);
-                operator.povUp().onTrue(cmd);
+                // cmd = climber.runExtendClimber();
+                // SmartDashboard.putData(cmd);
+                // operator.povUp().onTrue(cmd);
 
-                cmd = climber.runRetractClimber();
-                SmartDashboard.putData(cmd);
-                operator.povDown().onTrue(cmd);
+                // cmd = climber.runRetractClimber();
+                // SmartDashboard.putData(cmd);
+                // operator.povDown().onTrue(cmd);
 
-                cmd = Commands.sequence(climber.runStop(), climber.runStopClaw()).withName("Climber Stop");
-                SmartDashboard.putData(cmd);
-                operator.x().onTrue(cmd);
+                // cmd = Commands.sequence(climber.runStop(),
+                // climber.runStopClaw()).withName("Climber Stop");
+                // SmartDashboard.putData(cmd);
+                // operator.x().onTrue(cmd);
 
-                cmd = hood.runSet(Constants.HoodPreferences.SERVO_SHORT).withName("Hood Speed Short");
-                SmartDashboard.putData(cmd);
-                joystick.a().onTrue(cmd);
+                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_SHORT).withName("Hood Speed
+                // Short");
+                // SmartDashboard.putData(cmd);
+                // joystick.a().onTrue(cmd);
 
-                cmd = hood.runSet(Constants.HoodPreferences.SERVO_MEDIUM).withName("Hood Speed Medium");
-                SmartDashboard.putData(cmd);
-                joystick.b().onTrue(cmd);
+                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_MEDIUM).withName("Hood
+                // Speed Medium");
+                // SmartDashboard.putData(cmd);
+                // joystick.b().onTrue(cmd);
 
-                cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed Long");
-                SmartDashboard.putData(cmd);
-                joystick.y().onTrue(cmd);
+                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed
+                // Long");
+                // SmartDashboard.putData(cmd);
+                // joystick.y().onTrue(cmd);
 
-                cmd = hopper.runForwardHopper();
-                SmartDashboard.putData(cmd);
-                joystick.leftBumper().toggleOnTrue(cmd);
+                // cmd = hopper.runForwardHopper();
+                // SmartDashboard.putData(cmd);
+                // joystick.leftBumper().toggleOnTrue(cmd);
 
-                cmd = hopper.runReverseHopper();
+                // cmd = hopper.runReverseHopper();
+                // SmartDashboard.putData(cmd);
+                // joystick.rightBumper().toggleOnTrue(cmd);
+
+                cmd = intake.runPickupFuel();
                 SmartDashboard.putData(cmd);
-                joystick.rightBumper().toggleOnTrue(cmd);
+                driver.leftTrigger().toggleOnTrue(cmd);
+
+                cmd = intake.runRetractIntake();
+                SmartDashboard.putData(cmd);
+                driver.rightTrigger().toggleOnTrue(cmd);
+
+                cmd = intake.runKickFuel();
+                SmartDashboard.putData(cmd);
+                driver.a().toggleOnTrue(cmd);
+
+                driver.x().onTrue(intake.runPickupStop());
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
