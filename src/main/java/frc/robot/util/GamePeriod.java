@@ -21,9 +21,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public final class GamePeriod {
     /**
-     * The different periods of the game.
+     * A period of the game.
      */
-    public enum Period {
+    private enum Period {
         // Auto (total 0:20 / 20 seconds)
         AUTO,
 
@@ -62,14 +62,41 @@ public final class GamePeriod {
         }
     }
 
+    /**
+     * A listener for when periods change.
+     */
+    @FunctionalInterface
+    public static interface Listener {
+        public void run();
+    }
+    // EXAMPLE CODE TO USE LISTENER (likely in Robot.java constructor)
+    // GamePeriod.setListener(() -> {
+    // System.out.println("Period has changed, do stuff");
+    // });
+
+    /**
+     * Listener singleton.
+     */
+    private static Listener listener;
+
     // Publishers for Elastic dashboard
     private static DoublePublisher matchTimePublisher;
     private static StringPublisher alliancePublisher;
     private static StringPublisher periodPublisher;
     private static BooleanPublisher isActivePublisher;
     private static StringPublisher gameDataPublisher;
+    private static DoublePublisher periodTimePublisher;
 
-    private static String gameData = "none";
+    private static String gameData = "_";
+
+    /**
+     * Remembers previous period for hasPeriodChanged()
+     */
+    private static Period previousPeriod = Period.NOT_IN_MATCH;
+
+    public static void setListener(Listener l) {
+        listener = l;
+    }
 
     /**
      * Returns which period we are in based on the DriverStation's match time.
@@ -77,8 +104,6 @@ public final class GamePeriod {
      * @return A period of the game.
      */
     public static Period getPeriod() {
-        // todo: write code that counts backwards for newly downloaded DriverStation
-        // maybe
         final double secondsRemaining = DriverStation.getMatchTime();
 
         if (DriverStation.isAutonomous()) {
@@ -103,7 +128,7 @@ public final class GamePeriod {
             } else {
                 return Period.NOT_IN_MATCH;
             }
-        } // todo: else {} //DriverStation.isTest()
+        }
 
         return Period.NOT_IN_MATCH;
     }
@@ -124,7 +149,6 @@ public final class GamePeriod {
         }
 
         final String gameData = DriverStation.getGameSpecificMessage();
-
         if (gameData.length() == 0) {
             // Code for no data received yet
             return Optional.empty();
@@ -138,12 +162,62 @@ public final class GamePeriod {
 
         final boolean isBlue = alliance.get() == DriverStation.Alliance.Blue;
         final char inactiveAllianceChar = gameData.charAt(0);
-
         final boolean isActive = (isBlue && inactiveAllianceChar == 'R' || !isBlue && inactiveAllianceChar == 'B')
                 ? (period == Period.SHIFT_1 || period == Period.SHIFT_3)
                 : (period == Period.SHIFT_2 || period == Period.SHIFT_4);
 
         return Optional.of(isActive);
+    }
+
+    /**
+     * Returns how much time is remaining until the next period.
+     * 
+     * @return How much time is remaining.
+     */
+    public static double periodTimeRemaining() {
+        final double secondsRemaining = DriverStation.getMatchTime();
+        final Period period = getPeriod();
+
+        switch (period) {
+            case AUTO:
+                return secondsRemaining;
+            case TRANSITION_SHIFT:
+                return secondsRemaining - 130.0; // 140 + 10
+            case SHIFT_1:
+                return secondsRemaining - 105.0;
+            case SHIFT_2:
+                return secondsRemaining - 80.0;
+            case SHIFT_3:
+                return secondsRemaining - 55.0;
+            case SHIFT_4:
+                return secondsRemaining - 30.0;
+            case END_GAME:
+                return secondsRemaining;
+            case NOT_IN_MATCH:
+            default:
+                return -1.0;
+        }
+    }
+
+    /**
+     * The period changing action that the Listener listens for. If the period has
+     * changed, the listener runs it's action. Put this method in robotPeriodic or
+     * something alike.
+     */
+    public static void hasPeriodChanged() {
+        final Period currentPeriod = getPeriod();
+
+        // basically instantiate previousPeriod
+        if (previousPeriod == Period.NOT_IN_MATCH) {
+            previousPeriod = currentPeriod;
+        }
+
+        if (currentPeriod != previousPeriod) {
+            previousPeriod = currentPeriod;
+            if (listener != null) {
+                listener.run();
+            }
+        }
     }
 
     /**
@@ -167,6 +241,9 @@ public final class GamePeriod {
 
         StringTopic gameDataTopic = table.getStringTopic("GameData");
         gameDataPublisher = gameDataTopic.publish();
+
+        DoubleTopic periodTimeTopic = table.getDoubleTopic("PeriodTimeRemaining");
+        periodTimePublisher = periodTimeTopic.publish();
     }
 
     /**
@@ -206,6 +283,10 @@ public final class GamePeriod {
         // Game Data declared seperately
         gameDataPublisher.set(gameData);
         SmartDashboard.putString("Game Data", gameData);
+
+        double periodTimeRemaining = periodTimeRemaining();
+        periodTimePublisher.set(periodTimeRemaining);
+        SmartDashboard.putNumber("Period Time Left", periodTimeRemaining);
     }
 
     /**
