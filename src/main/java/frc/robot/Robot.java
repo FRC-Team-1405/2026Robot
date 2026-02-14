@@ -7,8 +7,10 @@ package frc.robot;
 import com.ctre.phoenix6.HootAutoReplay;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.RumbleJoystick;
 import frc.robot.util.GamePeriod;
 
 public class Robot extends TimedRobot {
@@ -25,6 +27,8 @@ public class Robot extends TimedRobot {
         m_robotContainer = new RobotContainer();
 
         GamePeriod.elasticInit();
+
+        RumbleJoystick.setRumbleOccasion(m_robotContainer.getJoystick());
     }
 
     @Override
@@ -33,6 +37,7 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run();
 
         GamePeriod.elasticPeriodic();
+        GamePeriod.hasPeriodChanged();
     }
 
     @Override

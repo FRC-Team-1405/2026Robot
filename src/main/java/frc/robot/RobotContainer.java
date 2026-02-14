@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.RumbleJoystick;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -80,7 +79,6 @@ public class RobotContainer {
                 joystick.b().whileTrue(drivetrain.applyRequest(
                                 () -> point.withModuleDirection(
                                                 new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-                joystick.x().onTrue(new RumbleJoystick(joystick));
                 joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
                 joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
                 joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
@@ -106,5 +104,9 @@ public class RobotContainer {
                                                 .withTimeout(5.0),
                                 // Finally idle for the rest of auton
                                 drivetrain.applyRequest(() -> idle));
+        }
+
+        public CommandXboxController getJoystick() {
+                return joystick;
         }
 }

@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.util.GamePeriod;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -32,6 +33,8 @@ public class RumbleJoystick extends SequentialCommandGroup {
         runRumbleStart(joystick, RumbleType.kBothRumble, 1.0),
         new WaitCommand(2.0),
         runRumbleStop(joystick));
+
+    schedule();
   }
 
   /**
@@ -51,5 +54,18 @@ public class RumbleJoystick extends SequentialCommandGroup {
 
   public Command runRumbleStop(CommandXboxController joystick) {
     return runRumbleStart(joystick, RumbleType.kBothRumble, 0.0);
+  }
+
+  // ---DO NOT EDIT setRumbleOccasion(). IT IS VERY FRAGILE
+  /**
+   * Sets the occasion, or when the joystick will rumble. The joystick will rumble
+   * whenever the period of the match changes.
+   * 
+   * @param joystick the joystick that will rumble
+   */
+  public static void setRumbleOccasion(CommandXboxController joystick) {
+    GamePeriod.setListener(() -> {
+      new RumbleJoystick(joystick, RumbleType.kBothRumble, 1.0);
+    });
   }
 }

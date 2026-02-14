@@ -12,11 +12,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringTopic;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.RumbleJoystick;
 
 /**
  * A utility class about which period of the game we're in.
@@ -24,8 +20,6 @@ import frc.robot.commands.RumbleJoystick;
  * @author Dylan Wilson
  */
 public final class GamePeriod {
-    private final static CommandXboxController joystick = new CommandXboxController(0);
-
     /**
      * A period of the game.
      */
@@ -122,7 +116,6 @@ public final class GamePeriod {
             if (130.0 <= secondsRemaining && secondsRemaining <= 140.0) {
                 return Period.TRANSITION_SHIFT;
             } else if (105.0 <= secondsRemaining && secondsRemaining <= 130.0) {
-                new RumbleJoystick(joystick);
                 return Period.SHIFT_1;
             } else if (80.0 <= secondsRemaining && secondsRemaining <= 105.0) {
                 return Period.SHIFT_2;
