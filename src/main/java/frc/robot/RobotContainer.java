@@ -49,9 +49,9 @@ public class RobotContainer {
 
         public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-        // public final Climber climber = new Climber();
-        // public final AdjustableHood hood = new AdjustableHood();
-        // public final Hopper hopper = new Hopper();
+        public final Climber climber = new Climber();
+        public final AdjustableHood hood = new AdjustableHood();
+        public final Hopper hopper = new Hopper();
         public final Intake intake = new Intake();
 
         public RobotContainer() {
@@ -62,55 +62,40 @@ public class RobotContainer {
                 // configure operator controls
                 Command cmd;
 
-                // cmd = climber.runExtendClimber();
-                // SmartDashboard.putData(cmd);
-                // operator.povUp().onTrue(cmd);
-
-                // cmd = climber.runRetractClimber();
-                // SmartDashboard.putData(cmd);
-                // operator.povDown().onTrue(cmd);
-
-                // cmd = Commands.sequence(climber.runStop(),
-                // climber.runStopClaw()).withName("Climber Stop");
-                // SmartDashboard.putData(cmd);
-                // operator.x().onTrue(cmd);
-
-                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_SHORT).withName("Hood Speed
-                // Short");
-                // SmartDashboard.putData(cmd);
-                // joystick.a().onTrue(cmd);
-
-                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_MEDIUM).withName("Hood
-                // Speed Medium");
-                // SmartDashboard.putData(cmd);
-                // joystick.b().onTrue(cmd);
-
-                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed
-                // Long");
-                // SmartDashboard.putData(cmd);
-                // joystick.y().onTrue(cmd);
-
-                // cmd = hopper.runForwardHopper();
-                // SmartDashboard.putData(cmd);
-                // joystick.leftBumper().toggleOnTrue(cmd);
-
-                // cmd = hopper.runReverseHopper();
-                // SmartDashboard.putData(cmd);
-                // joystick.rightBumper().toggleOnTrue(cmd);
-
-                cmd = intake.runPickupFuel();
+                cmd = climber.runExtendClimber();
                 SmartDashboard.putData(cmd);
-                driver.leftTrigger().toggleOnTrue(cmd);
+                operator.povUp().onTrue(cmd);
 
-                cmd = intake.runRetractIntake();
+                cmd = climber.runRetractClimber();
                 SmartDashboard.putData(cmd);
-                driver.rightTrigger().toggleOnTrue(cmd);
+                operator.povDown().onTrue(cmd);
 
-                cmd = intake.runKickFuel();
+                cmd = Commands.sequence(climber.runStop(),
+                                climber.runStopClaw()).withName("Climber Stop");
                 SmartDashboard.putData(cmd);
-                driver.a().toggleOnTrue(cmd);
+                operator.x().onTrue(cmd);
 
-                driver.x().onTrue(intake.runPickupStop());
+                cmd = hood.runSet(Constants.HoodPreferences.SERVO_SHORT).withName("Hood Speed Short");
+                SmartDashboard.putData(cmd);
+                joystick.a().onTrue(cmd);
+
+                cmd = hood.runSet(Constants.HoodPreferences.SERVO_MEDIUM).withName("Hood Speed Medium");
+                SmartDashboard.putData(cmd);
+                joystick.b().onTrue(cmd);
+
+                cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed Long");
+                SmartDashboard.putData(cmd);
+                joystick.y().onTrue(cmd);
+
+                cmd = hopper.runForwardHopper();
+                SmartDashboard.putData(cmd);
+                joystick.leftBumper().toggleOnTrue(cmd);
+
+                cmd = hopper.runReverseHopper();
+                SmartDashboard.putData(cmd);
+                joystick.rightBumper().toggleOnTrue(cmd);
+
+                driver.rightBumper().onTrue(intake.runToggleIntake());
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically

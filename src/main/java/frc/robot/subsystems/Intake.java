@@ -9,6 +9,7 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -27,6 +28,7 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   private int intakeSettleCount = 0;
   private double intakePositionTarget = 0;
+  private boolean intakeDeployed = false;
 
   public Intake() {
     SimProfiles.initIntake(intakeMotor);
@@ -53,41 +55,43 @@ public class Intake extends SubsystemBase {
     return (intakeSettleCount >= Constants.IntakePreferences.SETTLE_MAX);
   }
 
-  public void moveIntake(double position) {
+  private void moveIntake(double position) {
     intakeMotor.setControl(intakeMotorSpeed.withPosition(position));
     intakePositionTarget = position;
   }
 
-  public void movePickup(double position) {
+  private void movePickup(double position) {
     pickupMotor.setControl(pickupMotorSpeed.withVelocity(position));
   }
 
-  public void intakeOut() {
+  private void intakeOut() {
+    intakeDeployed = true;
     moveIntake(Constants.IntakePreferences.INTAKE_MOTOR_OUT);
     fLogger.log("Intake Out ");
   }
 
-  public void intakeIn() {
+  private void intakeIn() {
+    intakeDeployed = false;
     moveIntake(Constants.IntakePreferences.INTAKE_MOTOR_IN);
     fLogger.log("Intake In ");
   }
 
-  public void pickupOut() {
+  private void pickupOut() {
     movePickup(Constants.IntakePreferences.PICKUP_MOTOR_OUT);
     fLogger.log("Pickup Out ");
   }
 
-  public void pickupIn() {
+  private void pickupIn() {
     movePickup(Constants.IntakePreferences.PICKUP_MOTOR_IN);
     fLogger.log("Pickup In ");
   }
 
-  public void stopIntake() {
+  private void stopIntake() {
     intakeMotor.setControl(stop);
     fLogger.log("Stop Intake ");
   }
 
-  public void stopPickup() {
+  private void stopPickup() {
     pickupMotor.setControl(stop);
     fLogger.log("Stop Pickup ");
   }
@@ -108,12 +112,30 @@ public class Intake extends SubsystemBase {
         .withName("Run Intake In");
   }
 
+  public Command runPickupOut(String name) {
+    Command cmd = runPickupFuel().withName(name);
+    SmartDashboard.putData(cmd);
+    return cmd;
+  }
+
   public Command runPickupOut() {
-    return runOnce(() -> pickupOut()).withName("Run Pickup Out");
+    return runOnce(() -> pickupOut());
+  }
+
+  public Command runPickupIn(String name) {
+    Command cmd = runPickupIn().withName(name);
+    SmartDashboard.putData(cmd);
+    return cmd;
   }
 
   public Command runPickupIn() {
-    return runOnce(() -> pickupIn()).withName("Run Pickup In");
+    return runOnce(() -> pickupIn());
+  }
+
+  public Command runPickupStop(String name) {
+    Command cmd = runPickupStop().withName(name);
+    SmartDashboard.putData(cmd);
+    return cmd;
   }
 
   public Command runPickupStop() {
@@ -138,4 +160,7 @@ public class Intake extends SubsystemBase {
         runPickupOut());
   }
 
+  public Command runToggleIntake() {
+    return Commands.either(runIntakeIn(), runIntakeOut(), () -> intakeDeployed);
+  }
 }
