@@ -26,11 +26,11 @@ public class AutoPilotCommands {
         public static final Rotation2d CCW_30deg = Rotation2d.fromDegrees(30);
         // TODO: Test origin auto
         // Poses
-        public static Supplier<Pose2d> pos1 = () -> AprilTags.getAprilTagPose(28);
-        public static Supplier<Pose2d> examplePose = () -> new Pose2d(0, 0, Rotation2d.fromDegrees(90));
+
         public static Supplier<Pose2d> offBlueCenter1 = () -> new Pose2d(2, 4.85, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> offBlueCenter2 = () -> new Pose2d(0.40, 4.85, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> feedingStation = () -> new Pose2d(0.37, 0.5, Rotation2d.fromDegrees(0));
+
         // Start Poses
         public static Supplier<Pose2d> startRightFaceIn = () -> new Pose2d(3.55, 0.37, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> startLeftFaceIn = () -> new Pose2d(3.55, 7.65, Rotation2d.fromDegrees(270));
@@ -43,6 +43,7 @@ public class AutoPilotCommands {
         public static Supplier<Pose2d> beforeLeftBump = () -> new Pose2d(3.5, 5.5, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> onLeftBump = () -> new Pose2d(4.5, 5.5, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> afterLeftBump = () -> new Pose2d(5.5, 5.5, Rotation2d.fromDegrees(0));
+
         // Shooter Poses
         public static Supplier<Pose2d> blueShootCenter = () -> new Pose2d(3.5, 4, Rotation2d.fromDegrees(0));
 
@@ -51,6 +52,7 @@ public class AutoPilotCommands {
         public static Supplier<Pose2d> farLeftCenter = () -> new Pose2d(8.25, 6, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> farRightLeft = () -> new Pose2d(7.75, 1, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> farLeftLeft = () -> new Pose2d(7.75, 6, Rotation2d.fromDegrees(90));
+
         // Depot Poses
         public static Supplier<Pose2d> depotFaceIn = () -> new Pose2d(0.40, 6.5, Rotation2d.fromDegrees(270));
         public static Supplier<Pose2d> leftOfDepotFaceIn = () -> new Pose2d(0.40, 7, Rotation2d.fromDegrees(270));
@@ -60,29 +62,21 @@ public class AutoPilotCommands {
         public static Supplier<Pose2d> leftOfDepotFaceOut = () -> new Pose2d(0.40, 7, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> midOfDepotFaceOut = () -> new Pose2d(0.40, 6, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> rightOfDepotFaceOut = () -> new Pose2d(0.40, 5.5, Rotation2d.fromDegrees(90));
+
         // Constant Poses
         // Center Pose is 8,4, Blue Center Pose is 2,4,90
         public static Supplier<Pose2d> blueCenter = () -> new Pose2d(2, 4, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> origin = () -> new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(4, 0, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> preClimbPosition = () -> new Pose2d(2.5, 4, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> climbPosition = () -> new Pose2d(1.5, 4, Rotation2d.fromDegrees(180));
 
         public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber) {
                 /* Commands */
                 // Uses command suppliers instead of commands so that we can reuse the same
                 // command in an autonomous
-                Supplier<Command> MoveTo_pos1 = () -> new AutoPilotCommand.Builder(
-                                () -> pos1.get(), drivetrain, "MoveTo_pos1")
-                                .withFlipPoseForAlliance(true)
-                                .build();
 
-                Supplier<Command> MoveTo_pos1_withTracking = () -> new AutoPilotCommand.Builder(
-                                () -> pos1.get(), drivetrain, "MoveTo_pos1_withTracking")
-                                .withPointTowardsDuringMotion(() -> AprilTags.getAprilTagPose(20)) // Example: track tag
-                                                                                                   // 4 while moving
-                                .withPointTowardsTransitionThreshold(0.7) // Transition to final rotation at 70% of the
-                                                                          // path
-                                .withFlipPoseForAlliance(true)
-                                .build();
                 Supplier<Command> MoveTo_blueCenter = () -> new AutoPilotCommand.Builder(
                                 () -> blueCenter.get(), drivetrain, "MoveTo_blueCenter")
                                 .withFlipPoseForAlliance(true)
@@ -105,6 +99,18 @@ public class AutoPilotCommands {
                                 .build();
                 Supplier<Command> MoveTo_feedingStation = () -> new AutoPilotCommand.Builder(
                                 () -> feedingStation.get(), drivetrain, "MoveTo_feedingStation")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_fourMeters = () -> new AutoPilotCommand.Builder(
+                                () -> fourMeters.get(), drivetrain, "MoveTo_fourMeters")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_preClimbPosition = () -> new AutoPilotCommand.Builder(
+                                () -> preClimbPosition.get(), drivetrain, "MoveTo_preClimbPosition")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_climbPosition = () -> new AutoPilotCommand.Builder(
+                                () -> climbPosition.get(), drivetrain, "MoveTo_climbPosition")
                                 .withFlipPoseForAlliance(true)
                                 .build();
                 // Shooter
@@ -190,41 +196,26 @@ public class AutoPilotCommands {
                                 .build();
 
                 /* Full Autos */ // TODO: DON'T FORGET THE COMMAS
-                Command AP_auto1 = new SequentialCommandGroup(
-                                MoveTo_pos1.get());
-
-                Command AP_tracking_example = new SequentialCommandGroup(
-                                MoveTo_pos1_withTracking.get());
-
+                // Test/Move to a position
                 Command AP_blueCenter = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get());
-
                 Command AP_origin = new SequentialCommandGroup(
                                 MoveTo_origin.get());
-
+                Command AP_ShootFromDepot = new SequentialCommandGroup(
+                                MoveTo_blueShootCenter.get());
                 Command AP_blueCenterToDepot = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get(),
                                 MoveTo_depotFaceIn.get());
-
-                Command AP_blueCenterToOriginToRightBump = new SequentialCommandGroup(
-                                MoveTo_blueCenter.get(),
-                                MoveTo_origin.get(),
-                                MoveTo_beforeRightBump.get());
-
-                Command AP_blueScoreBumpFeed = new SequentialCommandGroup(
-                                MoveTo_blueCenter.get(),
-                                MoveTo_beforeRightBump.get(),
-                                MoveTo_centerOfField.get());
-
+                Command AP_fourMeters = new SequentialCommandGroup(
+                                MoveTo_fourMeters.get());
+                // Mini Autos
+                Command climbCommand = climber.runClimbUp().withName("Auto Climb Up");
+                SmartDashboard.putData(climbCommand);
                 Command AP_DepotFaceIn = new SequentialCommandGroup(
                                 MoveTo_leftOfDepotFaceIn.get(),
                                 MoveTo_depotFaceIn.get(),
                                 MoveTo_midOfDepotFaceIn.get(),
                                 MoveTo_rightOfDepotFaceIn.get());
-
-                Command AP_ShootFromDepot = new SequentialCommandGroup(
-                                MoveTo_blueShootCenter.get());
-
                 Command AP_rightBump = new SequentialCommandGroup(
                                 MoveTo_beforeRightBump.get(),
                                 MoveTo_onRightBump.get(),
@@ -232,6 +223,14 @@ public class AutoPilotCommands {
                 Command AP_CenterHarvest = new SequentialCommandGroup(
                                 MoveTo_farRightLeft.get(),
                                 MoveTo_farLeftLeft.get());
+                Command AP_climb = new SequentialCommandGroup(
+                                MoveTo_preClimbPosition.get(),
+                                climbCommand,
+                                MoveTo_climbPosition.get(),
+                                climber.runClimbDown(),
+                                Commands.print("climbing"));
+
+                // Actual Full autos
                 Command AP_LeftStartDepotScore = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get(),
                                 MoveTo_startLeftFaceIn.get(),
@@ -240,6 +239,7 @@ public class AutoPilotCommands {
                                 MoveTo_midOfDepotFaceIn.get(),
                                 MoveTo_rightOfDepotFaceIn.get(),
                                 MoveTo_blueShootCenter.get());
+
                 Command AP_RightStartDepotScore = new SequentialCommandGroup(
                                 MoveTo_startRightFaceIn.get(),
                                 MoveTo_blueCenter.get(),
@@ -252,6 +252,7 @@ public class AutoPilotCommands {
                                 MoveTo_blueShootCenter.get());
                 Command cmd = climber.runExtendClimber().withName("Auto Climb");
                 SmartDashboard.putData(cmd);
+
                 Command AP_RightStartFeedingStationScore = new SequentialCommandGroup(
                                 MoveTo_startRightFaceIn.get(),
                                 MoveTo_feedingStation.get(),
@@ -259,6 +260,7 @@ public class AutoPilotCommands {
                                 MoveTo_blueShootCenter.get(),
                                 Commands.parallel(MoveTo_afterLeftBump.get(), cmd));
                 // Commands.print("climbing").andThen(Commands.waitSeconds(3)));
+
                 Command AP_RightStartCenterHarvestInLeft = new SequentialCommandGroup(
                                 MoveTo_startRightFaceIn.get(),
                                 MoveTo_beforeRightBump.get(),
@@ -293,15 +295,13 @@ public class AutoPilotCommands {
 
                 /* Register Commands */ // any auto added here needs to be registered in AutoCommands to show up on
                                         // Elastic
-                NamedCommands.registerCommand("AP_auto1", AP_auto1);
-                NamedCommands.registerCommand("AP_tracking_example", AP_tracking_example);
                 NamedCommands.registerCommand("AP_blueCenter", AP_blueCenter);
                 NamedCommands.registerCommand("AP_blueCenterToDepot", AP_blueCenterToDepot);
-                NamedCommands.registerCommand("AP_blueCenterToOriginToRightBump", AP_blueCenterToOriginToRightBump);
-                NamedCommands.registerCommand("AP_blueScoreBumpFeed", AP_blueScoreBumpFeed);
+                NamedCommands.registerCommand("AP_fourMeters", AP_fourMeters);
                 NamedCommands.registerCommand("AP_DepotFaceIn", AP_DepotFaceIn);
                 NamedCommands.registerCommand("AP_ShootFromDepot", AP_ShootFromDepot);
                 NamedCommands.registerCommand("AP_origin", AP_origin);
+                NamedCommands.registerCommand("AP_climb", AP_climb);
                 NamedCommands.registerCommand("AP_rightBump", AP_rightBump);
                 NamedCommands.registerCommand("AP_CenterHarvest", AP_CenterHarvest);
                 NamedCommands.registerCommand("AP_LeftStartDepotScore", AP_LeftStartDepotScore);

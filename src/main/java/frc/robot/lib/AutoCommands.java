@@ -37,19 +37,17 @@ public class AutoCommands {
         HashMap<String, Command> commandsToAddToChooser = new HashMap<>();
 
         // region PidToPose
-        commandsToAddToChooser.put("P2P_auto1", NamedCommands.getCommand("P2P_auto1"));
+        // commandsToAddToChooser.put("P2P_auto1",
+        // NamedCommands.getCommand("P2P_auto1"));
         // endregion PidToPose
 
         // region autopilot
-        commandsToAddToChooser.put("AP_auto1", NamedCommands.getCommand("AP_auto1"));
-        commandsToAddToChooser.put("AP_tracking_example", NamedCommands.getCommand("AP_tracking_example"));
         commandsToAddToChooser.put("AP_blueCenter", NamedCommands.getCommand("AP_blueCenter"));
         commandsToAddToChooser.put("AP_blueCenterToDepot", NamedCommands.getCommand("AP_blueCenterToDepot"));
-        commandsToAddToChooser.put("AP_blueCenterToOriginToRightBump",
-                NamedCommands.getCommand("AP_blueCenterToOriginToRightBump"));
-        commandsToAddToChooser.put("AP_blueScoreBumpFeed", NamedCommands.getCommand("AP_blueScoreBumpFeed"));
         commandsToAddToChooser.put("AP_DepotFaceIn", NamedCommands.getCommand("AP_DepotFaceIn"));
         commandsToAddToChooser.put("AP_origin", NamedCommands.getCommand("AP_origin"));
+        commandsToAddToChooser.put("AP_climb", NamedCommands.getCommand("AP_climb"));
+
         commandsToAddToChooser.put("AP_ShootFromDepot", NamedCommands.getCommand("AP_ShootFromDepot"));
         commandsToAddToChooser.put("AP_rightBump", NamedCommands.getCommand("AP_rightBump"));
         commandsToAddToChooser.put("AP_CenterHarvest", NamedCommands.getCommand("AP_CenterHarvest"));
@@ -58,6 +56,7 @@ public class AutoCommands {
         commandsToAddToChooser.put("AP_RightStartFeedingStationScore",
                 NamedCommands.getCommand("AP_RightStartFeedingStationScore"));
         commandsToAddToChooser.put("AP_TheShowboater", NamedCommands.getCommand("AP_TheShowboater"));
+        commandsToAddToChooser.put("AP_fourMeters", NamedCommands.getCommand("AP_fourMeters"));
         // TODO: Fix rotation and ask Stephen about position/rotations
         commandsToAddToChooser.put("AP_RightStartCenterHarvestInLeft",
                 NamedCommands.getCommand("AP_RightStartCenterHarvestInLeft"));

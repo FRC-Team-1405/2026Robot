@@ -84,7 +84,8 @@ public class AutoPilotCommand extends FinneyCommand {
             .withDriveRequestType(DriveRequestType.Velocity);
 
     private static final APConstraints kConstraints = new APConstraints()
-            .withAcceleration(10.0) // TUNE THIS TO YOUR ROBOT!
+            .withAcceleration(2.0) // TUNE THIS TO YOUR ROBOT!// was 10
+            .withVelocity(2.0)
             .withJerk(10.0);
 
     // AutoPilot Thresholds

@@ -129,6 +129,7 @@ public class RobotContainer {
                 joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
+
         }
 
         public Command getAutonomousCommand() {
