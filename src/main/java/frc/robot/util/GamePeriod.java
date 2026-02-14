@@ -23,7 +23,7 @@ public final class GamePeriod {
     /**
      * A period of the game.
      */
-    public enum Period {
+    private enum Period {
         // Auto (total 0:20 / 20 seconds)
         AUTO,
 
@@ -65,19 +65,17 @@ public final class GamePeriod {
     /**
      * A listener for when periods change.
      */
+    @FunctionalInterface
     public static interface Listener {
         public void run();
     }
     // EXAMPLE CODE TO USE LISTENER (likely in Robot.java constructor)
-    // GamePeriod.setListener(new GamePeriod.Listener() {
-    // @Override
-    // public void run() {
+    // GamePeriod.setListener(() -> {
     // System.out.println("Period has changed, do stuff");
-    // }
     // });
 
     /**
-     * Listener instance.
+     * Listener singleton.
      */
     private static Listener listener;
 
@@ -89,10 +87,10 @@ public final class GamePeriod {
     private static StringPublisher gameDataPublisher;
     private static DoublePublisher periodTimePublisher;
 
-    private static String gameData = "none";
+    private static String gameData = "_";
 
     /**
-     * Remembers previous period for changePeriod()
+     * Remembers previous period for hasPeriodChanged()
      */
     private static Period previousPeriod = Period.NOT_IN_MATCH;
 
@@ -106,8 +104,6 @@ public final class GamePeriod {
      * @return A period of the game.
      */
     public static Period getPeriod() {
-        // todo: write code that counts backwards for newly downloaded DriverStation
-        // maybe
         final double secondsRemaining = DriverStation.getMatchTime();
 
         if (DriverStation.isAutonomous()) {
@@ -132,7 +128,7 @@ public final class GamePeriod {
             } else {
                 return Period.NOT_IN_MATCH;
             }
-        } // todo: else {} //DriverStation.isTest()
+        }
 
         return Period.NOT_IN_MATCH;
     }
@@ -153,7 +149,6 @@ public final class GamePeriod {
         }
 
         final String gameData = DriverStation.getGameSpecificMessage();
-
         if (gameData.length() == 0) {
             // Code for no data received yet
             return Optional.empty();
@@ -167,7 +162,6 @@ public final class GamePeriod {
 
         final boolean isBlue = alliance.get() == DriverStation.Alliance.Blue;
         final char inactiveAllianceChar = gameData.charAt(0);
-
         final boolean isActive = (isBlue && inactiveAllianceChar == 'R' || !isBlue && inactiveAllianceChar == 'B')
                 ? (period == Period.SHIFT_1 || period == Period.SHIFT_3)
                 : (period == Period.SHIFT_2 || period == Period.SHIFT_4);
@@ -207,9 +201,10 @@ public final class GamePeriod {
 
     /**
      * The period changing action that the Listener listens for. If the period has
-     * changed, the listener runs it's action.
+     * changed, the listener runs it's action. Put this method in robotPeriodic or
+     * something alike.
      */
-    public static void periodChanged() {
+    public static void hasPeriodChanged() {
         final Period currentPeriod = getPeriod();
 
         // basically instantiate previousPeriod
