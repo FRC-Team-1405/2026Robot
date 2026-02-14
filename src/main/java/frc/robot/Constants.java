@@ -66,6 +66,9 @@ public final class Constants {
   
   public static final Rectangle2d BLUE_ALLIANCE_ZONE = new Rectangle2d(new Translation2d(0.0, 0.0), new Translation2d(Units.inchesToMeters(156.61), Units.inchesToMeters(317.69)));
   public static final Rectangle2d RED_ALLIANCE_ZONE = new Rectangle2d(new Translation2d(Units.inchesToMeters(494.61),0.0), new Translation2d(Units.inchesToMeters(651.22), Units.inchesToMeters(317.69)));
+  
+  public static final double CALISPEED = .2;
+
   /**
    * Annotate CAN ID fields with this annotation so we can detect duplicates in a
    * unit test

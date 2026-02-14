@@ -151,7 +151,7 @@ public class FireControl extends SubsystemBase{
     /**
      * @return The offset needed to aim while moving
      */
-    private double getOffset() { //TODO
+    private double getOffset() {
         double offset;
         offset = 0.0;
         return offset;
