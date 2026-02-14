@@ -1,6 +1,41 @@
 {
   "Device": [
     {
+      "name": "Motor Output",
+      "summary": "",
+      "description": "",
+      "ordinal": 0,
+      "configs": [
+        {
+          "name": "Inverted",
+          "summary": "Invert state of the device as seen from the front of the motor.",
+          "ordinal": 0,
+          "type": "InvertedValue",
+          "description": "",
+          "units": "",
+          "min_value": -1.7976931348623157E+308,
+          "max_value": 1.7976931348623157E+308,
+          "signal_id": 1901,
+          "signal_name": "Config_Inverted",
+          "default_value": 0,
+          "value": 1,
+          "param_value": "Clockwise_Positive",
+          "enum_values": [
+            {
+              "name": "CounterClockwise_Positive",
+              "comment": "Positive motor output results in counter-clockwise motion.",
+              "value": 0
+            },
+            {
+              "name": "Clockwise_Positive",
+              "comment": "Positive motor output results in clockwise motion.",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Slot 0",
       "summary": "",
       "description": "",
@@ -18,8 +53,8 @@
           "signal_id": 1878,
           "signal_name": "Slot0_kI",
           "default_value": 0,
-          "value": 0.12,
-          "param_value": 0.12,
+          "value": 0.11999999731779099,
+          "param_value": 0.11999999731779099,
           "enum_values": []
         },
         {
@@ -34,8 +69,8 @@
           "signal_id": 1879,
           "signal_name": "Slot0_kD",
           "default_value": 0,
-          "value": 0.02,
-          "param_value": 0.02,
+          "value": 0.019999999552965164,
+          "param_value": 0.019999999552965164,
           "enum_values": []
         },
         {
@@ -50,8 +85,8 @@
           "signal_id": 1881,
           "signal_name": "Slot0_kV",
           "default_value": 0,
-          "value": 0.12,
-          "param_value": 0.12,
+          "value": 0.11999999731779099,
+          "param_value": 0.11999999731779099,
           "enum_values": []
         }
       ]

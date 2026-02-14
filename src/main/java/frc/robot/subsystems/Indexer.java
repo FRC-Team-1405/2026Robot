@@ -13,6 +13,7 @@ import com.ctre.phoenix6.controls.NeutralOut;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CANBus;
 import frc.robot.Constants.Prefs;
@@ -25,7 +26,8 @@ public class Indexer extends SubsystemBase {
 
     private final NeutralOut m_Brake = new NeutralOut();
 
-    private void setIndexerSpeed(AngularVelocity speed) {
+    private void setIndexerSpeed(Supplier<AngularVelocity> speed) {
+        indexerMotor.setControl(velocityVoltage.withVelocity(speed.get()));
     }
 
     private void indexerStop() {
@@ -37,12 +39,12 @@ public class Indexer extends SubsystemBase {
         SimProfiles.initIndexer(indexerMotor);
     }
 
-    public Command runIndexer() {
-        return this.runEnd(() -> {
-            setIndexerSpeed(Prefs.INDEXER_VELOCITY);
-        }, () -> {
-            indexerStop();
-        });
+    public Command runIndexer(Supplier<AngularVelocity> speed) {
+        return Commands.runOnce(() -> setIndexerSpeed(speed), this);
+    }
+
+    public Command stopIndexer() {
+        return Commands.runOnce(() -> indexerStop(), this);
     }
 
     public Command runStopIndexer() {

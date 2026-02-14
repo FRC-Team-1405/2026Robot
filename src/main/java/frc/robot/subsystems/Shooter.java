@@ -12,7 +12,6 @@ import java.security.spec.DSAPrivateKeySpec;
 
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -21,9 +20,9 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Prefs;
@@ -36,7 +35,7 @@ public class Shooter extends SubsystemBase {
   private final VelocityVoltage m_VelocityVoltage = new VelocityVoltage(0).withSlot(0);
   private final NeutralOut m_Brake = new NeutralOut();
 
-  private int SettleCount = 0;
+  private int settleCount = 0;
 
   private boolean locked = false;
 
@@ -70,6 +69,8 @@ public class Shooter extends SubsystemBase {
 
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
     shooterMotor1.setControl(m_VelocityVoltage.withVelocity(speed.get()));
+    settleCount = 0;
+    locked = false;
   }
 
   private void shooterStop() {
@@ -81,32 +82,37 @@ public class Shooter extends SubsystemBase {
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     SimProfiles.initShooter(shooterMotor1);
     SimProfiles.initShooter(shooterMotor2);
+    stopShooter();
     // setShooterMotor();
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
-    return this.runEnd(() -> {
-      setShooterSpeed(speed);
-    }, () -> {
-      shooterStop();
-    });
+    return Commands.runOnce(() -> setShooterSpeed(speed), this);
+  };
+
+  public Command stopShooter() {
+    return Commands.runOnce(() -> shooterStop(), this);
   }
 
   @Override
   public void periodic() {
     double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
-    double range = locked ? Prefs.WIDE : Prefs.TIGHT;
+    double range = locked ? Prefs.WIDE : Prefs.TIGHT; // TODO improve name on "locked"
     if (Math.abs(error) < range) {
-      SettleCount += 1;
+      if (settleCount < Prefs.STABLE_COUNT) {
+        settleCount += 1;
+      }
     } else {
-      SettleCount = 0;
+      settleCount = 0;
     }
 
-    locked = SettleCount >= Prefs.STABLE_COUNT;
+    locked = settleCount >= Prefs.STABLE_COUNT;
 
     SmartDashboard.putNumber("Shooter/RPS", shooterMotor1.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/CurrentDraw", shooterMotor1.getSupplyCurrent().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/Error", shooterMotor1.getClosedLoopError().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
+    SmartDashboard.putBoolean("Shooter/Locked", locked);
   }
 
 }

@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Commands.AutoFire;
+import frc.robot.Commands.IndexerShooterStop;
 import frc.robot.Constants.Prefs;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -33,10 +35,17 @@ public class RobotContainer {
 
         private void configureBindings() {
                 joystickTest.a().toggleOnTrue(shooter.runShooter(() -> {
-                        return Prefs.SHORT;
+                        return Prefs.LONG;
                 }));
 
-                joystickTest.b().toggleOnTrue(indexer.runIndexer());
+                joystickTest.x().onTrue(new IndexerShooterStop(shooter, indexer));
+
+                joystickTest.b().toggleOnTrue(indexer.runIndexer(() -> {
+                        return Prefs.INDEXER_VELOCITY;
+                }));
+
+                joystickTest.y().toggleOnTrue(
+                                new AutoFire(shooter, indexer, () -> Prefs.LONG, () -> Prefs.INDEXER_VELOCITY));
         }
 
         public Command getAutonomousCommand() {
