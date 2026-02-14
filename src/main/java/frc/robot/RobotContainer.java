@@ -10,14 +10,17 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.AdjustableHood;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MoveMode;
 
@@ -40,6 +43,7 @@ public class RobotContainer {
         private final Telemetry logger = new Telemetry(MaxSpeed);
 
         private final CommandXboxController joystick = new CommandXboxController(0);
+        private final CommandXboxController operator = new CommandXboxController(1);
 
         public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -102,20 +106,6 @@ public class RobotContainer {
                 joystick.y().onTrue(moveMode.setToStandardMode());
                 joystick.x().onTrue(moveMode.setToSnakeMode());
                 joystick.b().onTrue(moveMode.setToCompassMode());
-
-                joystick.rightBumper().onTrue(new Command() {
-                        @Override
-                        public void initialize() {
-                                joystick.setRumble(RumbleType.kBothRumble, 1);
-                        }
-                });
-
-                joystick.rightBumper().onFalse(new Command() {
-                        @Override
-                        public void initialize() {
-                                joystick.setRumble(RumbleType.kBothRumble, 0);
-                        }
-                });
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
