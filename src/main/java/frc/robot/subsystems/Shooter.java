@@ -54,6 +54,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.subsystem.AdvancedSubsystem;
 
 import frc.robot.Constants;
+import frc.robot.subsystems.FireControl;
 import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLimitSwitch;
@@ -82,10 +83,12 @@ private final RelativeEncoder shooterRightTopEncoder;
   private final SparkFlexConfig shooterBottomConfig = new SparkFlexConfig();
   private final SparkFlexConfig shooterTopConfig = new SparkFlexConfig();
   private final SparkFlexConfig shooterTopFollowerConfig = new SparkFlexConfig();
-private final SparkFlexConfig shooterBottomFollowerConfig = new SparkFlexConfig();
+ private final SparkFlexConfig shooterBottomFollowerConfig = new SparkFlexConfig();
  private final SparkClosedLoopController shooterBottomController;
  private final SparkClosedLoopController shooterTopController;
-
+ private double topTargetRPM = 0.0;
+ private double bottomTargetRPM = 0.0;
+ 
 
  //RECOVERY TRACKING STUFF 
   
@@ -114,10 +117,11 @@ private final List<Long> bottomRecoveryTimes = new ArrayList<>(); // List of rec
   shooterLeftTopMotor = new SparkFlex(FRONT_TOP_SHOOTER_ID, MotorType.kBrushless);
   shooterRightBottomMotor = new SparkFlex(BACK_BOTTOM_SHOOTER_ID, MotorType.kBrushless);
   shooterRightTopMotor = new SparkFlex(BACK_TOP_SHOOTER_ID, MotorType.kBrushless);
-   
+  
+ 
   
   //configurating encoders
-  shooterLeftBottomEncoder = shooterLeftBottomMotor.getEncoder();
+shooterLeftBottomEncoder = shooterLeftBottomMotor.getEncoder();
 shooterLeftTopEncoder = shooterLeftTopMotor.getEncoder();
 shooterRightBottomEncoder = shooterRightBottomMotor.getEncoder();
 shooterRightTopEncoder = shooterRightTopMotor.getEncoder();
@@ -170,7 +174,8 @@ shooterTopConfig
 shooterLeftBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
 shooterRightTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-   
+     SmartDashboard.putNumber("Shooter Test Top RPM", 3000);
+     SmartDashboard.putNumber("Shooter Test Bottom RPM", 3000);
      }
 
 //methods
@@ -186,15 +191,15 @@ shooterRightTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters,
   }
 
 
-//find out if motors are at correct speeds :) will be important in testing trust
-  // Check if both top motors are at speed
+// find out if motors are at correct speeds :) will be important in testing trust
+//   Check if both top motors are at speed
 // Check if both TOP shooter motors are at speed
-public boolean topMotorsAtSpeed(double topRPM) {
+public boolean topMotorsAtSpeed(double topTargetRPM) {
 
 
-  return Math.abs(shooterLeftTopEncoder.getVelocity() - topRPM)
+  return Math.abs(shooterLeftTopEncoder.getVelocity() - topTargetRPM)
           < Constants.Shooter.shooterMotorTolerance
-      && Math.abs(shooterRightTopEncoder.getVelocity() - topRPM)
+      && Math.abs(shooterRightTopEncoder.getVelocity() - topTargetRPM)
           < Constants.Shooter.shooterMotorTolerance;
 }
 
@@ -210,7 +215,10 @@ public boolean bottomMotorsAtSpeed(double bottomRPM) {
 
  // setting the shoote rpm based off of the table 
   public void setShooterRPM(double topRPM, double bottomRPM) {
+  topTargetRPM = topRPM;
+  bottomTargetRPM = bottomRPM;
 
+  
   shooterTopController.setSetpoint(topRPM, ControlType.kVelocity);
   
   shooterBottomController.setSetpoint(bottomRPM, ControlType.kVelocity);
@@ -270,6 +278,20 @@ public boolean shooterAtSpeed(double topRPM, double bottomRPM) {
           && topMotorsAtSpeed(topRPM);
 }
 
+public Command manualShooterTest() {
+  return Commands.run(
+    () -> {
+        double topRPM = SmartDashboard.getNumber("Shooter/Target Top RPM", 0);
+       
+        double bottomRPM = SmartDashboard.getNumber("Shooter/Target Bottom RPM", 0);
+
+        setShooterRPM(topRPM, bottomRPM);
+
+      
+
+    }, this);
+}
+
  
 @Override
 public void periodic() {
@@ -306,15 +328,17 @@ public void periodic() {
             SmartDashboard.putNumber("Bottom Shooter Recovery Time (ms)", recoveryTime);
         }
     }
+    SmartDashboard.putNumber("Shooter/Top Volts", shooterLeftTopMotor.getAppliedOutput()*shooterLeftTopMotor.getBusVoltage());
 
     // Display current velocities
-    SmartDashboard.putNumber("Top Shooter RPM", topRPM);
-    SmartDashboard.putNumber("Bottom Shooter RPM", bottomRPM);
-    SmartDashboard.putNumber("Shooter/Top RPM", shooterLeftTopEncoder.getVelocity());
-   SmartDashboard.putNumber( "Shooter/Bottom RPM", shooterRightBottomEncoder.getVelocity());
-}  
-   
+    SmartDashboard.putNumber("Shooter/Top Target RPM", topTargetRPM);
+    SmartDashboard.putNumber("Shooter/Bottom Target RPM", bottomTargetRPM);
+  
+    SmartDashboard.putNumber("Shooter/Top RPM", topRPM);
+   SmartDashboard.putNumber( "Shooter/Bottom RPM", bottomRPM);
+}    
 }
+
     // This method will be called once per scheduler run
     //putting motor velocities on SmartDashboard
   

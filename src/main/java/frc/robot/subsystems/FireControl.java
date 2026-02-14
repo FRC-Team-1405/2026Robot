@@ -32,7 +32,7 @@ public class FireControl extends SubsystemBase{
     private double distanceFromTarget;
     private Pose2d target;
     private Supplier<ChassisSpeeds> speedSupplier;
-    private InterpolatingDoubleTreeMap rpmFromDistance;
+    InterpolatingDoubleTreeMap rpmFromDistance;
     private ChassisSpeeds currentChassisSpeeds;
 
     public FireControl(Supplier<Pose2d> robSupplier, Supplier<Alliance> allSupplier, Supplier<ChassisSpeeds> vSupplier) {

@@ -62,6 +62,7 @@ public class RobotContainer {
     driver.Y().onTrue(intake.putDownIntake());
     driver.DUp().whileTrue(funnyName.shootFuel());
     driver.DDown().whileTrue(funnyName.clearFuel());
+  
   /*   
         }, shooter))).andThen(new Shoot().andThen(Commands.waitSeconds(0.5).andThen(Commands.runOnce(() -> {
           shooter.stopMotors();
