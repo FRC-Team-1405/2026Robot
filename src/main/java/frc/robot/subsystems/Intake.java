@@ -28,7 +28,7 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   private int intakeSettleCount = 0;
   private double intakePositionTarget = 0;
-  private boolean intakeDeployed = false;
+  private boolean isIntakeDeployed = false;
 
   public Intake() {
     SimProfiles.initIntake(intakeMotor);
@@ -48,7 +48,6 @@ public class Intake extends SubsystemBase {
     } else {
       intakeSettleCount = 0;
     }
-    // This method will be called once per scheduler run
   }
 
   private boolean isIntakeAtTarget() {
@@ -65,13 +64,13 @@ public class Intake extends SubsystemBase {
   }
 
   private void intakeOut() {
-    intakeDeployed = true;
+    isIntakeDeployed = true;
     moveIntake(Constants.IntakePreferences.INTAKE_MOTOR_OUT);
     fLogger.log("Intake Out ");
   }
 
   private void intakeIn() {
-    intakeDeployed = false;
+    isIntakeDeployed = false;
     moveIntake(Constants.IntakePreferences.INTAKE_MOTOR_IN);
     fLogger.log("Intake In ");
   }
@@ -160,7 +159,13 @@ public class Intake extends SubsystemBase {
         runPickupOut());
   }
 
+  public Command runToggleIntake(String name) {
+    Command cmd = runToggleIntake().withName(name);
+    SmartDashboard.putData(cmd);
+    return cmd;
+  }
+
   public Command runToggleIntake() {
-    return Commands.either(runIntakeIn(), runIntakeOut(), () -> intakeDeployed);
+    return Commands.either(runIntakeIn(), runIntakeOut(), () -> isIntakeDeployed);
   }
 }

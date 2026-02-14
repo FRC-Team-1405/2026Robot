@@ -95,7 +95,10 @@ public class RobotContainer {
                 SmartDashboard.putData(cmd);
                 joystick.rightBumper().toggleOnTrue(cmd);
 
-                driver.rightBumper().onTrue(intake.runToggleIntake());
+                driver.rightBumper().onTrue(intake.runToggleIntake("Driver/Intake/Arm"));
+                driver.rightTrigger()
+                                .onTrue(intake.runPickupFuel())
+                                .onFalse(intake.runPickupStop("Driver/Intake/Stop"));
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
