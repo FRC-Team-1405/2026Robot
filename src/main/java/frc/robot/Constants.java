@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Preferences;
 
 /** Add your docs here. */
@@ -11,6 +14,7 @@ public class Constants {
     public static class CANBus {
         public static final int CLIMBER_MOTOR = 45;
         public static final int CLIMBER_GRABBER = 37;
+        public static final int HOPPER_MOTOR = 25;
 
     }
 
@@ -78,4 +82,18 @@ public class Constants {
 
     }
 
+    public static class HopperPreferences {
+
+        public static final AngularVelocity HOPPER_FORWARD_SPEED;
+        public static final AngularVelocity HOPPER_REVERSE_SPEED;
+
+        static {
+            Preferences.initDouble("Hopper/Forward", 1.0);
+            HOPPER_FORWARD_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Forward", 1.0));
+
+            Preferences.initDouble("Hopper/Reverse", -1.0);
+            HOPPER_REVERSE_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Reverse", -1.0));
+
+        }
+    }
 }

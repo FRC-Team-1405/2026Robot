@@ -35,6 +35,7 @@ import frc.robot.lib.CommandTracker;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -72,6 +73,7 @@ public class RobotContainer {
 
     public final Climber climber = new Climber();
     public final AdjustableHood hood = new AdjustableHood();
+    public final Hopper hopper = new Hopper();
     private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
 
     public RobotContainer() {
@@ -105,6 +107,17 @@ public class RobotContainer {
         SmartDashboard.putData(cmd);
         joystick.b().onTrue(cmd);
 
+        cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed Long");
+        SmartDashboard.putData(cmd);
+        joystick.y().onTrue(cmd);
+
+        cmd = hopper.runForwardHopper();
+        SmartDashboard.putData(cmd);
+        joystick.leftBumper().toggleOnTrue(cmd);
+
+        cmd = hopper.runReverseHopper();
+        SmartDashboard.putData(cmd);
+        joystick.rightBumper().toggleOnTrue(cmd);
         cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed Long");
         SmartDashboard.putData(cmd);
         joystick.y().onTrue(cmd);
