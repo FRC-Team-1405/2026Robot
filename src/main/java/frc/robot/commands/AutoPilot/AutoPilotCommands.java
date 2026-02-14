@@ -232,7 +232,7 @@ public class AutoPilotCommands {
 
                 // Actual Full autos
                 Command AP_LeftStartDepotScore = new SequentialCommandGroup(
-                                MoveTo_blueCenter.get(),
+                                // MoveTo_blueCenter.get(),
                                 MoveTo_startLeftFaceIn.get(),
                                 MoveTo_leftOfDepotFaceIn.get(),
                                 MoveTo_depotFaceIn.get(),

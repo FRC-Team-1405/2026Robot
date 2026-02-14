@@ -30,6 +30,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.FinneyCommand;
 import frc.robot.lib.FinneyLogger;
@@ -84,8 +85,8 @@ public class AutoPilotCommand extends FinneyCommand {
             .withDriveRequestType(DriveRequestType.Velocity);
 
     private static final APConstraints kConstraints = new APConstraints()
-            .withAcceleration(2.0) // TUNE THIS TO YOUR ROBOT!// was 10
-            .withVelocity(2.0)
+            .withAcceleration(4.0) // TUNE THIS TO YOUR ROBOT!// was 10
+            .withVelocity(4.0)
             .withJerk(10.0);
 
     // AutoPilot Thresholds
