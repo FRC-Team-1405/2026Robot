@@ -8,11 +8,17 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -29,6 +35,9 @@ import frc.robot.lib.CommandTracker;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.Vision.VisionSample;
+import frc.robot.subsystems.vision.VisionConstants;
 
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
@@ -51,10 +60,19 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
 
+    // Vision publishers
+    StructPublisher<Pose2d> cameraEstimatedPosePublisher1 = NetworkTableInstance.getDefault()
+            .getStructTopic("Camera1_EstimatedPose", Pose2d.struct).publish();
+    StructPublisher<Pose2d> cameraEstimatedPosePublisher2 = NetworkTableInstance.getDefault()
+            .getStructTopic("Camera2_EstimatedPose", Pose2d.struct).publish();
+    List<StructPublisher<Pose2d>> cameraEstimatedPosesPublisher = Arrays.asList(cameraEstimatedPosePublisher1,
+            cameraEstimatedPosePublisher2);
+
     public final CommandSwerveDrivetrain drivetrain = TunerConstants_OldRobot.createDrivetrain();
 
     public final Climber climber = new Climber();
     public final AdjustableHood hood = new AdjustableHood();
+    private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
 
     public RobotContainer() {
         configureBindings();
@@ -134,6 +152,53 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return AutoCommands.getAutonomousCommand();
+    }
+
+    public void correctOdometry() {
+        // if (SIMULATE_VISION_FAILURES){
+        // int percentageFramesToDrop = 80;
+        // Random rnd = new Random();
+
+        // if(rnd.nextInt(100) < percentageFramesToDrop){
+        // return;
+        // }
+        // }
+
+        List<VisionSample> visionSamples = vision.flushSamples();
+        vision.updateSpeeds(drivetrain.getState().Speeds);
+        // System.out.println("vision sample count: " + visionSamples.size());
+        for (var sample : visionSamples) {
+
+            double thetaStddev = 99999.0;
+            if (true /* STRICT_VISION_ORIENTATION_WEIGHTING */) {
+                // if sample weight isn't essentially perfect, don't trust orientation, sample
+                // weighting is perfect when disabled
+                thetaStddev = sample.weight() > 0.9 ? 10.0 : 99999.0;
+            } else {
+                // You will need to TUNE this scalar. A higher value (e.g., 5.0) means less
+                // trust.
+                thetaStddev = 1.0 / sample.weight();
+            }
+
+            drivetrain.addVisionMeasurement(
+                    sample.pose(),
+                    sample.timestamp(),
+                    VecBuilder.fill(0.1 / sample.weight(), 0.1 / sample.weight(), thetaStddev));
+        }
+
+        Pose2d visionPose = null;
+        Pose2d odomPose = drivetrain.getState().Pose;
+        for (int i = 0; i < 2; i++) {
+            if (i + 1 <= visionSamples.size()) {
+                cameraEstimatedPosesPublisher.get(i).set(visionSamples.get(i).pose());
+                visionPose = visionSamples.get(i).pose();
+            }
+        }
+
+        // if (visionPose != null) {
+        // double yawError = yawDiffDegrees(visionPose, odomPose);
+        // yawErrorPub.set(yawError);
+        // }
     }
 
     /** Update NetworkTables with active commands from CommandTracker */
