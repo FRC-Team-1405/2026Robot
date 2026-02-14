@@ -208,6 +208,9 @@ public class AutoPilotCommands {
                                 MoveTo_depotFaceIn.get());
                 Command AP_fourMeters = new SequentialCommandGroup(
                                 MoveTo_fourMeters.get());
+                Command AP_blueShootCenter = new SequentialCommandGroup(
+                                MoveTo_blueCenter.get(),
+                                MoveTo_blueShootCenter.get());
                 // Mini Autos
                 Command climbCommand = climber.runClimbUp().withName("Auto Climb Up");
                 SmartDashboard.putData(climbCommand);
@@ -296,6 +299,7 @@ public class AutoPilotCommands {
                 /* Register Commands */ // any auto added here needs to be registered in AutoCommands to show up on
                                         // Elastic
                 NamedCommands.registerCommand("AP_blueCenter", AP_blueCenter);
+                NamedCommands.registerCommand("AP_blueCenter", AP_blueShootCenter);
                 NamedCommands.registerCommand("AP_blueCenterToDepot", AP_blueCenterToDepot);
                 NamedCommands.registerCommand("AP_fourMeters", AP_fourMeters);
                 NamedCommands.registerCommand("AP_DepotFaceIn", AP_DepotFaceIn);

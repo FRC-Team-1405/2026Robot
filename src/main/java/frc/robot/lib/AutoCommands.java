@@ -60,6 +60,7 @@ public class AutoCommands {
         // TODO: Fix rotation and ask Stephen about position/rotations
         commandsToAddToChooser.put("AP_RightStartCenterHarvestInLeft",
                 NamedCommands.getCommand("AP_RightStartCenterHarvestInLeft"));
+        commandsToAddToChooser.put("AP_blueScoreCenter", NamedCommands.getCommand("AP_blueScoreCenter"));
 
         // endregion autopilot
         commandsToAddToChooser.put("Left_First_Auto", NamedCommands.getCommand("Left - [My First Auto]"));
