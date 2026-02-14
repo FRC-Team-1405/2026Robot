@@ -214,7 +214,7 @@ public class MoveMode {
      * @return a multiplier of the robots max speed
      */
     private double slowMode() {
-        return 0.25d;
+        return 0.20;
     }
 
     /**
@@ -224,7 +224,7 @@ public class MoveMode {
      * @return a multiplier of the robots max speed
      */
     private double normalMode() {
-        return 0.5d;
+        return 0.6;
     }
 
     /**

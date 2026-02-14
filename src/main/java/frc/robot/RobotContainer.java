@@ -176,10 +176,10 @@ public class RobotContainer {
 
         // Select rotation mode
         joystick.y().onTrue(moveMode.setToStandardMode());
-        joystick.x().onTrue(moveMode.setToSnakeMode());
-        joystick.b().onTrue(moveMode.setToCompassMode());
+        // joystick.x().onTrue(moveMode.setToSnakeMode());
+        // joystick.b().onTrue(moveMode.setToCompassMode());
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        joystick.start().and(joystick.back()).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
