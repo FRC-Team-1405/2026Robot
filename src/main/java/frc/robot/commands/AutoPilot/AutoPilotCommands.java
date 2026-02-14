@@ -45,7 +45,7 @@ public class AutoPilotCommands {
         public static Supplier<Pose2d> afterLeftBump = () -> new Pose2d(5.5, 5.5, Rotation2d.fromDegrees(0));
 
         // Shooter Poses
-        public static Supplier<Pose2d> blueShootCenter = () -> new Pose2d(3.5, 4, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> blueShootCenter = () -> new Pose2d(3.5, 4, Rotation2d.fromDegrees(180));
 
         // Center Poses
         public static Supplier<Pose2d> farRightCenter = () -> new Pose2d(8.25, 1, Rotation2d.fromDegrees(0));
@@ -299,7 +299,7 @@ public class AutoPilotCommands {
                 /* Register Commands */ // any auto added here needs to be registered in AutoCommands to show up on
                                         // Elastic
                 NamedCommands.registerCommand("AP_blueCenter", AP_blueCenter);
-                NamedCommands.registerCommand("AP_blueCenter", AP_blueShootCenter);
+                NamedCommands.registerCommand("AP_blueShootCenter", AP_blueShootCenter);
                 NamedCommands.registerCommand("AP_blueCenterToDepot", AP_blueCenterToDepot);
                 NamedCommands.registerCommand("AP_fourMeters", AP_fourMeters);
                 NamedCommands.registerCommand("AP_DepotFaceIn", AP_DepotFaceIn);
