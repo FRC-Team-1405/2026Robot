@@ -52,14 +52,10 @@ public class Hopper extends SubsystemBase {
   }
 
   public Command runForwardHopper() {
-    return runOnce(() -> forwardHopper()).withName("Run Forward Hopper");
+    return startEnd(() -> forwardHopper(), () -> stopHopper()).withName("Run Forward Hopper");
   }
 
   public Command runReverseHopper() {
-    return runOnce(() -> reverseHopper()).withName("Run Reverse Hopper");
-  }
-
-  public Command stop() {
-    return runOnce(() -> stopHopper()).withName("Stop Hopper");
+    return startEnd(() -> reverseHopper(), () -> stopHopper()).withName("Run Reverse Hopper");
   }
 }

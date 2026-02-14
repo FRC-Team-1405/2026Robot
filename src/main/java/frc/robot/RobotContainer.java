@@ -85,11 +85,11 @@ public class RobotContainer {
 
                 cmd = hopper.runForwardHopper();
                 SmartDashboard.putData(cmd);
-                joystick.leftBumper().onTrue(cmd);
+                joystick.leftBumper().toggleOnTrue(cmd);
 
                 cmd = hopper.runReverseHopper();
                 SmartDashboard.putData(cmd);
-                joystick.rightBumper().onTrue(cmd);
+                joystick.rightBumper().toggleOnTrue(cmd);
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
