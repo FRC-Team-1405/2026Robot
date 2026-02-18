@@ -3,6 +3,7 @@ package frc.robot.commands.AutoPilot;
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.NamedCommands;
+import com.therekrab.autopilot.APConstraints;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,6 +19,11 @@ import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class AutoPilotCommands {
+
+        private static final APConstraints bumpConstraints = new APConstraints()
+                        .withAcceleration(1.0) // TUNE THIS TO YOUR ROBOT!
+                        .withVelocity(1.0)
+                        .withJerk(5.0);
 
         // Rotations
         // Positive rotations are CCW:
@@ -177,6 +183,7 @@ public class AutoPilotCommands {
                 Supplier<Command> MoveTo_onRightBump = () -> new AutoPilotCommand.Builder(
                                 () -> onRightBump.get(), drivetrain, "MoveTo_onRightBump")
                                 .withFlipPoseForAlliance(true)
+                                .withConstraints(bumpConstraints)
                                 .build();
                 Supplier<Command> MoveTo_afterRightBump = () -> new AutoPilotCommand.Builder(
                                 () -> afterRightBump.get(), drivetrain, "MoveTo_afterRightBump")
@@ -189,6 +196,7 @@ public class AutoPilotCommands {
                 Supplier<Command> MoveTo_onLeftBump = () -> new AutoPilotCommand.Builder(
                                 () -> onLeftBump.get(), drivetrain, "MoveTo_onLeftBump")
                                 .withFlipPoseForAlliance(true)
+                                .withConstraints(bumpConstraints)
                                 .build();
                 Supplier<Command> MoveTo_afterLeftBump = () -> new AutoPilotCommand.Builder(
                                 () -> afterLeftBump.get(), drivetrain, "MoveTo_afterLeftBump")

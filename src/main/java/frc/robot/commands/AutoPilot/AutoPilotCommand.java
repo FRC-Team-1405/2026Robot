@@ -30,7 +30,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.FinneyCommand;
 import frc.robot.lib.FinneyLogger;
@@ -68,6 +67,15 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  *         .withPointTowardsDuringMotion(() -> gamePiecePose)
  *         .withPointTowardsTransitionThreshold(0.9) // transition at 90% distance
  *         .build();
+ * 
+ * // With custom constraints (acceleration, velocity, jerk)
+ * APConstraints customConstraints = new APConstraints()
+ *         .withAcceleration(6.0)
+ *         .withVelocity(5.0)
+ *         .withJerk(15.0);
+ * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
+ *         .withConstraints(customConstraints)
+ *         .build();
  * </pre>
  */
 public class AutoPilotCommand extends FinneyCommand {
@@ -84,18 +92,16 @@ public class AutoPilotCommand extends FinneyCommand {
     public final SwerveRequest.ApplyRobotSpeeds applyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds()
             .withDriveRequestType(DriveRequestType.Velocity);
 
-    private static final APConstraints kConstraints = new APConstraints()
-            .withAcceleration(4.0) // TUNE THIS TO YOUR ROBOT!// was 10
+    // Default constraints
+    private static final APConstraints kDefaultConstraints = new APConstraints()
+            .withAcceleration(4.0) // TUNE THIS TO YOUR ROBOT!
             .withVelocity(4.0)
             .withJerk(10.0);
 
-    // AutoPilot Thresholds
-    private static final APProfile kProfile = new APProfile(kConstraints)
-            .withErrorXY(Centimeters.of(2))
-            .withErrorTheta(Degrees.of(0.5))
-            .withBeelineRadius(Centimeters.of(16));
-
-    public static final Autopilot kAutopilot = new Autopilot(kProfile);
+    // Instance-specific AutoPilot components (final but constructed per instance)
+    private final APConstraints kConstraints;
+    private final APProfile kProfile;
+    private final Autopilot kAutopilot;
 
     private APTarget m_target;
     private final Supplier<Pose2d> m_targetSupplier;
@@ -128,6 +134,15 @@ public class AutoPilotCommand extends FinneyCommand {
         m_pointTowardsDuringMotionSupplier = builder.pointTowardsDuringMotion;
         m_pointTowardsTransitionThreshold = builder.pointTowardsTransitionThreshold;
         this.commandName = builder.commandName;
+
+        // Initialize AutoPilot components with custom or default constraints
+        this.kConstraints = builder.constraints;
+        this.kProfile = new APProfile(kConstraints)
+                .withErrorXY(Centimeters.of(2))
+                .withErrorTheta(Degrees.of(0.5))
+                .withBeelineRadius(Centimeters.of(16));
+        this.kAutopilot = new Autopilot(kProfile);
+
         // TODO:Tune PID Loop
         m_thetaController = new ProfiledPIDController(
                 8, 0.0, 0, // PID gains, TUNE THIS TO YOUR ROBOT!
@@ -155,6 +170,7 @@ public class AutoPilotCommand extends FinneyCommand {
         private boolean flipPoseForAlliance = false;
         private Optional<Supplier<Pose2d>> pointTowardsDuringMotion = Optional.empty();
         private double pointTowardsTransitionThreshold = 0.8; // 80% of distance
+        private APConstraints constraints = kDefaultConstraints;
 
         public Builder(Supplier<Pose2d> targetSupplier, CommandSwerveDrivetrain drivetrain, String commandName) {
             this.targetSupplier = targetSupplier;
@@ -179,6 +195,17 @@ public class AutoPilotCommand extends FinneyCommand {
 
         public Builder withPointTowardsTransitionThreshold(double threshold) {
             this.pointTowardsTransitionThreshold = threshold;
+            return this;
+        }
+
+        /**
+         * Set custom AutoPilot constraints for acceleration, velocity, and jerk.
+         * 
+         * @param constraints Custom APConstraints
+         * @return this Builder
+         */
+        public Builder withConstraints(APConstraints constraints) {
+            this.constraints = constraints;
             return this;
         }
 
