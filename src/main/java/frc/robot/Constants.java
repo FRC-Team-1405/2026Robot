@@ -118,7 +118,7 @@ public final class Constants {
     public static final int TURRET_MOTOR_ID = 10;
     public static final double VOLTAGE = 10.0;
     public static final int CURRENT = 50;
-    public static final double TURRET_GEAR_RATIO_IO = 0;
+    public static final double TURRET_GEAR_RATIO_IO = 20 * 200 / 28;
   }
 
   public static final class Vision {
