@@ -62,7 +62,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
-
+        PhysicsSim.getInstance().run();
     }
 
     @Override
