@@ -1,3 +1,4 @@
 
 ## 2026 Robot Radio
-- Wifi Key: FinneyRobotics
+- SSID: Golf 
+- Wifi Key: FinneyFalcon
