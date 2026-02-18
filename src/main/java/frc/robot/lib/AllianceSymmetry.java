@@ -154,9 +154,10 @@ public final class AllianceSymmetry {
                     2022, new YearInfo(SymmetryStrategy.ROTATIONAL, 16.4592, 8.2296),
                     2023, new YearInfo(SymmetryStrategy.VERTICAL, 16.54175, 8.0137),
                     2024, new YearInfo(SymmetryStrategy.VERTICAL, 16.54175, 8.211),
-                    2025, new YearInfo(SymmetryStrategy.ROTATIONAL, 17.548, 8.052)));
+                    2025, new YearInfo(SymmetryStrategy.ROTATIONAL, 17.548, 8.052),
+                    2026, new YearInfo(SymmetryStrategy.ROTATIONAL, 16.540988, 10.4)));
 
-    private static YearInfo activeYear = flipperMap.get(2025);
+    private static YearInfo activeYear = flipperMap.get(2026);
 
     /**
      * Get the flipper that is currently active for flipping coordinates. It's

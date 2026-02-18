@@ -15,6 +15,8 @@ public class Constants {
         public static final int CLIMBER_MOTOR = 45;
         public static final int CLIMBER_GRABBER = 37;
         public static final int HOPPER_MOTOR = 25;
+        public static final int INTAKE_MOTOR = 28;
+        public static final int PICKUP_MOTOR = 29;
 
     }
 
@@ -70,6 +72,18 @@ public class Constants {
 
     }
 
+    public static class AutonomousPreferences {
+
+        public static final double WAIT_TIME;
+
+        static {
+            Preferences.initDouble("Auto Wait Time (Seconds)", 3.0);
+            WAIT_TIME = Preferences.getDouble("Auto Wait Time (Seconds)", 3.0);
+
+        }
+
+    }
+
     public static class HopperPreferences {
 
         public static final AngularVelocity HOPPER_FORWARD_SPEED;
@@ -82,6 +96,29 @@ public class Constants {
             Preferences.initDouble("Hopper/Reverse", -1.0);
             HOPPER_REVERSE_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Reverse", -1.0));
 
+        }
+    }
+
+    public static class IntakePreferences {
+        public static final double INTAKE_MOTOR_OUT;
+        public static final double INTAKE_MOTOR_IN;
+        public static final double PICKUP_MOTOR_OUT;
+        public static final double PICKUP_MOTOR_IN;
+        public static final double SETTLE_MAX;
+        public static final double POSITION_TOLERANCE;
+        static {
+            Preferences.initDouble("Intake/Out", 10.0);
+            INTAKE_MOTOR_OUT = Preferences.getDouble("Intake/Out", 10.0);
+            Preferences.initDouble("Intake/In", 0.0);
+            INTAKE_MOTOR_IN = Preferences.getDouble("Intake/In", 0.0);
+            Preferences.initDouble("Pickup/Out", 10.0);
+            PICKUP_MOTOR_OUT = Preferences.getDouble("Pickup/Out", 10.0);
+            Preferences.initDouble("Pickup/In", -10.0);
+            PICKUP_MOTOR_IN = Preferences.getDouble("Pickup/In", -10.0);
+            Preferences.initDouble("Intake/Settle Max", 3.0);
+            SETTLE_MAX = Preferences.getDouble("Intake/SettleMax", 3.0);
+            Preferences.initDouble("Intake/PositionTolerance", 1.0);
+            POSITION_TOLERANCE = Preferences.getDouble("Intake/PositionTolerance", 1.0);
         }
     }
 }
