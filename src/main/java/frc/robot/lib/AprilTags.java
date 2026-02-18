@@ -2,7 +2,6 @@ package frc.robot.lib;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,52 +16,29 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Filesystem;
-import frc.robot.lib.AllianceSymmetry;
 
 public class AprilTags {
-        /**
-         * {@link
-         * https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2025-reefscape.json}
-         */
-        public static final AprilTag[] TAGS = new AprilTag[] {
-                        new AprilTag(
-                                        25,
-                                        new Pose3d(
-                                                        new Translation3d(
-                                                                        4.0218614,
-                                                                        4.3902376,
-                                                                        1.12395),
-                                                        new Rotation3d(
-                                                                        new Quaternion(6.123233995736766e-17, 0.0, 0.0,
-                                                                                        1)))),
-                        new AprilTag(
-                                        26,
-                                        new Pose3d(
-                                                        new Translation3d(
-                                                                        4.0218614,
-                                                                        4.0346376,
-                                                                        1.12395),
-                                                        new Rotation3d(new Quaternion(
-                                                                        6.123233995736766e-17, 0.0, 0.0, 1))))
-
-        };
+        // AprilTag Fields:
+        // https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/
 
         /**
-         * Returns a new array of AprilTags, replacing any tags in TAGS with overrides
-         * in TAGS_OVERRIDES if they match by ID.
+         * Returns a new array of AprilTags, replacing any tags in APRIL_TAG_FIELD with
+         * overrides in TAGS_OVERRIDES if they match by ID.
          * 
          * @return AprilTag[] with overrides applied
          */
         public static AprilTag[] getTagsWithOverrides() {
+                List<AprilTag> tags = getAprilTagFieldLayout().getTags();
+
                 Map<Integer, AprilTag> overrideMap = new HashMap<>();
                 for (AprilTag tag : TAGS_OVERRIDES) {
                         overrideMap.put(tag.ID, tag);
                 }
 
-                AprilTag[] result = new AprilTag[TAGS.length];
-                for (int i = 0; i < TAGS.length; i++) {
-                        int id = TAGS[i].ID;
-                        result[i] = overrideMap.getOrDefault(id, TAGS[i]);
+                AprilTag[] result = new AprilTag[tags.size()];
+                for (int i = 0; i < tags.size(); i++) {
+                        int id = tags.get(i).ID;
+                        result[i] = overrideMap.getOrDefault(id, tags.get(i));
                 }
 
                 return result;
