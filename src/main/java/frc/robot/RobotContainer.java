@@ -5,13 +5,18 @@ package frc.robot;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.input.controllers.XboxControllerWrapper;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.SwerveDriveWithGamepad;
+import frc.robot.commands.testRPM;
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.FireControl;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 
 public class RobotContainer {
@@ -31,8 +36,18 @@ public class RobotContainer {
       });
 
   public static final Intake intake = new Intake();
-  public static final Indexer funnyName = new Indexer();
-
+  public static final Indexer indexer = new Indexer();
+  public static final Shooter shooter =
+    new Shooter(
+        Constants.Shooter.TOP_LEFT_SHOOTER_ID,
+        Constants.Shooter.TOP_RIGHT_SHOOTER_ID,
+        Constants.Shooter.BOTTOM_RIGHT_SHOOTER_ID,
+        Constants.Shooter.BOTTOM_LEFT_SHOOTER_ID
+      
+    );
+public static final FireControl fireControl =
+    new FireControl(() -> swerve.getPose(),() -> DriverStation.getAlliance().orElse(Alliance.Blue),() -> new ChassisSpeeds()
+    );
   // Vision clients
   // public static final JetsonClient jetson = new JetsonClient();
 
@@ -56,12 +71,20 @@ public class RobotContainer {
 
   private void configureButtonBindings() {
     coDriver.START();
-    driver.A().whileTrue(intake.intakeFuel());
-    driver.B().whileTrue(intake.extakeFuel());
-    driver.X().onTrue(intake.putUpIntake());
-    driver.Y().onTrue(intake.putDownIntake());
-    driver.DUp().whileTrue(funnyName.shootFuel());
-    driver.DDown().whileTrue(funnyName.clearFuel());
+    driver.RT().whileTrue(shootFuelCommand());
+    driver.LT().whileTrue(intake.intakeFuel());
+    driver.LB().whileTrue(new testRPM());
+
+    coDriver.X().whileTrue(intake.extakeFuel());
+    coDriver.B().whileTrue(shooter.reverseShooter(400));
+
+
+   
+    // driver.X().onTrue(intake.putUpIntake());
+    // driver.Y().onTrue(intake.putDownIntake());
+    // driver.DUp().whileTrue(indexer.shootFuel());
+   
+    
   
   /*   
         }, shooter))).andThen(new Shoot().andThen(Commands.waitSeconds(0.5).andThen(Commands.runOnce(() -> {
@@ -70,4 +93,36 @@ public class RobotContainer {
         }))))); */
   
   }
+
+ public Command shootFuelCommand() {
+    return Commands.sequence(
+
+//shooting the fuel 
+        shooter.spinUp(
+            fireControl.getShooterRpm(),
+            fireControl.getShooterRpm()
+        ),
+
+        Commands.waitUntil(() ->
+            shooter.shooterAtSpeed(
+                fireControl.getShooterRpm(),
+                fireControl.getShooterRpm()
+            )
+        ),
+
+        
+        Commands.parallel(
+            shooter.spinUp(
+                fireControl.getShooterRpm(),
+                fireControl.getShooterRpm()
+            ),
+            indexer.shootFuel()
+        )
+
+    ).finallyDo(() -> {
+        shooter.stopTopShooterMotors();
+        shooter.stopBottomShooterMotors();
+        indexer.stopIndexer();
+    });
+}
 }

@@ -220,28 +220,24 @@ public final class Constants {
     public static final class Shooter {
       // front top motor
       @CanId(CanId.Type.MOTOR)
-      public static final int FRONT_TOP_SHOOTER_ID = 30;
-      @CanId(CanId.Type.ENCODER)
-      public static final int FRONT_TOP_ENCODER_ID = 30;
+      public static final int TOP_LEFT_SHOOTER_ID = 30;
+  
 
 
       //front bottom motor
       @CanId(CanId.Type.MOTOR)
-      public static final int FRONT_BOTTOM_SHOOTER_ID = 31;
-      @CanId(CanId.Type.ENCODER)
-      public static final int FRONT_BOTTOM_ENCODER_ID = 31;
+      public static final int BOTTOM_LEFT_SHOOTER_ID = 31;
+   
 
       //back top motor
       @CanId(CanId.Type.MOTOR)
-      public static final int BACK_TOP_SHOOTER_ID = 32;
-       @CanId(CanId.Type.ENCODER)
-      public static final int BACK_TOP_ENCODER_ID = 32;
+      public static final int TOP_RIGHT_SHOOTER_ID = 32;
+    
 
       //back bottom motor
       @CanId(CanId.Type.MOTOR)
-      public static final int BACK_BOTTOM_SHOOTER_ID = 33;
-      @CanId(CanId.Type.ENCODER)
-      public static final int BACK_BOTTOM_ENCODER_ID = 33;
+      public static final int BOTTOM_RIGHT_SHOOTER_ID = 33;
+    
 
       //top motor controlling stuff
       public static final double TOP_TARGET_SHOOTER_RPM = 0.0;

@@ -80,10 +80,6 @@ private final RelativeEncoder shooterLeftTopEncoder;
 private final RelativeEncoder shooterRightBottomEncoder;
 private final RelativeEncoder shooterRightTopEncoder;
 
-  private final SparkFlexConfig shooterBottomConfig = new SparkFlexConfig();
-  private final SparkFlexConfig shooterTopConfig = new SparkFlexConfig();
-  private final SparkFlexConfig shooterTopFollowerConfig = new SparkFlexConfig();
- private final SparkFlexConfig shooterBottomFollowerConfig = new SparkFlexConfig();
  private final SparkClosedLoopController shooterBottomController;
  private final SparkClosedLoopController shooterTopController;
  private double topTargetRPM = 0.0;
@@ -104,19 +100,16 @@ private final List<Long> bottomRecoveryTimes = new ArrayList<>(); // List of rec
  
   /** Creates a new Shooter. */
   public Shooter(
-   final int FRONT_BOTTOM_SHOOTER_ID, 
-   final int FRONT_TOP_SHOOTER_ID,
-   final int BACK_BOTTOM_SHOOTER_ID, 
-   final int BACK_TOP_SHOOTER_ID,
-   final int FRONT_BOTTOM_ENCODER_ID,
-   final int FRONT_TOP_ENCODER_ID,
-   final int BACK_BOTTOM_ENCODER_ID,
-   final int BACK_TOP_ENCODER_ID) {
+   final int TOP_LEFT_SHOOTER_ID, 
+   final int BOTTOM_LEFT_SHOOTER_ID,
+   final int TOP_RIGHT_SHOOTER_ID, 
+   final int BOTTOM_RIGHT_SHOOTER_ID
+  ) {
    //configuring motors
-  shooterLeftBottomMotor = new SparkFlex(FRONT_BOTTOM_SHOOTER_ID, MotorType.kBrushless);
-  shooterLeftTopMotor = new SparkFlex(FRONT_TOP_SHOOTER_ID, MotorType.kBrushless);
-  shooterRightBottomMotor = new SparkFlex(BACK_BOTTOM_SHOOTER_ID, MotorType.kBrushless);
-  shooterRightTopMotor = new SparkFlex(BACK_TOP_SHOOTER_ID, MotorType.kBrushless);
+  shooterLeftBottomMotor = new SparkFlex(BOTTOM_LEFT_SHOOTER_ID, MotorType.kBrushless);
+  shooterLeftTopMotor = new SparkFlex(TOP_LEFT_SHOOTER_ID, MotorType.kBrushless);
+  shooterRightBottomMotor = new SparkFlex(BOTTOM_RIGHT_SHOOTER_ID, MotorType.kBrushless);
+  shooterRightTopMotor = new SparkFlex(TOP_RIGHT_SHOOTER_ID, MotorType.kBrushless);
   
  
   
@@ -146,9 +139,6 @@ shooterRightTopEncoder = shooterRightTopMotor.getEncoder();
     .kA(Constants.Shooter.TOP_kA);
 
 
-shooterTopFollowerConfig.follow(shooterRightTopMotor, true);
-shooterBottomFollowerConfig.follow(shooterRightBottomMotor, true);
-
   //PID CONFIG
   shooterBottomConfig.closedLoop
   .p(Constants.Shooter.BOTTOM_SHOOTER_P)
@@ -171,10 +161,16 @@ shooterTopConfig
     .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_LIMIT)
     .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT);
 
-shooterLeftBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  shooterRightTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  shooterRightBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-shooterRightTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-     SmartDashboard.putNumber("Shooter Test Top RPM", 3000);
+  shooterTopConfig.follow(shooterRightTopMotor, true);
+  shooterBottomConfig.follow(shooterRightBottomMotor, true);
+
+  shooterLeftBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  shooterLeftTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    SmartDashboard.putNumber("Shooter Test Top RPM", 3000);
      SmartDashboard.putNumber("Shooter Test Bottom RPM", 3000);
      }
 
@@ -223,6 +219,10 @@ public boolean bottomMotorsAtSpeed(double bottomRPM) {
   
   shooterBottomController.setSetpoint(bottomRPM, ControlType.kVelocity);
 }
+public void setShooter(double speed) {
+shooterRightTopMotor.set(speed);
+shooterRightBottomMotor.set(speed);
+}
 
 public double getTopSetpoint() {
   return shooterTopController.getSetpoint();
@@ -240,6 +240,14 @@ public double getBottomSetpoint() {
           stopBottomShooterMotors();
         }));
   }
+  // public Command runMotors() {
+  //   return Commands.sequence(
+  //     Commands.runOnce(() -> {
+      
+  //     })
+  //   )
+  // }
+
  
  public Command shootCommand(double topRPM, double bottomRPM) {
     return Commands.sequence(
@@ -336,6 +344,9 @@ public void periodic() {
   
     SmartDashboard.putNumber("Shooter/Top RPM", topRPM);
    SmartDashboard.putNumber( "Shooter/Bottom RPM", bottomRPM);
+   SmartDashboard.putNumber("Shooter/Top Applied", shooterRightTopMotor.getAppliedOutput());
+  SmartDashboard.putNumber("Shooter/Bottom Applied", shooterRightBottomMotor.getAppliedOutput());
+   
 }    
 }
 
