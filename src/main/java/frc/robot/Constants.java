@@ -254,8 +254,8 @@ public final class Constants {
        public static final double BOTTOM_SHOOTER_FF = 0.0;
 
       public static final double shooterMotorTolerance = 50.0;
-      public static final int SHOOTER_CURRENT_STALL_LIMIT = 200;
-      public static final int SHOOTER_CURRENT_FREE_LIMIT = 200;
+      public static final int SHOOTER_CURRENT_STALL_LIMIT = 80;
+      public static final int SHOOTER_CURRENT_FREE_LIMIT = 50;
       public static final double SHOOTER_VOLTAGE_LIMIT = 10.0;
 
       public static final double TOP_kV = 0.002;   

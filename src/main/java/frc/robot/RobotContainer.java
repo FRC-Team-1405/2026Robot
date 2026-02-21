@@ -15,8 +15,6 @@ import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.SwerveDriveWithGamepad;
 import frc.robot.commands.testRPM;
 import frc.robot.subsystems.*;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 
 public class RobotContainer {
@@ -72,57 +70,19 @@ public static final FireControl fireControl =
 
   private void configureButtonBindings() {
     coDriver.START();
-    driver.RT().whileTrue(shootFuelCommand());
+    driver.RT().whileTrue(shootTestFuelCommand());
     driver.LT().whileTrue(intake.intakeFuel());
     driver.LB().whileTrue(new testRPM());
 
     coDriver.X().whileTrue(intake.extakeFuel());
     coDriver.B().whileTrue(shooter.reverseShooter(400));
-
-
-   
-    // driver.X().onTrue(intake.putUpIntake());
-    // driver.Y().onTrue(intake.putDownIntake());
-    // driver.DUp().whileTrue(indexer.shootFuel());
-   
-    
-  
-  /*   
-        }, shooter))).andThen(new Shoot().andThen(Commands.waitSeconds(0.5).andThen(Commands.runOnce(() -> {
-          shooter.stopMotors();
-
-        }))))); */
-  
   }
 
- public Command shootFuelCommand() {
+ public Command shootTestFuelCommand() {
     return Commands.sequence(
-//shooting the fuel 
-        shooter.spinUp(1000,1000
-            // fireControl.getShooterRpm(),
-            // fireControl.getShooterRpm()
-        ),
-
-        Commands.waitUntil(() ->
-            shooter.shooterAtSpeed(1000,1000
-                // fireControl.getShooterRpm(),
-                // fireControl.getShooterRpm()
-            )
-        ),
-
-        
-        Commands.parallel(
-            shooter.spinUp(1000,1000
-                // fireControl.getShooterRpm(),
-                // fireControl.getShooterRpm()
-            )
-            // indexer.shootFuel()
-        )
-
-    ).finallyDo(() -> {
-        shooter.stopTopShooterMotors();
-        shooter.stopBottomShooterMotors();
-        // indexer.stopIndexer();
-    });
+        shooter.shootCommand(1500, 1500),
+        Commands.waitUntil(() -> shooter.shooterAtSpeed(1500, 1500)),
+        Commands.run(() -> shooter.stopMotors(), shooter)
+    );
 }
 }
