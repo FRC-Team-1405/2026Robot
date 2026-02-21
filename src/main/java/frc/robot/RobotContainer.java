@@ -10,9 +10,12 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -23,6 +26,7 @@ import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MoveMode;
+import frc.robot.subsystems.MoveMode.*;
 
 public class RobotContainer {
         private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
@@ -31,6 +35,7 @@ public class RobotContainer {
         private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per
                                                                                           // second
                                                                                           // max angular velocity
+        private MoveMode moveMode = new MoveMode();
 
         /* Setting up bindings for necessary control of the swerve drive platform */
         private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -52,8 +57,6 @@ public class RobotContainer {
         }
 
         private void configureBindings() {
-                MoveMode moveMode = new MoveMode();
-
                 // Note that X is defined as forward according to WPILib convention,
                 // and Y is defined as to the left according to WPILib convention.
                 drivetrain.setDefaultCommand(
@@ -75,9 +78,9 @@ public class RobotContainer {
                 joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
                 // TODO: maybe uncomment joystick.b()... because IDK if my move algorithm
                 // overrides this algorithm
-                // joystick.b().whileTrue(drivetrain.applyRequest(
-                // () -> point.withModuleDirection(
-                // new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+                joystick.b().whileTrue(drivetrain.applyRequest(
+                                () -> point.withModuleDirection(
+                                                new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
                 // Run SysId routines when holding back/start and X/Y.
                 // Note that each routine should be run exactly once in a single log.
@@ -91,21 +94,16 @@ public class RobotContainer {
                                 drivetrain.runOnce(drivetrain::seedFieldCentric));
 
                 // Select speed mode
-                joystick.leftTrigger().onTrue(moveMode.setToSlowMode());
-                joystick.rightTrigger().onTrue(moveMode.setToFastMode());
-                // for the 2 lines below, ex. Left trigger is held, and right trigger is tapped
-                // quickly such that left trigger is still being held after right trigger is
-                // tapped. MoveMode.currentSpeedMode would be SLOW, then FAST, *then SLOW
-                // again*.
-                joystick.leftTrigger().and(joystick.rightTrigger().negate()).onTrue(moveMode.setToSlowMode());
-                joystick.rightTrigger().and(joystick.leftTrigger().negate()).onTrue(moveMode.setToFastMode());
-
-                joystick.leftTrigger().or(joystick.rightTrigger()).onFalse(moveMode.setToNormalMode());
+                joystick.leftTrigger().onTrue(moveMode.setTo(Speed.SLOW));
+                joystick.rightTrigger().onTrue(moveMode.setTo(Speed.FAST));
+                joystick.leftTrigger().or(joystick.rightTrigger()).onFalse(moveMode.setTo(Speed.NORMAL));
+                joystick.leftTrigger().and(joystick.rightTrigger().negate()).onTrue(moveMode.setTo(Speed.SLOW));
+                joystick.rightTrigger().and(joystick.leftTrigger().negate()).onTrue(moveMode.setTo(Speed.FAST));
 
                 // Select rotation mode
-                joystick.y().onTrue(moveMode.setToStandardMode());
-                joystick.x().onTrue(moveMode.setToSnakeMode());
-                joystick.b().onTrue(moveMode.setToCompassMode());
+                joystick.y().onTrue(moveMode.setTo(MoveMode.Rotation.STANDARD));
+                joystick.x().onTrue(moveMode.setTo(MoveMode.Rotation.SNAKE));
+                joystick.b().onTrue(moveMode.setTo(MoveMode.Rotation.COMPASS));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }

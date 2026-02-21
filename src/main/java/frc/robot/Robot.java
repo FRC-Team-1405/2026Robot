@@ -32,6 +32,8 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run();
+
+        GamePeriod.elasticPeriodic();
     }
 
     @Override

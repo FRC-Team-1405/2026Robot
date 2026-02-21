@@ -150,7 +150,6 @@ public final class GamePeriod {
 
         final String gameData = DriverStation.getGameSpecificMessage();
         if (gameData.length() == 0) {
-            // Code for no data received yet
             return Optional.empty();
         }
 

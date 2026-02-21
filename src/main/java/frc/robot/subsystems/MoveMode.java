@@ -12,100 +12,88 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /*
- * DRIVE TEAM README
+ * The current button mapping
  *
+ * A: brake
+ * B: compass rotation mode. Robot faces the way the right stick is facing.
+ * X: snake rotation mode. Robot faces the way it is moving / the left stick is
+ * facing.
+ * Y: standard rotation mode
+ * 
  * Left Trigger: slow mode (25% of max speed)
  * Right Trigger: fast mode (100% of max speed)
  * No trigger pressed: normal speed mode (50% of max speed)
  * 
- * Y: standard rotation mode
- * X: snake rotation mode. Robot faces the way it is moving / the left stick is
- * facing.
- * B: compass rotation mode. Robot faces the way the right stick is facing.
+ * 
  * 
  * Start + Back (simultaneously): Zeroizes the robot
+ * 
+ * L/R bumper: nothing
+ * D-pad: nothing
+ * Press L/R sticks: nothing
  */
 
 /**
  * Manages how the robot moves at certain speeds and rotates with modes. Modes
  * are changed with button input defined in RobotContainer.java.
- * <p>
- * ***There is a comment for the Drive Team titled 'DRIVE TEAM README' that
- * describes what all of the buttons do***.
  * 
  * @author Dylan Wilson
  */
 public class MoveMode {
-    /*
-     * Two seperate enums for managing the Speed modes and Rotation modes
-     * independently.
-     */
-    /**
-     * The speed modes the robot can be in.
-     */
-    private enum Speed {
+    /** The speed modes the robot can be in. */
+    public enum Speed {
         SLOW,
         NORMAL,
-        FAST
-    }
-
-    /**
-     * The rotation modes the robot can be in.
-     */
-    private enum Rotation {
-        STANDARD,
-        SNAKE,
-        COMPASS
-    }
-
-    /**
-     * Sets the currentSpeedMode or currentRotationMode for the robot. Is a private
-     * Command class to communicate with the RobotContainer.java's XboxController
-     * joystick.
-     */
-    private class ModeCommand extends InstantCommand {
-        private final Speed speedToSet;
-        private final Rotation rotationToSet;
-
-        private ModeCommand(final Speed speedToSet) {
-            this.speedToSet = speedToSet;
-            this.rotationToSet = null;
-        }
-
-        private ModeCommand(final Rotation rotationToSet) {
-            this.speedToSet = null;
-            this.rotationToSet = rotationToSet;
-        }
+        FAST;
 
         @Override
-        public void initialize() {
-            if (speedToSet != null) {
-                currentSpeedMode = speedToSet;
-            } else if (rotationToSet != null) {
-                currentRotationMode = rotationToSet;
+        public String toString() {
+            switch (this) {
+                case SLOW:
+                    return "Slow";
+                case NORMAL:
+                    return "Normal";
+                case FAST:
+                    return "Fast";
+                default:
+                    return "error Mode$Speed.toString()";
             }
-            elasticUpdate();
         }
     }
 
-    /**
-     * The speed mode that the robot is currently in.
-     */
-    private static Speed currentSpeedMode = Speed.NORMAL;
+    /** The rotation modes the robot can be in. */
+    public enum Rotation {
+        STANDARD,
+        SNAKE,
+        COMPASS;
 
-    /**
-     * The rotation mode that the robot is currently in.
-     */
-    private static Rotation currentRotationMode = Rotation.STANDARD;
+        @Override
+        public String toString() {
+            switch (this) {
+                case STANDARD:
+                    return "Standard";
+                case SNAKE:
+                    return "Snake";
+                case COMPASS:
+                    return "Compass";
+                default:
+                    return "error Mode$Rotation.toString()";
+            }
+        }
+    }
 
-    private static StringPublisher speedModePublisher; // For Eclipse
-    private static StringPublisher rotationModePublisher; // For Eclipse
+    /** The speed mode that the robot is currently in. */
+    private Speed currentSpeedMode = Speed.NORMAL;
+
+    /** The rotation mode that the robot is currently in. */
+    private Rotation currentRotationMode = Rotation.STANDARD;
 
     // TODO: Tune rotationController for physical robot
-    private final PIDController rotationController = new PIDController(12, 0, 0);
-    private double goalAngle;
-    private double currentAngle;
-    private double calculate;
+    private final PIDController rotationController = new PIDController(9, 0, 0.3);
+    // sim: P=9, I=0, D=0.3
+
+    private StringPublisher speedModePublisher; // For Eclipse
+    private StringPublisher rotationModePublisher; // For Eclipse
 
     public MoveMode() {
         elasticInit();
@@ -113,19 +101,46 @@ public class MoveMode {
     }
 
     /**
+     * Sets the currentSpeedMode to the speed parameter. Called in
+     * RobotContainer.java
+     * 
+     * @param speed the speed to set to
+     * @return a command that sets the robots speed mode
+     */
+    public InstantCommand setTo(final Speed speed) {
+        return new InstantCommand(() -> {
+            currentSpeedMode = speed;
+            elasticUpdate();
+        });
+    }
+
+    /**
+     * Sets the currentRotationMode to the rotation parameter. Called in
+     * RobotContainer.java
+     * 
+     * @param speed the rotation to set to
+     * @return a command that sets the robots rotation mode
+     */
+    public InstantCommand setTo(final Rotation rotation) {
+        return new InstantCommand(() -> {
+            currentRotationMode = rotation;
+            elasticUpdate();
+        });
+    }
+
+    /**
      * Selects the speed mode to perform based on which Mode currentSpeedMode is
      * equal to. A parent method for all the other speed modes.
+     * 
+     * @return a DoubleSupplier that returns a multiplier of the robots max speed
      */
     public DoubleSupplier selectSpeedMode() {
-        return new DoubleSupplier() {
-            @Override
-            public double getAsDouble() {
-                return switch (currentSpeedMode) {
-                    case SLOW -> slowMode();
-                    case NORMAL -> normalMode();
-                    case FAST -> fastMode();
-                };
-            }
+        return () -> {
+            return switch (currentSpeedMode) {
+                case SLOW -> 0.25d;
+                case NORMAL -> 0.5d;
+                case FAST -> 1.0d;
+            };
         };
     }
 
@@ -133,108 +148,23 @@ public class MoveMode {
      * Selects the rotation mode to perform based on which Mode currentRotationMode
      * is equal to. A parent method for all the other rotation modes.
      * 
-     * @param joystick       the connected Xbox Controller (all rotation modes)
-     * @param drivetrain     the Swerve Drivetrain (SNAKE, COMPASS)
-     * @param maxAngularRate rotational rate cap (STANDARD)
+     * @param joystick       the connected Xbox Controller (for all rotation modes)
+     * @param drivetrain     the Swerve Drivetrain (for SNAKE, COMPASS)
+     * @param maxAngularRate rotational rate cap (for STANDARD)
+     * 
+     * @return a DoubleSupplier that returns a value ranging from -Math.PI to
+     *         Math.PI radians, setting the angle of the robot
      */
     public DoubleSupplier selectRotationMode(final CommandXboxController joystick,
             final CommandSwerveDrivetrain drivetrain,
             final double maxAngularRate) {
-        return new DoubleSupplier() {
-            @Override
-            public double getAsDouble() {
-                return switch (currentRotationMode) {
-                    case STANDARD -> standardMode(joystick, maxAngularRate);
-                    case SNAKE -> snakeMode(joystick, drivetrain);
-                    case COMPASS -> compassMode(joystick, drivetrain);
-                };
-            }
+        return () -> {
+            return switch (currentRotationMode) {
+                case STANDARD -> standardMode(joystick, maxAngularRate);
+                case SNAKE -> snakeMode(joystick, drivetrain);
+                case COMPASS -> compassMode(joystick, drivetrain);
+            };
         };
-    }
-
-    /**
-     * Sets currentSpeedMode to Speed.SLOW. Enabled by the left trigger.
-     * 
-     * @return a Command that sets currentSpeedMode to Speed.SLOW
-     */
-    public ModeCommand setToSlowMode() {
-        return new ModeCommand(Speed.SLOW);
-    }
-
-    /**
-     * Sets currentSpeedMode to Speed.NORMAL. Enabled by no trigger
-     * input(none in left or right).
-     * 
-     * @return a Command that sets currentSpeedMode to Speed.NORMAL
-     */
-    public ModeCommand setToNormalMode() {
-        return new ModeCommand(Speed.NORMAL);
-    }
-
-    /**
-     * Sets currentSpeedMode to Speed.FAST. Enabled by the right trigger.
-     * 
-     * @return a Command that sets currentSpeedMode to Speed.FAST
-     */
-    public ModeCommand setToFastMode() {
-        return new ModeCommand(Speed.FAST);
-    }
-
-    /**
-     * Sets currentRotationMode to Rotation.STANDARD. Enabled by the X button.
-     * 
-     * @return a Command that sets currentRotationMode to Rotation.STANDARD
-     */
-    public ModeCommand setToStandardMode() {
-        return new ModeCommand(Rotation.STANDARD);
-    }
-
-    /**
-     * Sets currentRotationMode to Rotation.SNAKE. Enabled by the Y button.
-     * 
-     * @return a Command that sets currentRotationMode to Rotation.SNAKE
-     */
-    public ModeCommand setToSnakeMode() {
-        return new ModeCommand(Rotation.SNAKE);
-    }
-
-    /**
-     * Sets currentRotationMode to Rotation.COMPASS. Enabled by the B button.
-     * 
-     * @return a Command that sets currentRotationMode to Rotation.SNAKE
-     */
-    public ModeCommand setToCompassMode() {
-        return new ModeCommand(Rotation.COMPASS);
-    }
-
-    /**
-     * Slow mode is a speed mode where the robot moves at 25% of its speed
-     * capacity.
-     * 
-     * @return a multiplier of the robots max speed
-     */
-    private double slowMode() {
-        return 0.25d;
-    }
-
-    /**
-     * Normal mode is a speed mode where the robot moves at 50% of its speed
-     * capacity.
-     * 
-     * @return a multiplier of the robots max speed
-     */
-    private double normalMode() {
-        return 0.5d;
-    }
-
-    /**
-     * Fast mode is a speed mode where the robot moves at 100% of its speed
-     * capacity.
-     * 
-     * @return a multiplier of the robots max speed
-     */
-    private double fastMode() {
-        return 1.0d;
     }
 
     /**
@@ -258,8 +188,7 @@ public class MoveMode {
 
     /**
      * Snake mode is a rotation mode where the robot points in the direction that it
-     * is driving in /
-     * the direction that the left stick is facing.
+     * is driving in / the direction that the left stick is facing.
      * 
      * @param joystick   the connected Xbox Controller
      * @param drivetrain the Swerve Drivetrain
@@ -275,8 +204,7 @@ public class MoveMode {
 
     /**
      * Compass mode is a rotation mode where the robot points in the direction that
-     * the right stick
-     * is facing.
+     * the right stick is facing.
      * 
      * @param joystick the connected Xbox Controller
      * @return a difference in goal angle and current angle calculated using a
@@ -309,11 +237,14 @@ public class MoveMode {
             return 0;
         }
 
-        goalAngle = -Math.atan2(joystickY, joystickX) - Math.PI / 2; // radians
-        currentAngle = drivetrain.getState().Pose.getRotation().getRadians();
+        double goalAngle = -Math.atan2(joystickY, joystickX) - Math.PI / 2; // radians
+        double currentAngle = drivetrain.getState().Pose.getRotation().getRadians();
 
         rotationController.setSetpoint(goalAngle);
-        calculate = rotationController.calculate(currentAngle);
+        double calculate = rotationController.calculate(currentAngle);
+
+        SmartDashboard.putNumber("goalAngle", goalAngle);
+        SmartDashboard.putNumber("currentAngle", currentAngle);
 
         return calculate;
     }
@@ -334,8 +265,8 @@ public class MoveMode {
     }
 
     /**
-     * Manages Elastic display whenever the currentSpeedMode or currentRotationMode
-     * is changed.
+     * Manages Elastic display whenever the currentSpeedMode, currentRotationMode or
+     * isDisabled is changed.
      */
     private void elasticUpdate() {
         final String strSpeedMode = currentSpeedMode.toString();
