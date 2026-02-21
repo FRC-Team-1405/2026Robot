@@ -102,10 +102,10 @@ public class Constants {
             INTAKE_MOTOR_IN = Preferences.getDouble("Intake/In", 3.0);
             Preferences.initDouble("Intake/Center", 50.0);
             INTAKE_MOTOR_CENTER = Preferences.getDouble("Intake/Center", 50.0);
-            Preferences.initDouble("Pickup/Out", 10.0);
-            PICKUP_MOTOR_OUT = Preferences.getDouble("Pickup/Out", 10.0);
-            Preferences.initDouble("Pickup/In", -10.0);
-            PICKUP_MOTOR_IN = Preferences.getDouble("Pickup/In", -10.0);
+            Preferences.initDouble("Pickup/Out", -25.0);
+            PICKUP_MOTOR_OUT = Preferences.getDouble("Pickup/Out", -25.0);
+            Preferences.initDouble("Pickup/In", 50.0);
+            PICKUP_MOTOR_IN = Preferences.getDouble("Pickup/In", 50.0);
             Preferences.initDouble("Intake/Settle Max", 3.0);
             SETTLE_MAX = Preferences.getDouble("Intake/SettleMax", 3.0);
             Preferences.initDouble("Intake/PositionTolerance", 0.5);
