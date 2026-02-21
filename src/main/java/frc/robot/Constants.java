@@ -20,8 +20,9 @@ public class Constants {
         public static final int INTAKE_MOTOR = 28;
         public static final int PICKUP_MOTOR = 29;
 
-        public static final int SHOOTER_MOTOR_1 = 20;
-        public static final int SHOOTER_MOTOR_2 = 21;
+        public static final int SHOOTER_MOTOR_1 = 41;
+        public static final int SHOOTER_MOTOR_2 = 42;
+        public static final int SHOOTER_MOTOR_3 = 43;
 
         public static final int INDEXER_MOTOR = 22;
 
@@ -31,6 +32,7 @@ public class Constants {
 
     public static class ShooterPreferences {
         public static final AngularVelocity SHORT;
+        public static final AngularVelocity INTERMEDIATE;
         public static final AngularVelocity MEDIUM;
         public static final AngularVelocity LONG;
 
@@ -49,6 +51,8 @@ public class Constants {
             // Shooter Velocities
             Preferences.initDouble("ShooterVelocities/Short", 10);
             SHORT = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Short", 10));
+            Preferences.initDouble("ShooterVelocities/Intermediate", 20);
+            INTERMEDIATE = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Intermediate", 20));
             Preferences.initDouble("ShooterVelocities/Medium", 30);
             MEDIUM = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Medium", 30));
             Preferences.initDouble("ShooterVelocities/Long", 50);

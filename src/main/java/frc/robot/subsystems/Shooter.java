@@ -11,6 +11,7 @@ import java.lang.Math;
 import java.security.spec.DSAPrivateKeySpec;
 
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -19,6 +20,7 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,13 +34,16 @@ import frc.robot.sim.SimProfiles;
 public class Shooter extends SubsystemBase {
   private final TalonFX shooterMotor1 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_1);
   private final TalonFX shooterMotor2 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_2);
+  private final TalonFX shooterMotor3 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_3);
 
-  private final VelocityVoltage m_VelocityVoltage = new VelocityVoltage(0).withSlot(0);
+  private final MotionMagicVelocityVoltage m_VelocityVoltage = new MotionMagicVelocityVoltage(0).withSlot(0);
   private final NeutralOut m_Brake = new NeutralOut();
 
   private LinearFilter filter = LinearFilter.movingAverage(50);
 
   private int settleCount = 0;
+
+  private double shooterTarget = 0.0;
 
   private boolean locked = false;
 
@@ -55,6 +60,9 @@ public class Shooter extends SubsystemBase {
     configs.Slot0.kS = 0.0;
 
     configs.Voltage.withPeakForwardVoltage(Volts.of(8)).withPeakReverseVoltage(Volts.of(-8));
+
+    configs.MotionMagic.MotionMagicCruiseVelocity = 15;
+    configs.MotionMagic.MotionMagicAcceleration = 5;
 
     StatusCode status = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
@@ -73,6 +81,7 @@ public class Shooter extends SubsystemBase {
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
     shooterMotor1.setControl(m_VelocityVoltage.withVelocity(speed.get()));
     settleCount = 0;
+    shooterTarget = speed.get().in(RotationsPerSecond);
     locked = false;
   }
 
@@ -82,11 +91,11 @@ public class Shooter extends SubsystemBase {
 
   /** Creates a new Shooter. */
   public Shooter() {
-    shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     SimProfiles.initShooter(shooterMotor1);
     SimProfiles.initShooter(shooterMotor2);
+    shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     stopShooter();
-    setShooterMotor();
+    // setShooterMotor();
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
@@ -105,6 +114,7 @@ public class Shooter extends SubsystemBase {
 
     double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
     double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
+    double target = shooterMotor1.getClosedLoopReference().getValueAsDouble();
     double highError = 0.0;
     double lowError = 0.0;
     double range = locked ? ShooterPreferences.WIDE : ShooterPreferences.TIGHT; // TODO improve name on "locked"
@@ -121,7 +131,7 @@ public class Shooter extends SubsystemBase {
       lowError += 1;
     }
 
-    if (Math.abs(error) < range) {
+    if (MathUtil.isNear(shooterTarget, target, 1.0) && Math.abs(error) < range) {
       if (settleCount < ShooterPreferences.STABLE_COUNT) {
         settleCount += 1;
       }
