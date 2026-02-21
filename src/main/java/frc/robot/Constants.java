@@ -241,31 +241,33 @@ public final class Constants {
 
       //top motor controlling stuff
       public static final double TOP_TARGET_SHOOTER_RPM = 0.0;
-      public static final double TOP_SHOOTER_P = 0.0;
+      public static final double TOP_SHOOTER_P = 0.0001;
       public static final double TOP_SHOOTER_I = 0.0;
-      public static final double TOP_SHOOTER_D = 0.0;
+      public static final double TOP_SHOOTER_D = 0.00001;
       public static final double TOP_SHOOTER_FF = 0.0;
 
       //bottom motor controlling stuff
       public static final double BOTTOM_TARGET_SHOOTER_RPM = 0.0;
-      public static final double BOTTOM_SHOOTER_P = 0.0;
+      public static final double BOTTOM_SHOOTER_P = 0.00008;
       public static final double BOTTOM_SHOOTER_I = 0.0;
-      public static final double BOTTOM_SHOOTER_D = 0.0;
+      public static final double BOTTOM_SHOOTER_D = 0.000001;
        public static final double BOTTOM_SHOOTER_FF = 0.0;
 
       public static final double shooterMotorTolerance = 50.0;
-      public static final int SHOOTER_CURRENT_LIMIT = 100;
-      public static final double SHOOTER_VOLTAGE_LIMIT = 0.0;
+      public static final int SHOOTER_CURRENT_STALL_LIMIT = 200;
+      public static final int SHOOTER_CURRENT_FREE_LIMIT = 200;
+      public static final double SHOOTER_VOLTAGE_LIMIT = 10.0;
 
-      public static final double TOP_kV = 0.0;   
-      public static final double BOTTOM_kV = 0.0;
-      public static final double TOP_kS = 0.0;        
-      public static final double BOTTOM_kS = 0.0;
+      public static final double TOP_kV = 0.002;   
+      public static final double BOTTOM_kV = 0.0022;
+      public static final double TOP_kS = 0.01;     
+      public static final double BOTTOM_kS = 0.01;
 
-      public static final double TOP_kA = 0.0;        //what values
-      public static final double BOTTOM_kA = 0.0;
+      public static final double TOP_kA = 0.0064;        
+      public static final double BOTTOM_kA = 0.0038;
+
+      public static final double RAMP_RATE = 0.1;
     }
-
     }
   
   

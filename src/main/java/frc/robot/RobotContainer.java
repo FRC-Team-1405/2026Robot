@@ -69,6 +69,7 @@ public static final FireControl fireControl =
     }, swerve));
   }
 
+
   private void configureButtonBindings() {
     coDriver.START();
     driver.RT().whileTrue(shootFuelCommand());
@@ -96,33 +97,32 @@ public static final FireControl fireControl =
 
  public Command shootFuelCommand() {
     return Commands.sequence(
-
 //shooting the fuel 
-        shooter.spinUp(
-            fireControl.getShooterRpm(),
-            fireControl.getShooterRpm()
+        shooter.spinUp(1000,1000
+            // fireControl.getShooterRpm(),
+            // fireControl.getShooterRpm()
         ),
 
         Commands.waitUntil(() ->
-            shooter.shooterAtSpeed(
-                fireControl.getShooterRpm(),
-                fireControl.getShooterRpm()
+            shooter.shooterAtSpeed(1000,1000
+                // fireControl.getShooterRpm(),
+                // fireControl.getShooterRpm()
             )
         ),
 
         
         Commands.parallel(
-            shooter.spinUp(
-                fireControl.getShooterRpm(),
-                fireControl.getShooterRpm()
-            ),
-            indexer.shootFuel()
+            shooter.spinUp(1000,1000
+                // fireControl.getShooterRpm(),
+                // fireControl.getShooterRpm()
+            )
+            // indexer.shootFuel()
         )
 
     ).finallyDo(() -> {
         shooter.stopTopShooterMotors();
         shooter.stopBottomShooterMotors();
-        indexer.stopIndexer();
+        // indexer.stopIndexer();
     });
 }
 }

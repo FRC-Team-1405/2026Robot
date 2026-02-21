@@ -10,62 +10,20 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.sim.SparkFlexSim;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.ClosedLoopConfig;
-import com.revrobotics.spark.config.LimitSwitchConfig.Type;
-import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
-import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.ResetMode;   // Import the new global ResetMode
 import com.revrobotics.PersistMode;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Preferences;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.BatterySim;
-import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.lib.subsystem.AdvancedSubsystem;
 
 import frc.robot.Constants;
-import frc.robot.subsystems.FireControl;
-import com.revrobotics.sim.SparkFlexSim;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLimitSwitch;
-
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.LimitSwitchConfig;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.LimitSwitchConfig.Behavior;
-import com.revrobotics.spark.config.LimitSwitchConfig.Type;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
 
 
 public class Shooter extends SubsystemBase {
@@ -82,6 +40,7 @@ private final RelativeEncoder shooterRightTopEncoder;
 
  private final SparkClosedLoopController shooterBottomController;
  private final SparkClosedLoopController shooterTopController;
+private boolean hardwareFollowConfigured = false;
  private double topTargetRPM = 0.0;
  private double bottomTargetRPM = 0.0;
  
@@ -111,33 +70,28 @@ private final List<Long> bottomRecoveryTimes = new ArrayList<>(); // List of rec
   shooterRightBottomMotor = new SparkFlex(BOTTOM_RIGHT_SHOOTER_ID, MotorType.kBrushless);
   shooterRightTopMotor = new SparkFlex(TOP_RIGHT_SHOOTER_ID, MotorType.kBrushless);
   
- 
   
   //configurating encoders
-shooterLeftBottomEncoder = shooterLeftBottomMotor.getEncoder();
-shooterLeftTopEncoder = shooterLeftTopMotor.getEncoder();
-shooterRightBottomEncoder = shooterRightBottomMotor.getEncoder();
-shooterRightTopEncoder = shooterRightTopMotor.getEncoder();
-  
-
-
-
+  shooterLeftBottomEncoder = shooterLeftBottomMotor.getEncoder();
+  shooterLeftTopEncoder = shooterLeftTopMotor.getEncoder();
+  shooterRightBottomEncoder = shooterRightBottomMotor.getEncoder();
+  shooterRightTopEncoder = shooterRightTopMotor.getEncoder();
+    
 
 //CONTROLLER STUFF
   shooterBottomController = shooterLeftBottomMotor.getClosedLoopController();
    SparkFlexConfig shooterBottomConfig = new SparkFlexConfig();
  shooterBottomConfig.closedLoop.feedForward
-    .kS(Constants.Shooter.BOTTOM_kS)  // need values 
+    .kS(Constants.Shooter.BOTTOM_kS)
     .kV(Constants.Shooter.BOTTOM_kV) 
     .kA(Constants.Shooter.BOTTOM_kA);
 
   shooterTopController = shooterLeftTopMotor.getClosedLoopController();
  SparkFlexConfig shooterTopConfig = new SparkFlexConfig();
  shooterTopConfig.closedLoop.feedForward
-    .kS(Constants.Shooter.TOP_kS)  // need values 
+    .kS(Constants.Shooter.TOP_kS)
     .kV(Constants.Shooter.TOP_kV) 
     .kA(Constants.Shooter.TOP_kA);
-
 
   //PID CONFIG
   shooterBottomConfig.closedLoop
@@ -149,30 +103,47 @@ shooterRightTopEncoder = shooterRightTopMotor.getEncoder();
   .p(Constants.Shooter.TOP_SHOOTER_P)
   .i(Constants.Shooter.TOP_SHOOTER_I)
   .d(Constants.Shooter.TOP_SHOOTER_D);
+   
+  shooterBottomConfig.closedLoopRampRate(Constants.Shooter.RAMP_RATE);
+  shooterTopConfig.closedLoopRampRate(Constants.Shooter.RAMP_RATE);
+  
 
   //configuring the motor
   shooterBottomConfig
     .idleMode(IdleMode.kCoast)
-    .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_LIMIT)
+    .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_STALL_LIMIT, Constants.Shooter.SHOOTER_CURRENT_FREE_LIMIT)
     .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT);
 
-shooterTopConfig
+  shooterTopConfig
     .idleMode(IdleMode.kCoast)
-    .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_LIMIT)
+    .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_STALL_LIMIT,Constants.Shooter.SHOOTER_CURRENT_FREE_LIMIT)
     .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT);
 
-  shooterRightTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-  shooterRightBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-  shooterTopConfig.follow(shooterRightTopMotor, true);
-  shooterBottomConfig.follow(shooterRightBottomMotor, true);
-
-  shooterLeftBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   shooterLeftTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  shooterLeftBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    SmartDashboard.putNumber("Shooter Test Top RPM", 3000);
-     SmartDashboard.putNumber("Shooter Test Bottom RPM", 3000);
-     }
+  shooterRightBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  shooterRightTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+  SmartDashboard.putNumber("Shooter Test Top RPM", 3000);
+  SmartDashboard.putNumber("Shooter Test Bottom RPM", 3000);
+
+    try {
+    SparkFlexConfig topFollowerFollow = new SparkFlexConfig();
+    SparkFlexConfig bottomFollowerFollow = new SparkFlexConfig();
+    // follow the leader and invert the output for the follower
+    topFollowerFollow.follow(shooterLeftTopMotor, true);
+    bottomFollowerFollow.follow(shooterLeftBottomMotor,true);
+    // Don't reset previously-applied safe parameters; only enable follower mode
+    shooterRightTopMotor.configure(topFollowerFollow, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    shooterRightBottomMotor.configure(bottomFollowerFollow, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    hardwareFollowConfigured = true;
+  } catch (Exception ex) {
+    // If the follow configuration isn't available in this REVLib version,
+    // we'll fall back to software mirroring (below in periodic()).
+    hardwareFollowConfigured = false;
+    }
+  }
 
 //methods
 //simple, just stopping motors
@@ -191,8 +162,6 @@ shooterTopConfig
 //   Check if both top motors are at speed
 // Check if both TOP shooter motors are at speed
 public boolean topMotorsAtSpeed(double topTargetRPM) {
-
-
   return Math.abs(shooterLeftTopEncoder.getVelocity() - topTargetRPM)
           < Constants.Shooter.shooterMotorTolerance
       && Math.abs(shooterRightTopEncoder.getVelocity() - topTargetRPM)
@@ -220,8 +189,8 @@ public boolean bottomMotorsAtSpeed(double bottomRPM) {
   shooterBottomController.setSetpoint(bottomRPM, ControlType.kVelocity);
 }
 public void setShooter(double speed) {
-shooterRightTopMotor.set(speed);
-shooterRightBottomMotor.set(speed);
+shooterLeftTopMotor.set(speed);
+shooterLeftBottomMotor.set(speed);
 }
 
 public double getTopSetpoint() {
@@ -294,9 +263,6 @@ public Command manualShooterTest() {
         double bottomRPM = SmartDashboard.getNumber("Shooter/Target Bottom RPM", 0);
 
         setShooterRPM(topRPM, bottomRPM);
-
-      
-
     }, this);
 }
 
