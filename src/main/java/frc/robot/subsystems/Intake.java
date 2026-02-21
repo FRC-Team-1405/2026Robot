@@ -34,6 +34,9 @@ public class Intake extends SubsystemBase {
   public Intake() {
     SimProfiles.initIntake(intakeMotor);
     SimProfiles.initPickup(pickupMotor);
+
+    pickupMotor.setControl(stop);
+    intakeMotor.setControl(stop);
   }
 
   @Override
