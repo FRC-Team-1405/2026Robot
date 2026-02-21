@@ -26,6 +26,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.ShooterPreferences;
+import frc.robot.commands.Shooter.AutoFire;
+import frc.robot.commands.Shooter.IndexerShooterStop;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants_OldRobot;
 import frc.robot.lib.AllianceSymmetry;
@@ -36,7 +39,9 @@ import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MoveMode;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Hopper;
+import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -62,6 +67,7 @@ public class RobotContainer {
 
         private final CommandXboxController joystick = new CommandXboxController(0);
         private final CommandXboxController operator = new CommandXboxController(1);
+        private final CommandXboxController shooterJoystick = new CommandXboxController(2);
 
         public final CommandSwerveDrivetrain drivetrain = TunerConstants_OldRobot.createDrivetrain();
 
@@ -73,6 +79,8 @@ public class RobotContainer {
         List<StructPublisher<Pose2d>> cameraEstimatedPosesPublisher = Arrays.asList(cameraEstimatedPosePublisher1,
                         cameraEstimatedPosePublisher2);
 
+        private Shooter shooter = new Shooter();
+        private Indexer indexer = new Indexer();
         public final Climber climber = new Climber();
         public final AdjustableHood hood = new AdjustableHood();
         public final Hopper hopper = new Hopper();
@@ -91,45 +99,13 @@ public class RobotContainer {
                 // configure operator controls
                 Command cmd;
 
-                // cmd = climber.runExtendClimber();
-                // SmartDashboard.putData(cmd);
-                // operator.povUp().onTrue(cmd);
+                cmd = intake.runIntakeOut();
+                SmartDashboard.putData(cmd);
+                operator.povUp().onTrue(cmd);
 
-                // cmd = climber.runRetractClimber();
-                // SmartDashboard.putData(cmd);
-                // operator.povDown().onTrue(cmd);
-
-                // cmd = Commands.sequence(climber.runStop(),
-                // climber.runStopClaw()).withName("Climber Stop");
-                // SmartDashboard.putData(cmd);
-                // operator.x().onTrue(cmd);
-
-                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_SHORT).withName("Hood Speed
-                // Short");
-                // SmartDashboard.putData(cmd);
-                // joystick.a().onTrue(cmd);
-
-                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_MEDIUM).withName("Hood
-                // Speed Medium");
-                // SmartDashboard.putData(cmd);
-                // joystick.b().onTrue(cmd);
-
-                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed
-                // Long");
-                // SmartDashboard.putData(cmd);
-                // joystick.y().onTrue(cmd);
-
-                // cmd = hopper.runForwardHopper();
-                // SmartDashboard.putData(cmd);
-                // joystick.leftBumper().toggleOnTrue(cmd);
-
-                // cmd = hopper.runReverseHopper();
-                // SmartDashboard.putData(cmd);
-                // joystick.rightBumper().toggleOnTrue(cmd);
-                // cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed
-                // Long");
-                // SmartDashboard.putData(cmd);
-                // joystick.y().onTrue(cmd);
+                cmd = intake.runIntakeIn();
+                SmartDashboard.putData(cmd);
+                operator.povDown().onTrue(cmd);
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
@@ -158,8 +134,9 @@ public class RobotContainer {
                                 () -> point.withModuleDirection(
                                                 new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
-                joystick.rightBumper().onTrue(intake.runPickupIn("PickupRun"));
-                joystick.leftBumper().onTrue(intake.runPickupStop("PickupStop"));
+                joystick.leftBumper().onTrue(
+                                Commands.either(intake.runPickupStop(), intake.runPickupIn(), intake::isPickupRunning));
+
                 // joystick.rightTrigger()
                 // .onTrue(intake.runPickupFuel())
                 // .onFalse(intake.runPickupStop("Driver/Intake/Stop"));
@@ -195,6 +172,21 @@ public class RobotContainer {
                 joystick.start().and(joystick.back()).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
+
+                shooterJoystick.a().toggleOnTrue(shooter.runShooter(() -> {
+                        return ShooterPreferences.INTERMEDIATE;
+                }));
+
+                shooterJoystick.x().onTrue(new IndexerShooterStop(shooter, indexer));
+
+                shooterJoystick.b().toggleOnTrue(indexer.runIndexer(() -> {
+                        return ShooterPreferences.INDEXER_VELOCITY;
+                }));
+
+                shooterJoystick.y().toggleOnTrue(
+                                new AutoFire(shooter, indexer, () -> ShooterPreferences.LONG,
+                                                () -> ShooterPreferences.INDEXER_VELOCITY));
+
         }
 
         public Command getAutonomousCommand() {

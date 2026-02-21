@@ -29,6 +29,7 @@ public class Intake extends SubsystemBase {
   private int intakeSettleCount = 0;
   private double intakePositionTarget = 0;
   private boolean isIntakeDeployed = false;
+  private boolean isPickupActive = false;
 
   public Intake() {
     SimProfiles.initIntake(intakeMotor);
@@ -59,8 +60,9 @@ public class Intake extends SubsystemBase {
     intakePositionTarget = position;
   }
 
-  private void movePickup(double position) {
-    pickupMotor.setControl(pickupMotorSpeed.withVelocity(position));
+  private void movePickup(double speed) {
+    pickupMotor.setControl(pickupMotorSpeed.withVelocity(speed));
+    isPickupActive = true;
   }
 
   private void intakeOut() {
@@ -73,6 +75,12 @@ public class Intake extends SubsystemBase {
     isIntakeDeployed = false;
     moveIntake(Constants.IntakePreferences.INTAKE_MOTOR_IN);
     fLogger.log("Intake In ");
+  }
+
+  private void intakeCenter() {
+    isIntakeDeployed = true;
+    moveIntake(Constants.IntakePreferences.INTAKE_MOTOR_CENTER);
+    fLogger.log("Intake Center");
   }
 
   private void pickupOut() {
@@ -92,6 +100,7 @@ public class Intake extends SubsystemBase {
 
   private void stopPickup() {
     pickupMotor.setControl(stop);
+    isPickupActive = false;
     fLogger.log("Stop Pickup ");
   }
 
@@ -111,8 +120,16 @@ public class Intake extends SubsystemBase {
         .withName("Run Intake In");
   }
 
+  public Command runIntakeCenter() {
+    return Commands.sequence(
+        runOnce(() -> intakeCenter()),
+        Commands.waitUntil(() -> isIntakeAtTarget()))
+        .finallyDo(() -> stopIntake())
+        .withName("Run Intake Center");
+  }
+
   public Command runPickupOut(String name) {
-    Command cmd = runPickupFuel().withName(name);
+    Command cmd = runPickupOut().withName(name);
     SmartDashboard.putData(cmd);
     return cmd;
   }
@@ -141,11 +158,11 @@ public class Intake extends SubsystemBase {
     return runOnce(() -> stopPickup());
   }
 
-  public Command runPickupFuel() {
-    return Commands.sequence(
-        runIntakeOut(),
-        runPickupIn());
-  }
+  // public Command runPickupFuel() {
+  // return Commands.sequence(
+  // runIntakeOut(),
+  // runPickupIn());
+  // }
 
   public Command runRetractIntake() {
     return Commands.sequence(
@@ -153,19 +170,12 @@ public class Intake extends SubsystemBase {
         runIntakeIn());
   }
 
-  public Command runKickFuel() {
-    return Commands.sequence(
-        runIntakeOut(),
-        runPickupOut());
+  public boolean isIntakeExtended() {
+    return isIntakeDeployed;
   }
 
-  public Command runToggleIntake(String name) {
-    Command cmd = runToggleIntake().withName(name);
-    SmartDashboard.putData(cmd);
-    return cmd;
+  public boolean isPickupRunning() {
+    return isPickupActive;
   }
 
-  public Command runToggleIntake() {
-    return Commands.either(runIntakeIn(), runIntakeOut(), () -> isIntakeDeployed);
-  }
 }
