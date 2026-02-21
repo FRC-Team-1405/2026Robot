@@ -84,8 +84,9 @@ public class Shooter extends SubsystemBase {
   public Shooter() {
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     SimProfiles.initShooter(shooterMotor1);
+    SimProfiles.initShooter(shooterMotor2);
     stopShooter();
-    // setShooterMotor();
+    setShooterMotor();
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
