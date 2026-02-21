@@ -174,7 +174,7 @@ public class RobotContainer {
                 drivetrain.registerTelemetry(logger::telemeterize);
 
                 shooterJoystick.a().toggleOnTrue(shooter.runShooter(() -> {
-                        return ShooterPreferences.SHORT;
+                        return ShooterPreferences.INTERMEDIATE;
                 }));
 
                 shooterJoystick.x().onTrue(new IndexerShooterStop(shooter, indexer));
