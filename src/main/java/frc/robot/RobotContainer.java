@@ -26,6 +26,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.ShooterPreferences;
+import frc.robot.commands.Shooter.AutoFire;
+import frc.robot.commands.Shooter.IndexerShooterStop;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants_OldRobot;
 import frc.robot.lib.AllianceSymmetry;
@@ -36,7 +39,9 @@ import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MoveMode;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Hopper;
+import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -62,6 +67,7 @@ public class RobotContainer {
 
         private final CommandXboxController joystick = new CommandXboxController(0);
         private final CommandXboxController operator = new CommandXboxController(1);
+        private final CommandXboxController shooterJoystick = new CommandXboxController(2);
 
         public final CommandSwerveDrivetrain drivetrain = TunerConstants_OldRobot.createDrivetrain();
 
@@ -73,6 +79,8 @@ public class RobotContainer {
         List<StructPublisher<Pose2d>> cameraEstimatedPosesPublisher = Arrays.asList(cameraEstimatedPosePublisher1,
                         cameraEstimatedPosePublisher2);
 
+        private Shooter shooter = new Shooter();
+        private Indexer indexer = new Indexer();
         public final Climber climber = new Climber();
         public final AdjustableHood hood = new AdjustableHood();
         public final Hopper hopper = new Hopper();
@@ -195,6 +203,21 @@ public class RobotContainer {
                 joystick.start().and(joystick.back()).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
+
+                shooterJoystick.a().toggleOnTrue(shooter.runShooter(() -> {
+                        return ShooterPreferences.LONG;
+                }));
+
+                shooterJoystick.x().onTrue(new IndexerShooterStop(shooter, indexer));
+
+                shooterJoystick.b().toggleOnTrue(indexer.runIndexer(() -> {
+                        return ShooterPreferences.INDEXER_VELOCITY;
+                }));
+
+                shooterJoystick.y().toggleOnTrue(
+                                new AutoFire(shooter, indexer, () -> ShooterPreferences.LONG,
+                                                () -> ShooterPreferences.INDEXER_VELOCITY));
+
         }
 
         public Command getAutonomousCommand() {

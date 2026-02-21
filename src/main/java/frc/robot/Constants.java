@@ -4,9 +4,11 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Preferences;
 
 /** Add your docs here. */
@@ -18,6 +20,51 @@ public class Constants {
         public static final int INTAKE_MOTOR = 28;
         public static final int PICKUP_MOTOR = 29;
 
+        public static final int SHOOTER_MOTOR_1 = 20;
+        public static final int SHOOTER_MOTOR_2 = 21;
+
+        public static final int INDEXER_MOTOR = 22;
+
+        public static final int ADJUSTABLE_SHOOTER_MOTOR = 24;
+
+    }
+
+    public static class ShooterPreferences {
+        public static final AngularVelocity SHORT;
+        public static final AngularVelocity MEDIUM;
+        public static final AngularVelocity LONG;
+
+        public static final AngularVelocity INDEXER_VELOCITY;
+
+        public static final double TIGHT;
+        public static final double WIDE;
+        public static final int STABLE_COUNT;
+
+        public static AngularVelocity distanceToVelocity(Distance distance) {
+            double temp = distance.in(Feet);
+            return RotationsPerSecond.of(temp * 5);
+        }
+
+        static {
+            // Shooter Velocities
+            Preferences.initDouble("ShooterVelocities/Short", 10);
+            SHORT = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Short", 10));
+            Preferences.initDouble("ShooterVelocities/Medium", 30);
+            MEDIUM = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Medium", 30));
+            Preferences.initDouble("ShooterVelocities/Long", 50);
+            LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 50));
+
+            // Indexer Velocities
+            Preferences.initDouble("IndexerVelocities/IndexerVelocity", 20);
+            INDEXER_VELOCITY = RotationsPerSecond.of(Preferences.getDouble("IndexerVelocities/IndexerVelocity", 20));
+
+            Preferences.initDouble("ShooterAccuracy/Tight", 1);
+            TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 1);
+            Preferences.initDouble("ShooterAccuracy/Wide", 10);
+            WIDE = Preferences.getDouble("ShooterAccuracy/Wide", 10);
+            Preferences.initInt("ShooterAccuracy/StableCount", 5);
+            STABLE_COUNT = Preferences.getInt("ShooterAccuracy/StableCount", 5);
+        }
     }
 
     public static class ClimberPreferences {
