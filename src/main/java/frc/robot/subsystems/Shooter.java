@@ -98,10 +98,28 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
+    double leaderCurrentDraw = shooterMotor1.getSupplyCurrent().getValueAsDouble();
+    double followerCurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
+    double differentialCurrentDraw = Math.abs(leaderCurrentDraw - followerCurrentDraw);
 
+    double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
     double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
+    double highError = 0.0;
+    double lowError = 0.0;
     double range = locked ? Prefs.WIDE : Prefs.TIGHT; // TODO improve name on "locked"
+
+    if (error >= highError) {
+      highError = error;
+    } else {
+      highError -= 1;
+    }
+
+    if (error <= lowError) {
+      lowError = error;
+    } else {
+      lowError += 1;
+    }
+
     if (Math.abs(error) < range) {
       if (settleCount < Prefs.STABLE_COUNT) {
         settleCount += 1;
@@ -113,9 +131,13 @@ public class Shooter extends SubsystemBase {
     locked = settleCount >= Prefs.STABLE_COUNT;
 
     SmartDashboard.putNumber("Shooter/RPS", shooterMotor1.getVelocity().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter/CurrentDraw", shooterMotor1.getSupplyCurrent().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter/Error", shooterMotor1.getClosedLoopError().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter/LeaderCurrentDraw", leaderCurrentDraw);
+    SmartDashboard.putNumber("Shooter/FollowerCurrentDraw", followerCurrentDraw);
+    SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw", differentialCurrentDraw);
+    SmartDashboard.putNumber("Shooter/Error", error);
     SmartDashboard.putNumber("Shooter/AverageError", averageError);
+    SmartDashboard.putNumber("Shooter/HighError", highError);
+    SmartDashboard.putNumber("Shooter/LowError", lowError);
     SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
     SmartDashboard.putBoolean("Shooter/Locked", locked);
   }
