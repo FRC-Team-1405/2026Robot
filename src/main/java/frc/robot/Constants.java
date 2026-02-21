@@ -72,6 +72,18 @@ public class Constants {
 
     }
 
+    public static class AutonomousPreferences {
+
+        public static final double WAIT_TIME;
+
+        static {
+            Preferences.initDouble("Auto Wait Time (Seconds)", 3.0);
+            WAIT_TIME = Preferences.getDouble("Auto Wait Time (Seconds)", 3.0);
+
+        }
+
+    }
+
     public static class HopperPreferences {
 
         public static final AngularVelocity HOPPER_FORWARD_SPEED;

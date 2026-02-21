@@ -1,37 +1,5 @@
 [
   {
-    "name": "/Preferences/Hood/Servo Speed Seconds",
-    "type": "double",
-    "value": 0.5,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Hood/Servo Speed Short",
-    "type": "double",
-    "value": 0.3,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Hood/Servo Speed Medium",
-    "type": "double",
-    "value": 0.6,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Hood/Servo Speed Long",
-    "type": "double",
-    "value": 1.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
     "name": "/Preferences/Climber/Arm/Extended",
     "type": "double",
     "value": 100.0,
@@ -80,57 +48,9 @@
     }
   },
   {
-    "name": "/Preferences/Hopper/Forward",
+    "name": "/Preferences/Hood/Servo Speed Seconds",
     "type": "double",
-    "value": 1.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Hopper/Reverse",
-    "type": "double",
-    "value": -1.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Intake/Out",
-    "type": "double",
-    "value": 10.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Intake/In",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Pickup/Out",
-    "type": "double",
-    "value": 10.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Pickup/In",
-    "type": "double",
-    "value": -10.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Intake/Settle Max",
-    "type": "double",
-    "value": 3.0,
+    "value": 0.5,
     "properties": {
       "persistent": true
     }

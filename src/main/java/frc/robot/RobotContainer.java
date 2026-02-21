@@ -4,12 +4,21 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import java.util.Arrays;
+import java.util.List;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -17,12 +26,20 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
 import frc.robot.generated.TunerConstants;
+import frc.robot.generated.TunerConstants_OldRobot;
+import frc.robot.lib.AllianceSymmetry;
+import frc.robot.lib.AprilTags;
+import frc.robot.lib.AutoCommands;
+import frc.robot.lib.CommandTracker;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.MoveMode;
 import frc.robot.subsystems.Hopper;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.Vision.VisionSample;
+import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.Intake;
 
 public class RobotContainer {
@@ -45,17 +62,29 @@ public class RobotContainer {
 
         private final CommandXboxController joystick = new CommandXboxController(0);
         private final CommandXboxController operator = new CommandXboxController(1);
-        private final CommandXboxController driver = new CommandXboxController(2);
 
-        public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+        public final CommandSwerveDrivetrain drivetrain = TunerConstants_OldRobot.createDrivetrain();
+
+        // Vision publishers
+        StructPublisher<Pose2d> cameraEstimatedPosePublisher1 = NetworkTableInstance.getDefault()
+                        .getStructTopic("Camera1_EstimatedPose", Pose2d.struct).publish();
+        StructPublisher<Pose2d> cameraEstimatedPosePublisher2 = NetworkTableInstance.getDefault()
+                        .getStructTopic("Camera2_EstimatedPose", Pose2d.struct).publish();
+        List<StructPublisher<Pose2d>> cameraEstimatedPosesPublisher = Arrays.asList(cameraEstimatedPosePublisher1,
+                        cameraEstimatedPosePublisher2);
 
         public final Climber climber = new Climber();
         public final AdjustableHood hood = new AdjustableHood();
         public final Hopper hopper = new Hopper();
         public final Intake intake = new Intake();
+        private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
+        MoveMode moveMode = new MoveMode();
 
         public RobotContainer() {
                 configureBindings();
+
+                AutoCommands.registerCommands(drivetrain, climber);
+                AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
         }
 
         private void configureBindings() {
@@ -70,25 +99,15 @@ public class RobotContainer {
                 SmartDashboard.putData(cmd);
                 operator.povDown().onTrue(cmd);
 
-                driver.leftBumper().onTrue(
-                                Commands.either(intake.runPickupStop(), intake.runPickupIn(), intake::isPickupRunning));
-
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
-                                drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive
-                                                                                                                   // forward
-                                                                                                                   // with
-                                                                                                                   // negative
-                                                                                                                   // Y
-                                                                                                                   // (forward)
-                                                .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with
-                                                                                                // negative X (left)
-                                                .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive
-                                                                                                            // counterclockwise
-                                                                                                            // with
-                                                                                                            // negative
-                                                                                                            // X (left)
-                                ));
+                                drivetrain.applyRequest(() -> drive
+                                                .withVelocityX(-joystick.getLeftY() * MaxSpeed
+                                                                * moveMode.selectSpeedMode().getAsDouble())
+                                                .withVelocityY(-joystick.getLeftX() * MaxSpeed
+                                                                * moveMode.selectSpeedMode().getAsDouble())
+                                                .withRotationalRate(moveMode.selectRotationMode(joystick, drivetrain,
+                                                                MaxAngularRate).getAsDouble())));
 
                 // Idle while the robot is disabled. This ensures the configured
                 // neutral mode is applied to the drive motors while disabled.
@@ -97,9 +116,22 @@ public class RobotContainer {
                                 drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
                 joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+                // TODO: maybe uncomment joystick.b()... because IDK if my move algorithm
+                // overrides this algorithm
+                // joystick.b().whileTrue(drivetrain.applyRequest(
+                // () -> point.withModuleDirection(
+                // new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+                joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
                 joystick.b().whileTrue(drivetrain.applyRequest(
                                 () -> point.withModuleDirection(
                                                 new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+
+                joystick.leftBumper().onTrue(
+                                Commands.either(intake.runPickupStop(), intake.runPickupIn(), intake::isPickupRunning));
+
+                // joystick.rightTrigger()
+                // .onTrue(intake.runPickupFuel())
+                // .onFalse(intake.runPickupStop("Driver/Intake/Stop"));
 
                 // Run SysId routines when holding back/start and X/Y.
                 // Note that each routine should be run exactly once in a single log.
@@ -108,25 +140,100 @@ public class RobotContainer {
                 joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
                 joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
+                // Zeroize/reset the field-centric heading on start and back press.
+                joystick.start().and(joystick.back()).onTrue(
+                                drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+                // Select speed mode
+                joystick.leftTrigger().onTrue(moveMode.setToSlowMode());
+                joystick.rightTrigger().onTrue(moveMode.setToFastMode());
+                // for the 2 lines below, ex. Left trigger is held, and right trigger is tapped
+                // quickly such that left trigger is still being held after right trigger is
+                // tapped. MoveMode.currentSpeedMode would be SLOW, then FAST, *then SLOW
+                // again*.
+                joystick.leftTrigger().and(joystick.rightTrigger().negate()).onTrue(moveMode.setToSlowMode());
+                joystick.rightTrigger().and(joystick.leftTrigger().negate()).onTrue(moveMode.setToFastMode());
+
+                joystick.leftTrigger().or(joystick.rightTrigger()).onFalse(moveMode.setToNormalMode());
+
+                // Select rotation mode
+                joystick.y().onTrue(moveMode.setToStandardMode());
+                // joystick.x().onTrue(moveMode.setToSnakeMode());
+                // joystick.b().onTrue(moveMode.setToCompassMode());
                 // Reset the field-centric heading on left bumper press.
-                joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+                joystick.start().and(joystick.back()).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
 
         public Command getAutonomousCommand() {
-                // Simple drive forward auton
-                final var idle = new SwerveRequest.Idle();
-                return Commands.sequence(
-                                // Reset our field centric heading to match the robot
-                                // facing away from our alliance station wall (0 deg).
-                                drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
-                                // Then slowly drive forward (away from us) for 5 seconds.
-                                drivetrain.applyRequest(() -> drive.withVelocityX(0.5)
-                                                .withVelocityY(0)
-                                                .withRotationalRate(0))
-                                                .withTimeout(5.0),
-                                // Finally idle for the rest of auton
-                                drivetrain.applyRequest(() -> idle));
+                return AutoCommands.getAutonomousCommand();
+        }
+
+        public void correctOdometry() {
+                // if (SIMULATE_VISION_FAILURES){
+                // int percentageFramesToDrop = 80;
+                // Random rnd = new Random();
+
+                // if(rnd.nextInt(100) < percentageFramesToDrop){
+                // return;
+                // }
+                // }
+
+                List<VisionSample> visionSamples = vision.flushSamples();
+                vision.updateSpeeds(drivetrain.getState().Speeds);
+                // System.out.println("vision sample count: " + visionSamples.size());
+                for (var sample : visionSamples) {
+
+                        double thetaStddev = 99999.0;
+                        if (true /* STRICT_VISION_ORIENTATION_WEIGHTING */) {
+                                // if sample weight isn't essentially perfect, don't trust orientation, sample
+                                // weighting is perfect when disabled
+                                thetaStddev = sample.weight() > 0.9 ? 10.0 : 99999.0;
+                        } else {
+                                // You will need to TUNE this scalar. A higher value (e.g., 5.0) means less
+                                // trust.
+                                thetaStddev = 1.0 / sample.weight();
+                        }
+
+                        drivetrain.addVisionMeasurement(
+                                        sample.pose(),
+                                        sample.timestamp(),
+                                        VecBuilder.fill(0.1 / sample.weight(), 0.1 / sample.weight(), thetaStddev));
+                }
+
+                Pose2d visionPose = null;
+                Pose2d odomPose = drivetrain.getState().Pose;
+                for (int i = 0; i < 2; i++) {
+                        if (i + 1 <= visionSamples.size()) {
+                                cameraEstimatedPosesPublisher.get(i).set(visionSamples.get(i).pose());
+                                visionPose = visionSamples.get(i).pose();
+                        }
+                }
+
+                // if (visionPose != null) {
+                // double yawError = yawDiffDegrees(visionPose, odomPose);
+                // yawErrorPub.set(yawError);
+                // }
+        }
+
+        /** Update NetworkTables with active commands from CommandTracker */
+        public static void updateNT() {
+                var inst = NetworkTableInstance.getDefault();
+                var table = inst.getTable("CommandTracker");
+
+                // Write active commands
+                int i = 0;
+                for (Command cmd : CommandTracker.getRunning()) {
+                        table.getEntry("cmd_" + i).setString(cmd.getName());
+                        i++;
+                }
+
+                // Clear leftover slots
+                for (int j = i; j < 2; j++) {
+                        table.getEntry("cmd_" + j).setString("");
+                }
+
+                table.getEntry("count").setNumber(CommandTracker.getRunning().size());
         }
 }

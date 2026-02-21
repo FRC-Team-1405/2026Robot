@@ -9,7 +9,8 @@ import com.ctre.phoenix6.HootAutoReplay;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.sim.PhysicsSim;
+import frc.robot.lib.MotorSim.PhysicsSim;
+import frc.robot.util.GamePeriod;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
@@ -23,24 +24,31 @@ public class Robot extends TimedRobot {
 
     public Robot() {
         m_robotContainer = new RobotContainer();
+
+        GamePeriod.elasticInit();
     }
 
     @Override
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
+        m_robotContainer.correctOdometry();
         CommandScheduler.getInstance().run();
+        RobotContainer.updateNT();
     }
 
     @Override
     public void disabledInit() {
+
     }
 
     @Override
     public void disabledPeriodic() {
+
     }
 
     @Override
     public void disabledExit() {
+
     }
 
     @Override
@@ -59,21 +67,26 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousExit() {
+
     }
 
     @Override
     public void teleopInit() {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
+
+            GamePeriod.elasticTeleopInit();
         }
     }
 
     @Override
     public void teleopPeriodic() {
+        GamePeriod.elasticTeleopPeriodic();
     }
 
     @Override
     public void teleopExit() {
+
     }
 
     @Override
