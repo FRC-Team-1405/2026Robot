@@ -26,7 +26,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Prefs;
-import frc.robot.sim.SimProfiles;
+import frc.robot.sim.sjc.MotorSim_Mech_SJC;
+import frc.robot.sim.sjc.PhysicsSim_SJC;
 
 public class Shooter extends SubsystemBase {
   private final TalonFX shooterMotor1 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_1);
@@ -38,6 +39,8 @@ public class Shooter extends SubsystemBase {
   private int settleCount = 0;
 
   private boolean locked = false;
+
+  private final MotorSim_Mech_SJC shooterMotorSimMech = new MotorSim_Mech_SJC("Shooter/FlywheelViz");
 
   public boolean isReadyToFire() {
     return locked;
@@ -79,8 +82,9 @@ public class Shooter extends SubsystemBase {
 
   /** Creates a new Shooter. */
   public Shooter() {
+    simulationInit();
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
-    SimProfiles.initShooter(shooterMotor1);
+    // SimProfiles.initShooter(shooterMotor1);
     stopShooter();
     // setShooterMotor();
   }
@@ -95,6 +99,9 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // TODO update to use velocity signal for higher refresh rate
+    shooterMotorSimMech.update(shooterMotor1.getPosition(), shooterMotor1.getVelocity());
+
     double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
     double range = locked ? Prefs.WIDE : Prefs.TIGHT; // TODO improve name on "locked"
     if (Math.abs(error) < range) {
@@ -112,6 +119,41 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/Error", shooterMotor1.getClosedLoopError().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
     SmartDashboard.putBoolean("Shooter/Locked", locked);
+  }
+
+  //
+  // Simulation code
+  //
+
+  /**
+   * Initialize simulation components
+   */
+  public void simulationInit() {
+    if (!edu.wpi.first.wpilibj.RobotBase.isReal()) {
+      // Add leader motor with gearbox simulation
+      // Parameters: motor, rotorInertia, loadMass, armLength, viscousCoeff,
+      // numMotors, gearRatio
+      // - viscousCoeff: air resistance on spinning flywheel (~0.001 for enclosed
+      // flywheel)
+      // - numMotors: 2 (both motors driving same gearbox)
+      double flywheelMassKg = Pounds.of(Constants.Prefs.FLYWHEEL_WEIGHT_LBS).in(Kilograms);
+      double flywheelRadiusMeters = Inches.of(Constants.Prefs.FLYWHEEL_DIAMETER_INCHES / 2.0).in(Meters);
+      double viscousDamping = 0.001; // Light air resistance
+
+      PhysicsSim_SJC.getInstance().addTalonFX(
+          shooterMotor1,
+          Constants.Prefs.FLYWHEEL_MOMENT_OF_INERTIA,
+          flywheelMassKg,
+          flywheelRadiusMeters,
+          viscousDamping,
+          2, // numberOfMotors in gearbox
+          Constants.Prefs.MOTOR_TO_WHEEL_GEAR_RATIO);
+    }
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    PhysicsSim_SJC.getInstance().run();
   }
 
 }
