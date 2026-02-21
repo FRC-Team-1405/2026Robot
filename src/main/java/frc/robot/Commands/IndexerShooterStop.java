@@ -9,12 +9,17 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Shooter;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class IndexerShooterStop extends SequentialCommandGroup {
-  /** Creates a new IndexerShooterStop. */
-  public IndexerShooterStop(Shooter shooterSubsytem, Indexer indexerSubsystem) {
-    addCommands(
-        shooterSubsytem.stopShooter(),
-        indexerSubsystem.stopIndexer());
-  };
-}
+/*
+ * You should consider using the more terse Command factories API instead
+ * https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-
+ * command-based.html#defining-commands
+ */
+// public class IndexerShooterStop extends SequentialCommandGroup {
+// /** Creates a new IndexerShooterStop. */
+// public IndexerShooterStop(Shooter shooterSubsytem, Indexer indexerSubsystem)
+// {
+// addCommands(
+// shooterSubsytem.stopShooter(),
+// indexerSubsystem.stopIndexer());
+// };
+// }

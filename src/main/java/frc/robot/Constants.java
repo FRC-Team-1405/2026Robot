@@ -2,6 +2,10 @@ package frc.robot;
 // Copyright (c) FIRST and other WPILib contributors.
 
 import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -26,12 +30,30 @@ public class Constants {
         public static final AngularVelocity SHORT;
         public static final AngularVelocity MEDIUM;
         public static final AngularVelocity LONG;
+        public static final AngularVelocity TEST;
 
         public static final AngularVelocity INDEXER_VELOCITY;
 
         public static final double TIGHT;
         public static final double WIDE;
         public static final int STABLE_COUNT;
+
+        // Flywheel physical properties
+        public static final double FLYWHEEL_DIAMETER_INCHES = 2.25;
+        public static final double FLYWHEEL_WEIGHT_LBS = 5.2;
+
+        // Gear ratio: wheel spins 1.5x faster than motor output (3:2 ratio)
+        public static final double MOTOR_TO_WHEEL_GEAR_RATIO = 1.5;
+
+        // Moment of inertia calculation for simulation
+        // Approximating flywheel as solid cylinder: I = (1/2) * m * r^2
+        // Using WPILib Units for conversion:
+        // mass = 5.2 lbs, radius = 1.125 inches
+        // I = 0.5 * mass_kg * radius_m^2
+        private static final double FLYWHEEL_MASS_KG = Pounds.of(FLYWHEEL_WEIGHT_LBS).in(Kilograms);
+        private static final double FLYWHEEL_RADIUS_M = Inches.of(FLYWHEEL_DIAMETER_INCHES / 2.0).in(Meters);
+        public static final double FLYWHEEL_MOMENT_OF_INERTIA = 0.5 * FLYWHEEL_MASS_KG * FLYWHEEL_RADIUS_M
+                * FLYWHEEL_RADIUS_M; // kg*m^2
 
         public static AngularVelocity distanceToVelocity(Distance distance) {
             double temp = distance.in(Feet);
@@ -46,6 +68,8 @@ public class Constants {
             MEDIUM = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Medium", 30));
             Preferences.initDouble("ShooterVelocities/Long", 50);
             LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 50));
+            Preferences.initDouble("ShooterVelocities/Test", 3);
+            TEST = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocites/Test", 3));
 
             // Indexer Velocities
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 20);

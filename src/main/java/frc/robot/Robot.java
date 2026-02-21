@@ -9,7 +9,7 @@ import com.ctre.phoenix6.HootAutoReplay;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.sim.PhysicsSim;
+// import frc.robot.sim.sjc.PhysicsSim_SJC;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
@@ -88,8 +88,8 @@ public class Robot extends TimedRobot {
     // public void testExit() {
     // }
 
-    @Override
-    public void simulationPeriodic() {
-        PhysicsSim.getInstance().run();
-    }
+    // @Override
+    // public void simulationPeriodic() {
+    // PhysicsSim_SJC.getInstance().run();
+    // }
 }

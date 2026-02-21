@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Stack;
 import java.util.function.Supplier;
 import java.lang.Math;
 import java.security.spec.DSAPrivateKeySpec;
@@ -27,11 +28,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Prefs;
-import frc.robot.sim.SimProfiles;
+// import frc.robot.sim.sjc.MotorSim_Mech_SJC;
+// import frc.robot.sim.sjc.PhysicsSim_SJC;
 
 public class Shooter extends SubsystemBase {
   private final TalonFX shooterMotor1 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_1);
-  private final TalonFX shooterMotor2 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_2);
+  // private final TalonFX shooterMotor2 = new
+  // TalonFX(Constants.CANBus.SHOOTER_MOTOR_2);
 
   private final VelocityVoltage m_VelocityVoltage = new VelocityVoltage(0).withSlot(0);
   private final NeutralOut m_Brake = new NeutralOut();
@@ -41,6 +44,9 @@ public class Shooter extends SubsystemBase {
   private int settleCount = 0;
 
   private boolean locked = false;
+
+  // private final MotorSim_Mech_SJC shooterMotorSimMech = new
+  // MotorSim_Mech_SJC("Shooter/FlywheelViz");
 
   public boolean isReadyToFire() {
     return locked;
@@ -82,10 +88,12 @@ public class Shooter extends SubsystemBase {
 
   /** Creates a new Shooter. */
   public Shooter() {
-    shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
-    SimProfiles.initShooter(shooterMotor1);
+    // simulationInit();
+    // shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1,
+    // MotorAlignmentValue.Opposed));
+    // SimProfiles.initShooter(shooterMotor1);
     stopShooter();
-    // setShooterMotor();
+    setShooterMotor();
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
@@ -98,14 +106,23 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // TODO update to use velocity signal for higher refresh rate
+    // shooterMotorSimMech.update(shooterMotor1.getPosition(),
+    // shooterMotor1.getVelocity());
+
     double leaderCurrentDraw = shooterMotor1.getSupplyCurrent().getValueAsDouble();
-    double followerCurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
-    double differentialCurrentDraw = Math.abs(leaderCurrentDraw - followerCurrentDraw);
+    // double followerCurrentDraw =
+    // shooterMotor2.getSupplyCurrent().getValueAsDouble();
+    // double differentialCurrentDraw = Math.abs(leaderCurrentDraw -
+    // followerCurrentDraw);
 
     double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
     double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
     double highError = 0.0;
     double lowError = 0.0;
+
+    // Stack<Double> last50Errors = new Stack<Double>();
+
     double range = locked ? Prefs.WIDE : Prefs.TIGHT; // TODO improve name on "locked"
 
     if (error >= highError) {
@@ -132,8 +149,9 @@ public class Shooter extends SubsystemBase {
 
     SmartDashboard.putNumber("Shooter/RPS", shooterMotor1.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/LeaderCurrentDraw", leaderCurrentDraw);
-    SmartDashboard.putNumber("Shooter/FollowerCurrentDraw", followerCurrentDraw);
-    SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw", differentialCurrentDraw);
+    // SmartDashboard.putNumber("Shooter/FollowerCurrentDraw", followerCurrentDraw);
+    // SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw",
+    // differentialCurrentDraw);
     SmartDashboard.putNumber("Shooter/Error", error);
     SmartDashboard.putNumber("Shooter/AverageError", averageError);
     SmartDashboard.putNumber("Shooter/HighError", highError);
@@ -141,5 +159,64 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
     SmartDashboard.putBoolean("Shooter/Locked", locked);
   }
+
+  // private double standardDeviation(double[] data) {
+  // double average = 0d;
+  // for (double number : data)
+  // average += number;
+  // average /= data.length;
+
+  // double[] deviations = new double[data.length];
+
+  // for (int i = 0; i < data.length; i++) {
+  // deviations[i] = data[i] - average;
+
+  // deviations[i] *= deviations[i];
+  // }
+
+  // double averageDeviation = 0d;
+  // for (double number : deviations)
+  // averageDeviation += number;
+  // averageDeviation /= deviations.length;
+
+  // return Math.sqrt(averageDeviation);
+  // }
+
+  //
+  // Simulation code
+  //
+
+  /**
+   * Initialize simulation components
+   */
+  // public void simulationInit() {
+  // if (!edu.wpi.first.wpilibj.RobotBase.isReal()) {
+  // // Add leader motor with gearbox simulation
+  // // Parameters: motor, rotorInertia, loadMass, armLength, viscousCoeff,
+  // // numMotors, gearRatio
+  // // - viscousCoeff: air resistance on spinning flywheel (~0.001 for enclosed
+  // // flywheel)
+  // // - numMotors: 2 (both motors driving same gearbox)
+  // double flywheelMassKg =
+  // Pounds.of(Constants.Prefs.FLYWHEEL_WEIGHT_LBS).in(Kilograms);
+  // double flywheelRadiusMeters =
+  // Inches.of(Constants.Prefs.FLYWHEEL_DIAMETER_INCHES / 2.0).in(Meters);
+  // double viscousDamping = 0.001; // Light air resistance
+
+  // PhysicsSim_SJC.getInstance().addTalonFX(
+  // shooterMotor1,
+  // Constants.Prefs.FLYWHEEL_MOMENT_OF_INERTIA,
+  // flywheelMassKg,
+  // flywheelRadiusMeters,
+  // viscousDamping,
+  // 2, // numberOfMotors in gearbox
+  // Constants.Prefs.MOTOR_TO_WHEEL_GEAR_RATIO);
+  // }
+  // }
+
+  // @Override
+  // public void simulationPeriodic() {
+  // PhysicsSim_SJC.getInstance().run();
+  // }
 
 }

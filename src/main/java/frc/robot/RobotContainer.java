@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Commands.AutoFire;
-import frc.robot.Commands.IndexerShooterStop;
+// import frc.robot.Commands.IndexerShooterStop;
 import frc.robot.Constants.Prefs;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -38,7 +38,7 @@ public class RobotContainer {
                         return Prefs.LONG;
                 }));
 
-                joystickTest.x().onTrue(new IndexerShooterStop(shooter, indexer));
+                // joystickTest.x().onTrue(new IndexerShooterStop(shooter, indexer));
 
                 joystickTest.b().toggleOnTrue(indexer.runIndexer(() -> {
                         return Prefs.INDEXER_VELOCITY;
