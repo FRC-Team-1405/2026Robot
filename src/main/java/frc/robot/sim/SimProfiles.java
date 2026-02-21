@@ -38,7 +38,10 @@ public class SimProfiles {
 
         motor.getConfigurator().apply(configs);
 
-        simShooter = new TalonFXSimProfile(motor).withRotorInertia(0.1).build();
+        simShooter = new TalonFXSimProfile(motor)
+                .withRotorInertia(0.1)
+                .withMotorCount(2)
+                .build();
         PhysicsSim.getInstance().addTalonFX(simShooter);
     }
 

@@ -88,8 +88,8 @@ public class Robot extends TimedRobot {
     // public void testExit() {
     // }
 
-    // @Override
-    // public void simulationPeriodic() {
-    // PhysicsSim.getInstance().run();
-    // }
+    @Override
+    public void simulationPeriodic() {
+        PhysicsSim.getInstance().run();
+    }
 }
