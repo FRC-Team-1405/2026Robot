@@ -62,43 +62,16 @@ public class RobotContainer {
                 // configure operator controls
                 Command cmd;
 
-                cmd = climber.runExtendClimber();
+                cmd = intake.runIntakeOut();
                 SmartDashboard.putData(cmd);
                 operator.povUp().onTrue(cmd);
 
-                cmd = climber.runRetractClimber();
+                cmd = intake.runIntakeIn();
                 SmartDashboard.putData(cmd);
                 operator.povDown().onTrue(cmd);
 
-                cmd = Commands.sequence(climber.runStop(),
-                                climber.runStopClaw()).withName("Climber Stop");
-                SmartDashboard.putData(cmd);
-                operator.x().onTrue(cmd);
-
-                cmd = hood.runSet(Constants.HoodPreferences.SERVO_SHORT).withName("Hood Speed Short");
-                SmartDashboard.putData(cmd);
-                joystick.a().onTrue(cmd);
-
-                cmd = hood.runSet(Constants.HoodPreferences.SERVO_MEDIUM).withName("Hood Speed Medium");
-                SmartDashboard.putData(cmd);
-                joystick.b().onTrue(cmd);
-
-                cmd = hood.runSet(Constants.HoodPreferences.SERVO_LONG).withName("Hood Speed Long");
-                SmartDashboard.putData(cmd);
-                joystick.y().onTrue(cmd);
-
-                cmd = hopper.runForwardHopper();
-                SmartDashboard.putData(cmd);
-                joystick.leftBumper().toggleOnTrue(cmd);
-
-                cmd = hopper.runReverseHopper();
-                SmartDashboard.putData(cmd);
-                joystick.rightBumper().toggleOnTrue(cmd);
-
-                driver.rightBumper().onTrue(intake.runToggleIntake("Driver/Intake/Arm"));
-                driver.rightTrigger()
-                                .onTrue(intake.runPickupFuel())
-                                .onFalse(intake.runPickupStop("Driver/Intake/Stop"));
+                driver.leftBumper().onTrue(
+                                Commands.either(intake.runPickupStop(), intake.runPickupIn(), intake::isPickupRunning));
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
