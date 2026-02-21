@@ -82,7 +82,7 @@ public class Camera {
     this.cachedCameraMatrix = Optional.of(intrinsics.cameraMatrix());
 
     poseEstimator = new PhotonPoseEstimator(
-        AprilTags.getAprilTagFieldLayout(), PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, this.robotToCamera);
+        AprilTags.getAprilTagFieldLayout(), PoseStrategy.LOWEST_AMBIGUITY, this.robotToCamera);
     poseEstimator.setTagModel(TargetModel.kAprilTag36h11);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
@@ -143,17 +143,17 @@ public class Camera {
       }
     }
 
-    for (int tagId : seenTags) {
-      trust *= Filtering.TAG_RANKINGS.getOrDefault(tagId, 0.0);
-    }
+    // for (int tagId : seenTags) {
+    // trust *= Filtering.TAG_RANKINGS.getOrDefault(tagId, 0.0);
+    // }
 
     trust *= Filtering.AREA_WEIGHT_COEFFICIENT.lerp(sumArea);
     trust *= Filtering.PIXEL_OFFSET_WEIGHT_COEFFICIENT.lerp(avgNormalizedPixelsFromCenter);
     trust *= Filtering.HEIGHT_WIDTH_PROPORTION_WEIGHT_COEFFICIENT.lerp(avgDimensionProportion);
 
-    if (DriverStation.isDisabled()) {
-      trust = 1.0;
-    }
+    // if (DriverStation.isDisabled()) {
+    // trust = 1.0;
+    // }
 
     var u = new VisionUpdate(pose, estRoboPose.timestampSeconds, trust);
     previousUpdate = Optional.of(u);
