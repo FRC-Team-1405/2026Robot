@@ -37,7 +37,7 @@ public class AutoFire extends SequentialCommandGroup {
           }
           return !shooterSubsytem.isReadyToFire();
         }),
-        Commands.print("indxer has stopped running"),
+        Commands.print("indexer has stopped running"),
         indexerSubsystem.runStopIndexer());
 
   };

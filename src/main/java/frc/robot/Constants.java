@@ -24,6 +24,7 @@ public class Constants {
 
     public static class Prefs {
         public static final AngularVelocity SHORT;
+        public static final AngularVelocity MEDIUM;
         public static final AngularVelocity LONG;
 
         public static final AngularVelocity INDEXER_VELOCITY;
@@ -41,6 +42,8 @@ public class Constants {
             // Shooter Velocities
             Preferences.initDouble("ShooterVelocities/Short", 10);
             SHORT = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Short", 10));
+            Preferences.initDouble("ShooterVelocities/Medium", 30);
+            MEDIUM = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Medium", 30));
             Preferences.initDouble("ShooterVelocities/Long", 50);
             LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 50));
 
