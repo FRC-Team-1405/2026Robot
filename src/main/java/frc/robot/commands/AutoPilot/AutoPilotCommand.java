@@ -76,6 +76,12 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
  *         .withConstraints(customConstraints)
  *         .build();
+ *
+ * // With custom profile thresholds (when a path is considered finished)
+ * // Parameters: errorXY (cm), errorTheta (deg), beelineRadius (cm)
+ * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
+ *         .withProfileThresholds(3.0, 1.0, 20.0)
+ *         .build();
  * </pre>
  */
 public class AutoPilotCommand extends FinneyCommand {
@@ -138,9 +144,9 @@ public class AutoPilotCommand extends FinneyCommand {
         // Initialize AutoPilot components with custom or default constraints
         this.kConstraints = builder.constraints;
         this.kProfile = new APProfile(kConstraints)
-                .withErrorXY(Centimeters.of(2))
-                .withErrorTheta(Degrees.of(0.5))
-                .withBeelineRadius(Centimeters.of(16));
+                .withErrorXY(Centimeters.of(builder.errorXYCentimeters))
+                .withErrorTheta(Degrees.of(builder.errorThetaDegrees))
+                .withBeelineRadius(Centimeters.of(builder.beelineRadiusCentimeters));
         this.kAutopilot = new Autopilot(kProfile);
 
         // TODO:Tune PID Loop
@@ -171,6 +177,10 @@ public class AutoPilotCommand extends FinneyCommand {
         private Optional<Supplier<Pose2d>> pointTowardsDuringMotion = Optional.empty();
         private double pointTowardsTransitionThreshold = 0.8; // 80% of distance
         private APConstraints constraints = kDefaultConstraints;
+        // Profile threshold defaults (units: centimeters / degrees)
+        private double errorXYCentimeters = 2.0;
+        private double errorThetaDegrees = 0.5;
+        private double beelineRadiusCentimeters = 16.0;
 
         public Builder(Supplier<Pose2d> targetSupplier, CommandSwerveDrivetrain drivetrain, String commandName) {
             this.targetSupplier = targetSupplier;
@@ -195,6 +205,23 @@ public class AutoPilotCommand extends FinneyCommand {
 
         public Builder withPointTowardsTransitionThreshold(double threshold) {
             this.pointTowardsTransitionThreshold = threshold;
+            return this;
+        }
+
+        /**
+         * Override the default profile thresholds used to determine when a path
+         * is considered finished.
+         *
+         * @param errorXYCentimeters       XY error threshold in centimeters
+         * @param errorThetaDegrees        theta error threshold in degrees
+         * @param beelineRadiusCentimeters beeline radius in centimeters
+         * @return this Builder
+         */
+        public Builder withProfileThresholds(double errorXYCentimeters, double errorThetaDegrees,
+                double beelineRadiusCentimeters) {
+            this.errorXYCentimeters = errorXYCentimeters;
+            this.errorThetaDegrees = errorThetaDegrees;
+            this.beelineRadiusCentimeters = beelineRadiusCentimeters;
             return this;
         }
 
