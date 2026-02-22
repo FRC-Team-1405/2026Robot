@@ -34,6 +34,12 @@ public class TunerConstants {
                         .withKP(0.001).withKI(0).withKD(0)
                         .withKS(0).withKV(0);
 
+        /**
+         * Example values for driveGains:
+         * .withKP(0.5).withKI(0).withKD(0.01)
+         * .withKS(0.3).withKV(1.6).withKA(3.0);
+         */
+
         // The closed-loop output type to use for the steer motors;
         // This affects the PID/FF gains for the steer motors
         private static final ClosedLoopOutputType kSteerClosedLoopOutput = ClosedLoopOutputType.Voltage;
@@ -58,7 +64,13 @@ public class TunerConstants {
         // cannot be null.
         // Some configs will be overwritten; check the `with*InitialConfigs()` API
         // documentation.
-        private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
+        private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration()
+                        .withCurrentLimits(
+                                        new CurrentLimitsConfigs()
+                                                        // TUNE THIS FOR YOUR ROBOT. This should be set to the current
+                                                        // at which your robot's drive motors start to slip.
+                                                        .withStatorCurrentLimit(Amps.of(80))
+                                                        .withStatorCurrentLimitEnable(true));
         private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
                         .withCurrentLimits(
                                         new CurrentLimitsConfigs()
@@ -79,15 +91,15 @@ public class TunerConstants {
 
         // Theoretical free speed (m/s) at 12 V applied output;
         // This needs to be tuned to your individual robot
-        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(14.54);
+        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.0);
 
         // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
         // This may need to be tuned to your individual robot
         private static final double kCoupleRatio = 0;
 
-        private static final double kDriveGearRatio = 3.7142857142857144;
+        private static final double kDriveGearRatio = 3.7142857142857144; // WCP Swerve X2S/X2St, X3 21T - 3.71:1
         private static final double kSteerGearRatio = 25.9;
-        private static final Distance kWheelRadius = Inches.of(3.5);
+        private static final Distance kWheelRadius = Inches.of(1.75);
 
         private static final boolean kInvertLeftSide = false;
         private static final boolean kInvertRightSide = true;

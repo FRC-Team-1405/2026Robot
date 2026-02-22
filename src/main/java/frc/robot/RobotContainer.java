@@ -69,7 +69,7 @@ public class RobotContainer {
         private final CommandXboxController operator = new CommandXboxController(1);
         private final CommandXboxController shooterJoystick = new CommandXboxController(2);
 
-        public final CommandSwerveDrivetrain drivetrain = TunerConstants_OldRobot.createDrivetrain();
+        public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
         // Vision publishers
         StructPublisher<Pose2d> cameraEstimatedPosePublisher1 = NetworkTableInstance.getDefault()
