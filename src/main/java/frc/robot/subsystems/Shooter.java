@@ -30,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.sim.SimProfiles;
+import frc.robot.sim.sjc.MotorSim_Mech_SJC;
+import frc.robot.sim.sjc.PhysicsSim_SJC;
 
 public class Shooter extends SubsystemBase {
   private final TalonFX shooterMotor1 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_1);
@@ -46,6 +48,8 @@ public class Shooter extends SubsystemBase {
   private double shooterTarget = 0.0;
 
   private boolean locked = false;
+
+  private final MotorSim_Mech_SJC shooterMotorSimMech = new MotorSim_Mech_SJC("Shooter/FlywheelViz");
 
   public boolean isReadyToFire() {
     return locked;
@@ -91,11 +95,12 @@ public class Shooter extends SubsystemBase {
 
   /** Creates a new Shooter. */
   public Shooter() {
-    SimProfiles.initShooter(shooterMotor1);
-    SimProfiles.initShooter(shooterMotor2);
+    // SimProfiles.initShooter(shooterMotor1);
+    // SimProfiles.initShooter(shooterMotor2);
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     stopShooter();
-    // setShooterMotor();
+    setShooterMotor();
+    simulationInit();
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
@@ -108,6 +113,9 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // TODO update to use velocity signal for higher refresh rate
+    shooterMotorSimMech.update(shooterMotor1.getPosition(), shooterMotor1.getVelocity());
+
     double leaderCurrentDraw = shooterMotor1.getSupplyCurrent().getValueAsDouble();
     double followerCurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
     double differentialCurrentDraw = Math.abs(leaderCurrentDraw - followerCurrentDraw);
@@ -153,4 +161,39 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("Shooter/Locked", locked);
   }
 
+  //
+  // Simulation code
+  //
+
+  /**
+   * Initialize simulation components
+   */
+  public void simulationInit() {
+    if (!edu.wpi.first.wpilibj.RobotBase.isReal()) {
+      // Add leader motor with gearbox simulation
+      // Parameters: motor, rotorInertia, loadMass, armLength, viscousCoeff,
+      // numMotors, gearRatio
+      // - viscousCoeff: air resistance on spinning flywheel (~0.001 for enclosed
+      // flywheel)
+      // - numMotors: 2 (both motors driving same gearbox)
+      double flywheelMassKg = Pounds.of(Constants.ShooterPhysicalProperties.FLYWHEEL_WEIGHT_LBS).in(Kilograms);
+      double flywheelRadiusMeters = Inches.of(Constants.ShooterPhysicalProperties.FLYWHEEL_DIAMETER_INCHES / 2.0)
+          .in(Meters);
+      double viscousDamping = 0.001; // Light air resistance
+
+      PhysicsSim_SJC.getInstance().addTalonFX(
+          shooterMotor1,
+          Constants.ShooterPhysicalProperties.FLYWHEEL_MOMENT_OF_INERTIA,
+          flywheelMassKg,
+          flywheelRadiusMeters,
+          viscousDamping,
+          2, // numberOfMotors in gearbox
+          Constants.ShooterPhysicalProperties.MOTOR_TO_WHEEL_GEAR_RATIO);
+    }
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    PhysicsSim_SJC.getInstance().run();
+  }
 }
