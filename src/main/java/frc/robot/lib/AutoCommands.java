@@ -45,15 +45,12 @@ public class AutoCommands {
         commandsToAddToChooser.put("AP_blueCenter", NamedCommands.getCommand("AP_blueCenter"));
         commandsToAddToChooser.put("AP_blueCenterToDepot", NamedCommands.getCommand("AP_blueCenterToDepot"));
         commandsToAddToChooser.put("AP_DepotFaceIn", NamedCommands.getCommand("AP_DepotFaceIn"));
-        commandsToAddToChooser.put("AP_origin", NamedCommands.getCommand("AP_origin"));
         commandsToAddToChooser.put("AP_climb", NamedCommands.getCommand("AP_climb"));
+
         commandsToAddToChooser.put("AP_rightBumpToField", NamedCommands.getCommand("AP_rightBumpToField"));
-        // commandsToAddToChooser.put("AP_fieldSideLeftBump",
-        // NamedCommands.getCommand("AP_fieldSideLeftBump"));
-        // commandsToAddToChooser.put("AP_allianceSideRightBump",
-        // NamedCommands.getCommand("AP_allianceSideRightBump"));
-        // commandsToAddToChooser.put("AP_allianceSideLeftBump",
-        // NamedCommands.getCommand("AP_allianceSideLeftBump"));
+        commandsToAddToChooser.put("AP_leftBumpToField", NamedCommands.getCommand("AP_leftBumpToField"));
+        commandsToAddToChooser.put("AP_rightBumpToAlliance", NamedCommands.getCommand("AP_rightBumpToAlliance"));
+        commandsToAddToChooser.put("AP_leftBumpToAlliance", NamedCommands.getCommand("AP_leftBumpToAlliance"));
 
         commandsToAddToChooser.put("AP_ShootFromDepot", NamedCommands.getCommand("AP_ShootFromDepot"));
 
