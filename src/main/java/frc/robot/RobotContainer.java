@@ -55,11 +55,15 @@ public class RobotContainer {
                                                                                           // second
                                                                                           // max angular velocity
 
+        private static final double DEADBAND = 0.10;
+
         /* Setting up bindings for necessary control of the swerve drive platform */
         private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-                        .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-                        .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive
-                                                                                 // motors
+                        .withDeadband(DEADBAND).withRotationalDeadband(DEADBAND); // Add a 10%
+                                                                                  // deadband
+        // .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop
+        // control for drive
+        // motors
         private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
         private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
@@ -95,6 +99,8 @@ public class RobotContainer {
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
         }
 
+        public static final double JOYSTICK_DEADBAND = 0.10;
+
         private void configureBindings() {
                 // configure operator controls
                 Command cmd;
@@ -110,9 +116,9 @@ public class RobotContainer {
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
                                 drivetrain.applyRequest(() -> drive
-                                                .withVelocityX(-joystick.getLeftY() * MaxSpeed
+                                                .withVelocityX(-applyDeadband(joystick.getLeftY()) * MaxSpeed
                                                                 * moveMode.selectSpeedMode().getAsDouble())
-                                                .withVelocityY(-joystick.getLeftX() * MaxSpeed
+                                                .withVelocityY(-applyDeadband(joystick.getLeftX()) * MaxSpeed
                                                                 * moveMode.selectSpeedMode().getAsDouble())
                                                 .withRotationalRate(moveMode.selectRotationMode(joystick, drivetrain,
                                                                 MaxAngularRate).getAsDouble())));
@@ -238,6 +244,10 @@ public class RobotContainer {
                 // double yawError = yawDiffDegrees(visionPose, odomPose);
                 // yawErrorPub.set(yawError);
                 // }
+        }
+
+        public static double applyDeadband(double value) {
+                return (Math.abs(value) < JOYSTICK_DEADBAND) ? 0.0 : value;
         }
 
         /** Update NetworkTables with active commands from CommandTracker */

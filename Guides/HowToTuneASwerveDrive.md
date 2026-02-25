@@ -22,6 +22,8 @@ Before touching software, confirm the hardware is correct:
 
 3. **Verify module positions**
    - Confirm `kFrontLeftXPos/YPos`, etc. are measured correctly from the robot center to each module center, in the WPILib coordinate system (+X = forward, +Y = left).
+   - FRC Coordinate System:
+https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html
    - Currently all set to ±10 inches. Measure and verify.
 
 4. **Verify motor/encoder inversions**
