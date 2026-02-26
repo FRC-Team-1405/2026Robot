@@ -80,8 +80,8 @@ public static final FireControl fireControl =
 
  public Command shootTestFuelCommand() {
     return Commands.sequence(
-        shooter.shootCommand(1500, 1500),
-        Commands.waitUntil(() -> shooter.shooterAtSpeed(1500, 1500)),
+        shooter.shootCommand(2500, 2500),
+        Commands.waitUntil(() -> shooter.shooterAtSpeed(2500, 2500)),
         Commands.run(() -> shooter.stopMotors(), shooter)
     );
 }
