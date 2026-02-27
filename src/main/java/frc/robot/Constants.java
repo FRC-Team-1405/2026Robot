@@ -28,7 +28,7 @@ public class Constants {
         public static final int SHOOTER_MOTOR_2 = 42;
         public static final int SHOOTER_MOTOR_3 = 43;
 
-        public static final int INDEXER_MOTOR = 22;
+        public static final int INDEXER_MOTOR = 40;
 
         public static final int ADJUSTABLE_SHOOTER_MOTOR = 24;
 

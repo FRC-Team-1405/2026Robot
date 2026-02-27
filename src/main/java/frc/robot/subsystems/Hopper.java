@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -20,7 +21,7 @@ public class Hopper extends SubsystemBase {
   private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
   /** Creates a new Hopper. */
   private TalonFX motor = new TalonFX(Constants.CANBus.HOPPER_MOTOR);
-  private final VelocityVoltage speed = new VelocityVoltage(0);
+  private final MotionMagicVelocityVoltage speed = new MotionMagicVelocityVoltage(0);
   private final NeutralOut stop = new NeutralOut();
 
   public Hopper() {
@@ -57,5 +58,9 @@ public class Hopper extends SubsystemBase {
 
   public Command runReverseHopper() {
     return startEnd(() -> reverseHopper(), () -> stopHopper()).withName("Run Reverse Hopper");
+  }
+
+  public Command runHopperStop() {
+    return runOnce(() -> stopHopper());
   }
 }

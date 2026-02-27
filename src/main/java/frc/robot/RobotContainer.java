@@ -101,11 +101,11 @@ public class RobotContainer {
 
                 cmd = intake.runIntakeOut();
                 SmartDashboard.putData(cmd);
-                operator.povUp().onTrue(cmd);
+                joystick.povUp().onTrue(cmd);
 
                 cmd = intake.runIntakeIn();
                 SmartDashboard.putData(cmd);
-                operator.povDown().onTrue(cmd);
+                joystick.povDown().onTrue(cmd);
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
@@ -135,7 +135,24 @@ public class RobotContainer {
                                                 new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
                 joystick.leftBumper().onTrue(
-                                Commands.either(intake.runPickupStop(), intake.runPickupIn(), intake::isPickupRunning));
+                                Commands.parallel(
+                                                intake.runPickupIn(),
+                                                hopper.runForwardHopper()));
+                joystick.leftBumper().onFalse(
+                                Commands.parallel(
+                                                intake.runPickupStop(),
+                                                hopper.runHopperStop()));
+
+                joystick.rightBumper().onTrue(
+                                Commands.parallel(
+                                                hopper.runForwardHopper(),
+                                                indexer.runIndexer(() -> ShooterPreferences.INDEXER_VELOCITY),
+                                                shooter.runShooter(() -> ShooterPreferences.INTERMEDIATE)));
+                joystick.rightBumper().onFalse(
+                                Commands.parallel(
+                                                hopper.runHopperStop(),
+                                                indexer.runStopIndexer(),
+                                                shooter.stopShooter()));
 
                 // joystick.rightTrigger()
                 // .onTrue(intake.runPickupFuel())
@@ -184,8 +201,8 @@ public class RobotContainer {
                 }));
 
                 shooterJoystick.y().toggleOnTrue(
-                                new AutoFire(shooter, indexer, () -> ShooterPreferences.LONG,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY));
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.SHORT,
+                                                () -> ShooterPreferences.INDEXER_VELOCITY).repeatedly());
 
         }
 
