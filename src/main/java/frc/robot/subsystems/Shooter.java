@@ -30,14 +30,17 @@ public class Shooter extends SubsystemBase {
   private final SparkFlex shooterLeftTopMotor;
   private final SparkFlex shooterRightBottomMotor;
   private final SparkFlex shooterRightTopMotor;
+  private SparkFlex shooterTippyTopMotor;
 
   private final RelativeEncoder shooterLeftBottomEncoder;
   private final RelativeEncoder shooterLeftTopEncoder;
   private final RelativeEncoder shooterRightBottomEncoder;
   private final RelativeEncoder shooterRightTopEncoder;
+  private RelativeEncoder shooterTippyTopEncoder;
 
   private final SparkClosedLoopController shooterBottomController;
   private final SparkClosedLoopController shooterTopController;
+  private SparkClosedLoopController shooterTippyTopController;
   private boolean hardwareFollowConfigured = false;
   private double topTargetRPM = 0.0;
   private double bottomTargetRPM = 0.0;
@@ -55,6 +58,36 @@ public class Shooter extends SubsystemBase {
   private final List<Long> bottomRecoveryTimes = new ArrayList<>(); // List of recorded recovery times
 
   /** Creates a new Shooter. */
+
+  public Shooter(
+      final int TOP_LEFT_SHOOTER_ID,
+      final int BOTTOM_LEFT_SHOOTER_ID,
+      final int TOP_RIGHT_SHOOTER_ID,
+      final int BOTTOM_RIGHT_SHOOTER_ID,
+      final int TIPPY_TOP_SHOOTER_ID) {
+        this(TOP_LEFT_SHOOTER_ID, BOTTOM_LEFT_SHOOTER_ID, TOP_RIGHT_SHOOTER_ID, BOTTOM_RIGHT_SHOOTER_ID);
+
+      // CREATE EXTRA MOTOR
+      shooterTippyTopMotor = new SparkFlex(TIPPY_TOP_SHOOTER_ID, MotorType.kBrushless);
+
+      // OBTAIN ENCODER
+      shooterTippyTopEncoder = shooterTippyTopMotor.getEncoder();
+
+      // CONFIG CONTROLLER
+      shooterTippyTopController = shooterTippyTopMotor.getClosedLoopController();
+      SparkFlexConfig shooterTippyTopConfig = new SparkFlexConfig();
+      shooterTippyTopConfig.closedLoop.feedForward
+          .kS(Constants.Shooter.TIPPY_kS)
+          .kV(Constants.Shooter.TIPPY_kV)
+          .kA(Constants.Shooter.TIPPY_kA);
+
+      // PID CONFIG
+      shooterTippyTopConfig.closedLoop
+          .p(Constants.Shooter.TIPPY_TOP_P)
+          .i(Constants.Shooter.TIPPY_TOP_I)
+          .d(Constants.Shooter.TIPPY_TOP_D);
+    }
+
   public Shooter(
       final int TOP_LEFT_SHOOTER_ID,
       final int BOTTOM_LEFT_SHOOTER_ID,

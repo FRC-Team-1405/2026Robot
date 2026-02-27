@@ -222,7 +222,6 @@ public final class Constants {
       public static final int TOP_LEFT_SHOOTER_ID = 30;
   
 
-
       //front bottom motor
       @CanId(CanId.Type.MOTOR)
       public static final int BOTTOM_LEFT_SHOOTER_ID = 31;
@@ -236,6 +235,10 @@ public final class Constants {
       //back bottom motor
       @CanId(CanId.Type.MOTOR)
       public static final int BOTTOM_RIGHT_SHOOTER_ID = 33;
+
+      //Top motor
+      @CanId(CanId.Type.MOTOR)
+      public static final int TIPPY_TOP_SHOOTER_ID = 1; //TODO
     
 
       //top motor controlling stuff
@@ -250,18 +253,32 @@ public final class Constants {
       public static final double BOTTOM_SHOOTER_P = 0.00008;
       public static final double BOTTOM_SHOOTER_I = 0.0;
       public static final double BOTTOM_SHOOTER_D = 0.000001;
-       public static final double BOTTOM_SHOOTER_FF = 0.0;
+      public static final double BOTTOM_SHOOTER_FF = 0.0;
+
+      //tippy top motor controlling stuff TODO
+      public static final double TIPPY_TOP_SHOOTER_RPM = 0.0;
+      public static final double TIPPY_TOP_P = 0.0;
+      public static final double TIPPY_TOP_I = 0.0;
+      public static final double TIPPY_TOP_D = 0.0;
+      public static final double TIPPY_TOP_FF = 0.0;
 
       public static final double shooterMotorTolerance = 50.0;
       public static final int SHOOTER_CURRENT_STALL_LIMIT = 80;
       public static final int SHOOTER_CURRENT_FREE_LIMIT = 50;
       public static final double SHOOTER_VOLTAGE_LIMIT = 10.0;
-
+      
+      //kV
+      public static final double TIPPY_kV = 0.0; //TODO
       public static final double TOP_kV = 0.002;   
       public static final double BOTTOM_kV = 0.0022;
+
+      //kS
+      public static final double TIPPY_kS = 0.0; //TODO
       public static final double TOP_kS = 0.01;     
       public static final double BOTTOM_kS = 0.01;
 
+      //kA
+      public static final double TIPPY_kA = 0.0; //TODO
       public static final double TOP_kA = 0.0064;        
       public static final double BOTTOM_kA = 0.0038;
 
