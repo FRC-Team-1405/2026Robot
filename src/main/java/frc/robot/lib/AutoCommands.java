@@ -52,6 +52,8 @@ public class AutoCommands {
         commandsToAddToChooser.put("AP_rightBumpToAlliance", NamedCommands.getCommand("AP_rightBumpToAlliance"));
         commandsToAddToChooser.put("AP_leftBumpToAlliance", NamedCommands.getCommand("AP_leftBumpToAlliance"));
 
+        commandsToAddToChooser.put("AP_rightBumpANGLEToField", NamedCommands.getCommand("AP_rightBumpANGLEToField"));
+
         commandsToAddToChooser.put("AP_ShootFromDepot", NamedCommands.getCommand("AP_ShootFromDepot"));
 
         commandsToAddToChooser.put("AP_CenterHarvest", NamedCommands.getCommand("AP_CenterHarvest"));
