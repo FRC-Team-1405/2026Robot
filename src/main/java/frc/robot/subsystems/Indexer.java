@@ -26,6 +26,10 @@ public class Indexer extends SubsystemBase {
 
     private final NeutralOut m_Brake = new NeutralOut();
 
+    private void setUpIndexer() {
+
+    }
+
     private void setIndexerSpeed(Supplier<AngularVelocity> speed) {
         indexerMotor.setControl(velocityVoltage.withVelocity(speed.get()));
     }
@@ -37,6 +41,7 @@ public class Indexer extends SubsystemBase {
     /** Creates a new Indexer. */
     public Indexer() {
         SimProfiles.initIndexer(indexerMotor);
+        setUpIndexer();
     }
 
     public Command runIndexer(Supplier<AngularVelocity> speed) {

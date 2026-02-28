@@ -5,6 +5,7 @@
 package frc.robot.commands.Shooter;
 
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Shooter;
@@ -24,6 +25,13 @@ public class AutoFire extends SequentialCommandGroup {
 
     addCommands(
         Commands.print("shooter is running"),
+        new InstantCommand() {
+          @Override
+          public void execute() {
+            shooterSubsytem.setSettleCount(0);
+            shooterSubsytem.setLocked(false);
+          }
+        },
         shooterSubsytem.runShooter(shooterVelocity),
         Commands.waitUntil(() -> {
           return shooterSubsytem.isReadyToFire();

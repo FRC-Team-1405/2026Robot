@@ -28,7 +28,7 @@ public class Constants {
         public static final int SHOOTER_MOTOR_2 = 42;
         public static final int SHOOTER_MOTOR_3 = 43;
 
-        public static final int INDEXER_MOTOR = 22;
+        public static final int INDEXER_MOTOR = 40;
 
         public static final int ADJUSTABLE_SHOOTER_MOTOR = 24;
 
@@ -85,10 +85,10 @@ public class Constants {
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 20);
             INDEXER_VELOCITY = RotationsPerSecond.of(Preferences.getDouble("IndexerVelocities/IndexerVelocity", 20));
 
-            Preferences.initDouble("ShooterAccuracy/Tight", 1);
-            TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 1);
-            Preferences.initDouble("ShooterAccuracy/Wide", 10);
-            WIDE = Preferences.getDouble("ShooterAccuracy/Wide", 10);
+            Preferences.initDouble("ShooterAccuracy/Tight", 3);
+            TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 3);
+            Preferences.initDouble("ShooterAccuracy/Wide", 5);
+            WIDE = Preferences.getDouble("ShooterAccuracy/Wide", 5);
             Preferences.initInt("ShooterAccuracy/StableCount", 5);
             STABLE_COUNT = Preferences.getInt("ShooterAccuracy/StableCount", 5);
         }

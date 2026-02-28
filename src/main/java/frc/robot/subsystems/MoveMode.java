@@ -340,10 +340,10 @@ public class MoveMode {
     private void elasticUpdate() {
         final String strSpeedMode = currentSpeedMode.toString();
         speedModePublisher.set(strSpeedMode);
-        SmartDashboard.putString("Speed Mode", strSpeedMode);
+        SmartDashboard.putString("MoveMode/Speed Mode", strSpeedMode);
 
         final String strRotationMode = currentRotationMode.toString();
         rotationModePublisher.set(strRotationMode);
-        SmartDashboard.putString("Rotation Mode", strRotationMode);
+        SmartDashboard.putString("MoveMode/Rotation Mode", strRotationMode);
     }
 }

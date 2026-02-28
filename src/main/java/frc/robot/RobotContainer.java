@@ -174,7 +174,7 @@ public class RobotContainer {
                 drivetrain.registerTelemetry(logger::telemeterize);
 
                 shooterJoystick.a().toggleOnTrue(shooter.runShooter(() -> {
-                        return ShooterPreferences.INTERMEDIATE;
+                        return ShooterPreferences.MEDIUM;
                 }));
 
                 shooterJoystick.x().onTrue(new IndexerShooterStop(shooter, indexer));
@@ -184,8 +184,8 @@ public class RobotContainer {
                 }));
 
                 shooterJoystick.y().toggleOnTrue(
-                                new AutoFire(shooter, indexer, () -> ShooterPreferences.LONG,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY));
+                                new AutoFire(shooter, indexer, () -> ShooterPreferences.MEDIUM,
+                                                () -> ShooterPreferences.INDEXER_VELOCITY).repeatedly());
 
         }
 
