@@ -7,8 +7,11 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -22,7 +25,7 @@ import frc.robot.sim.SimProfiles;
 public class Indexer extends SubsystemBase {
     private final TalonFX indexerMotor = new TalonFX(CANBus.INDEXER_MOTOR);
 
-    private final VelocityVoltage velocityVoltage = new VelocityVoltage(0);
+    private final MotionMagicVelocityVoltage velocityVoltage = new MotionMagicVelocityVoltage(0);
 
     private final NeutralOut m_Brake = new NeutralOut();
 
