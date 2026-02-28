@@ -143,9 +143,11 @@ public class Intake extends SubsystemBase {
     SmartDashboard.putData(cmd);
     return cmd;
   }
+  // return startEnd(() -> forwardHopper(), () -> stopHopper()).withName("Run
+  // Forward Hopper");
 
   public Command runPickupIn() {
-    return runOnce(() -> pickupIn());
+    return startEnd(() -> pickupIn(), () -> stopPickup());
   }
 
   public Command runPickupStop(String name) {
