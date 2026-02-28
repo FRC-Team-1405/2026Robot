@@ -29,11 +29,15 @@ public class Indexer extends SubsystemBase {
 
     private final NeutralOut m_Brake = new NeutralOut();
 
+    private boolean isIndexerActive = false;
+
     private void setIndexerSpeed(Supplier<AngularVelocity> speed) {
+        isIndexerActive = true;
         indexerMotor.setControl(velocityVoltage.withVelocity(speed.get()));
     }
 
     private void indexerStop() {
+        isIndexerActive = false;
         indexerMotor.setControl(m_Brake);
     }
 
@@ -56,5 +60,9 @@ public class Indexer extends SubsystemBase {
 
     @Override
     public void periodic() {
+    }
+
+    public boolean isIndexerRunning() {
+        return isIndexerActive;
     }
 }

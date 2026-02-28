@@ -19,6 +19,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.concurrent.Event;
+import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -69,8 +71,8 @@ public class RobotContainer {
 
         private final Telemetry logger = new Telemetry(MaxSpeed);
 
-        private final CommandXboxController joystick = new CommandXboxController(0);
-        private final CommandXboxController operator = new CommandXboxController(1);
+        private final CommandXboxController driverJoystick = new CommandXboxController(0);
+        private final CommandXboxController operatorJoystick = new CommandXboxController(1);
         private final CommandXboxController shooterJoystick = new CommandXboxController(2);
 
         public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -107,21 +109,22 @@ public class RobotContainer {
 
                 cmd = intake.runIntakeOut();
                 SmartDashboard.putData(cmd);
-                operator.povUp().onTrue(cmd);
+                driverJoystick.povUp().onTrue(cmd);
 
                 cmd = intake.runIntakeIn();
                 SmartDashboard.putData(cmd);
-                operator.povDown().onTrue(cmd);
+                driverJoystick.povDown().onTrue(cmd);
 
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
                                 drivetrain.applyRequest(() -> drive
-                                                .withVelocityX(-applyDeadband(joystick.getLeftY()) * MaxSpeed
+                                                .withVelocityX(-applyDeadband(driverJoystick.getLeftY()) * MaxSpeed
                                                                 * moveMode.selectSpeedMode().getAsDouble())
-                                                .withVelocityY(-applyDeadband(joystick.getLeftX()) * MaxSpeed
+                                                .withVelocityY(-applyDeadband(driverJoystick.getLeftX()) * MaxSpeed
                                                                 * moveMode.selectSpeedMode().getAsDouble())
-                                                .withRotationalRate(moveMode.selectRotationMode(joystick, drivetrain,
-                                                                MaxAngularRate).getAsDouble())));
+                                                .withRotationalRate(
+                                                                moveMode.selectRotationMode(driverJoystick, drivetrain,
+                                                                                MaxAngularRate).getAsDouble())));
 
                 // Idle while the robot is disabled. This ensures the configured
                 // neutral mode is applied to the drive motors while disabled.
@@ -129,19 +132,49 @@ public class RobotContainer {
                 RobotModeTriggers.disabled().whileTrue(
                                 drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-                joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+                driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
                 // TODO: maybe uncomment joystick.b()... because IDK if my move algorithm
                 // overrides this algorithm
                 // joystick.b().whileTrue(drivetrain.applyRequest(
                 // () -> point.withModuleDirection(
                 // new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-                joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-                joystick.b().whileTrue(drivetrain.applyRequest(
+                driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+                driverJoystick.b().whileTrue(drivetrain.applyRequest(
                                 () -> point.withModuleDirection(
-                                                new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+                                                new Rotation2d(-driverJoystick.getLeftY(),
+                                                                -driverJoystick.getLeftX()))));
+                // Trigger hopperTrigger = new Trigger(() -> {
+                // return intake.isPickupRunning() || indexer.isIndexerRunning();
+                // });
+                // hopperTrigger.onTrue( hopper.runForwardHopper() );
 
-                joystick.leftBumper().onTrue(
-                                Commands.either(intake.runPickupStop(), intake.runPickupIn(), intake::isPickupRunning));
+                driverJoystick.leftBumper().onFalse(
+                                Commands.parallel(
+                                                intake.runPickupStop(),
+                                                hopper.runStopHopper()));
+                driverJoystick.leftBumper().onTrue(
+                                Commands.parallel(
+                                                intake.runPickupIn(),
+                                                hopper.runForwardHopper()));
+
+                driverJoystick.rightBumper().onFalse(
+                                Commands.parallel(
+                                                hopper.runStopHopper(),
+                                                indexer.runStopIndexer(),
+                                                shooter.stopShooter()));
+
+                driverJoystick.rightBumper().onTrue(
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INTERMEDIATE,
+                                                () -> ShooterPreferences.INDEXER_VELOCITY).repeatedly());
+                // driverJoystick.rightBumper().onTrue(
+                // Commands.parallel(
+                // hopper.runForwardHopper(),
+                // indexer.runIndexer(() -> {
+                // return ShooterPreferences.INDEXER_VELOCITY;
+                // }),
+                // shooter.runShooter(() -> {
+                // return ShooterPreferences.INTERMEDIATE;
+                // })));
 
                 // joystick.rightTrigger()
                 // .onTrue(intake.runPickupFuel())
@@ -149,33 +182,38 @@ public class RobotContainer {
 
                 // Run SysId routines when holding back/start and X/Y.
                 // Note that each routine should be run exactly once in a single log.
-                joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-                joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-                joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-                joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+                driverJoystick.back().and(driverJoystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+                driverJoystick.back().and(driverJoystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+                driverJoystick.start().and(driverJoystick.y())
+                                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+                driverJoystick.start().and(driverJoystick.x())
+                                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
                 // Zeroize/reset the field-centric heading on start and back press.
-                joystick.start().and(joystick.back()).onTrue(
+                driverJoystick.start().and(driverJoystick.back()).onTrue(
                                 drivetrain.runOnce(drivetrain::seedFieldCentric));
 
                 // Select speed mode
-                joystick.leftTrigger().onTrue(moveMode.setToSlowMode());
-                joystick.rightTrigger().onTrue(moveMode.setToFastMode());
+                driverJoystick.leftTrigger().onTrue(moveMode.setToSlowMode());
+                driverJoystick.rightTrigger().onTrue(moveMode.setToFastMode());
                 // for the 2 lines below, ex. Left trigger is held, and right trigger is tapped
                 // quickly such that left trigger is still being held after right trigger is
                 // tapped. MoveMode.currentSpeedMode would be SLOW, then FAST, *then SLOW
                 // again*.
-                joystick.leftTrigger().and(joystick.rightTrigger().negate()).onTrue(moveMode.setToSlowMode());
-                joystick.rightTrigger().and(joystick.leftTrigger().negate()).onTrue(moveMode.setToFastMode());
+                driverJoystick.leftTrigger().and(driverJoystick.rightTrigger().negate())
+                                .onTrue(moveMode.setToSlowMode());
+                driverJoystick.rightTrigger().and(driverJoystick.leftTrigger().negate())
+                                .onTrue(moveMode.setToFastMode());
 
-                joystick.leftTrigger().or(joystick.rightTrigger()).onFalse(moveMode.setToNormalMode());
+                driverJoystick.leftTrigger().or(driverJoystick.rightTrigger()).onFalse(moveMode.setToNormalMode());
 
                 // Select rotation mode
-                joystick.y().onTrue(moveMode.setToStandardMode());
+                driverJoystick.y().onTrue(moveMode.setToStandardMode());
                 // joystick.x().onTrue(moveMode.setToSnakeMode());
                 // joystick.b().onTrue(moveMode.setToCompassMode());
                 // Reset the field-centric heading on left bumper press.
-                joystick.start().and(joystick.back()).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+                driverJoystick.start().and(driverJoystick.back())
+                                .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -190,7 +228,7 @@ public class RobotContainer {
                 }));
 
                 shooterJoystick.y().toggleOnTrue(
-                                new AutoFire(shooter, indexer, () -> ShooterPreferences.LONG,
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.LONG,
                                                 () -> ShooterPreferences.INDEXER_VELOCITY));
 
         }
