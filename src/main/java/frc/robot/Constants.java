@@ -238,7 +238,7 @@ public final class Constants {
 
       //Top motor
       @CanId(CanId.Type.MOTOR)
-      public static final int TIPPY_TOP_SHOOTER_ID = 1; //TODO
+      public static final int BITTY_BOTTOM_SHOOTER_ID = 1; //TODO
     
 
       //top motor controlling stuff
@@ -256,11 +256,11 @@ public final class Constants {
       public static final double BOTTOM_SHOOTER_FF = 0.0;
 
       //tippy top motor controlling stuff TODO
-      public static final double TIPPY_TOP_SHOOTER_RPM = 0.0;
-      public static final double TIPPY_TOP_P = 0.0;
-      public static final double TIPPY_TOP_I = 0.0;
-      public static final double TIPPY_TOP_D = 0.0;
-      public static final double TIPPY_TOP_FF = 0.0;
+      public static final double BITTY_BOTTOM_SHOOTER_RPM = 0.0;
+      public static final double BITTY_BOTTOM_P = 0.0;
+      public static final double BITTY_BOTTOM_I = 0.0;
+      public static final double BITTY_BOTTOM_D = 0.0;
+      public static final double BITTY_BOTTOM_FF = 0.0;
 
       public static final double shooterMotorTolerance = 50.0;
       public static final int SHOOTER_CURRENT_STALL_LIMIT = 80;
@@ -268,17 +268,17 @@ public final class Constants {
       public static final double SHOOTER_VOLTAGE_LIMIT = 10.0;
       
       //kV
-      public static final double TIPPY_kV = 0.0; //TODO
+      public static final double BITTY_kV = 0.0; //TODO
       public static final double TOP_kV = 0.002;   
       public static final double BOTTOM_kV = 0.0022;
 
       //kS
-      public static final double TIPPY_kS = 0.0; //TODO
+      public static final double BITTY_kS = 0.0; //TODO
       public static final double TOP_kS = 0.01;     
       public static final double BOTTOM_kS = 0.01;
 
       //kA
-      public static final double TIPPY_kA = 0.0; //TODO
+      public static final double BITTY_kA = 0.0; //TODO
       public static final double TOP_kA = 0.0064;        
       public static final double BOTTOM_kA = 0.0038;
 
