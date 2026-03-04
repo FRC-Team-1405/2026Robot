@@ -14,6 +14,6 @@ public class IndexerShooterStop extends SequentialCommandGroup {
   public IndexerShooterStop(Shooter shooterSubsytem, Indexer indexerSubsystem) {
     addCommands(
         shooterSubsytem.stopShooter(),
-        indexerSubsystem.stopIndexer());
+        indexerSubsystem.runStopIndexer());
   };
 }
