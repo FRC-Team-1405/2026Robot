@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 import java.lang.Math;
+import java.lang.annotation.Target;
 import java.security.spec.DSAPrivateKeySpec;
 
 import com.ctre.phoenix6.controls.Follower;
@@ -87,6 +88,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private void shooterStop() {
+    shooterTarget = 0.0;
     shooterMotor1.setControl(m_Brake);
   }
 

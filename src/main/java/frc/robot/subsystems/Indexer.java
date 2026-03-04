@@ -44,7 +44,6 @@ public class Indexer extends SubsystemBase {
     /** Creates a new Indexer. */
     public Indexer() {
         SimProfiles.initIndexer(indexerMotor);
-        setUpIndexer();
     }
 
     public Command runIndexer(Supplier<AngularVelocity> speed) {
