@@ -10,6 +10,7 @@ import edu.wpi.first.networktables.StringTopic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import static frc.robot.RobotContainer.applyDeadband;
 
 /*
  * DRIVE TEAM README
@@ -253,7 +254,7 @@ public class MoveMode {
      * @return the right stick's value capped by maxAngularRate
      */
     private double standardMode(final CommandXboxController joystick, final double maxAngularRate) {
-        return -joystick.getRightX() * maxAngularRate;
+        return -applyDeadband(joystick.getRightX()) * maxAngularRate;
     }
 
     /**
@@ -267,8 +268,8 @@ public class MoveMode {
      *         PIDController
      */
     private double snakeMode(final CommandXboxController joystick, final CommandSwerveDrivetrain drivetrain) {
-        final double joystickX = joystick.getLeftX();
-        final double joystickY = joystick.getLeftY();
+        final double joystickX = applyDeadband(joystick.getLeftX());
+        final double joystickY = applyDeadband(joystick.getLeftY());
 
         return calculateForJoystick(joystickX, joystickY, drivetrain);
     }
@@ -283,8 +284,8 @@ public class MoveMode {
      *         PIDController
      */
     private double compassMode(final CommandXboxController joystick, final CommandSwerveDrivetrain drivetrain) {
-        final double joystickX = joystick.getRightX();
-        final double joystickY = joystick.getRightY();
+        final double joystickY = applyDeadband(joystick.getRightY());
+        final double joystickX = applyDeadband(joystick.getRightX());
 
         return calculateForJoystick(joystickX, joystickY, drivetrain);
     }

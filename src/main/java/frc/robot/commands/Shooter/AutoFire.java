@@ -7,6 +7,7 @@ package frc.robot.commands.Shooter;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Shooter;
 
@@ -20,7 +21,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class AutoFire extends SequentialCommandGroup {
   /** Creates a new AutoFire. */
-  public AutoFire(Shooter shooterSubsytem, Indexer indexerSubsystem,
+  public AutoFire(Shooter shooterSubsytem, Indexer indexerSubsystem, Hopper hopper,
       Supplier<AngularVelocity> shooterVelocity, Supplier<AngularVelocity> indexerVelocity) {
 
     addCommands(
@@ -31,6 +32,7 @@ public class AutoFire extends SequentialCommandGroup {
         }),
         Commands.print("indexer is running"),
         indexerSubsystem.runIndexer(indexerVelocity),
+        hopper.runForwardHopper(),
         Commands.waitUntil(() -> {
           if (!shooterSubsytem.isReadyToFire()) {
             System.out.println("stop");
@@ -38,7 +40,8 @@ public class AutoFire extends SequentialCommandGroup {
           return !shooterSubsytem.isReadyToFire();
         }),
         Commands.print("indexer has stopped running"),
-        indexerSubsystem.runStopIndexer());
+        indexerSubsystem.runStopIndexer(),
+        hopper.runStopHopper());
 
   };
 }
