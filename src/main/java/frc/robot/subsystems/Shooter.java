@@ -82,9 +82,8 @@ public class Shooter extends SubsystemBase {
 
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
     shooterMotor1.setControl(m_VelocityVoltage.withVelocity(speed.get()));
-    settleCount = 0;
     shooterTarget = speed.get().in(RotationsPerSecond);
-    locked = false;
+
   }
 
   private void shooterStop() {
@@ -133,9 +132,13 @@ public class Shooter extends SubsystemBase {
       lowError += 1;
     }
 
-    if (MathUtil.isNear(shooterTarget, target, 1.0) && Math.abs(error) < range) {
-      if (settleCount < ShooterPreferences.STABLE_COUNT) {
-        settleCount += 1;
+    if (target > 0.0) {
+      if (MathUtil.isNear(shooterTarget, target, 1.0) && Math.abs(error) < range) {
+        if (settleCount < ShooterPreferences.STABLE_COUNT) {
+          settleCount += 1;
+        }
+      } else {
+        settleCount = 0;
       }
     } else {
       settleCount = 0;
@@ -155,5 +158,4 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
     SmartDashboard.putBoolean("Shooter/Locked", locked);
   }
-
 }

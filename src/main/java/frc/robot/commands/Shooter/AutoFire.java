@@ -25,13 +25,6 @@ public class AutoFire extends SequentialCommandGroup {
 
     addCommands(
         Commands.print("shooter is running"),
-        new InstantCommand() {
-          @Override
-          public void execute() {
-            shooterSubsytem.setSettleCount(0);
-            shooterSubsytem.setLocked(false);
-          }
-        },
         shooterSubsytem.runShooter(shooterVelocity),
         Commands.waitUntil(() -> {
           return shooterSubsytem.isReadyToFire();
