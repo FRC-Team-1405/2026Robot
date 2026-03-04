@@ -164,7 +164,7 @@ public class RobotContainer {
                                                 shooter.stopShooter()));
 
                 driverJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INTERMEDIATE,
+                                new AutoFire(shooter, indexer, () -> ShooterPreferences.INTERMEDIATE,
                                                 () -> ShooterPreferences.INDEXER_VELOCITY).repeatedly());
                 // driverJoystick.rightBumper().onTrue(
                 // Commands.parallel(
