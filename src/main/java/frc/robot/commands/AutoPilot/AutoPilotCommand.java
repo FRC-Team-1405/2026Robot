@@ -95,7 +95,7 @@ public class AutoPilotCommand extends FinneyCommand {
     // Default constraints
     private static final APConstraints kDefaultConstraints = new APConstraints()
             .withAcceleration(4.0) // TUNE THIS TO YOUR ROBOT!
-            .withVelocity(3.0)
+            .withVelocity(4.0)
             .withJerk(10.0);
 
     // Instance-specific AutoPilot components (final but constructed per instance)
