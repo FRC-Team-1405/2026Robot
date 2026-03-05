@@ -78,7 +78,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  *         .build();
  * </pre>
  */
-public class AutoPilotCommand extends FinneyCommand {
+public class CommandsForAutoPilot extends FinneyCommand {
     private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
 
     // Publishes AP's target position
@@ -126,7 +126,7 @@ public class AutoPilotCommand extends FinneyCommand {
     /**
      * Private constructor - use Builder to create instances
      */
-    private AutoPilotCommand(Builder builder) {
+    private CommandsForAutoPilot(Builder builder) {
         m_targetSupplier = builder.targetSupplier;
         m_drivetrain = builder.drivetrain;
         m_entryAngle = builder.entryAngle;
@@ -210,8 +210,8 @@ public class AutoPilotCommand extends FinneyCommand {
             return this;
         }
 
-        public AutoPilotCommand build() {
-            return new AutoPilotCommand(this);
+        public CommandsForAutoPilot build() {
+            return new CommandsForAutoPilot(this);
         }
     }
 
