@@ -41,7 +41,6 @@ public class RobotContainer {
         Constants.Shooter.TOP_RIGHT_SHOOTER_ID,
         Constants.Shooter.BOTTOM_RIGHT_SHOOTER_ID,
         Constants.Shooter.BOTTOM_LEFT_SHOOTER_ID
-      
     );
 public static final FireControl fireControl =
     new FireControl(() -> swerve.getPose(),() -> DriverStation.getAlliance().orElse(Alliance.Blue),() -> new ChassisSpeeds()
