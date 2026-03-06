@@ -164,8 +164,10 @@ public class RobotContainer {
                                                 shooter.stopShooter()));
 
                 driverJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INTERMEDIATE,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY).repeatedly());
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
+                                                .repeatedly());
+                driverJoystick.rightBumper().onFalse(
+                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
                 // driverJoystick.rightBumper().onTrue(
                 // Commands.parallel(
                 // hopper.runForwardHopper(),
@@ -217,19 +219,15 @@ public class RobotContainer {
 
                 drivetrain.registerTelemetry(logger::telemeterize);
 
-                shooterJoystick.a().toggleOnTrue(shooter.runShooter(() -> {
-                        return ShooterPreferences.INTERMEDIATE;
-                }));
+                shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.SHORT));
+                shooterJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.MEDIUM));
+                shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.LONG));
 
-                shooterJoystick.x().onTrue(new IndexerShooterStop(shooter, indexer));
-
-                shooterJoystick.b().toggleOnTrue(indexer.runIndexer(() -> {
-                        return ShooterPreferences.INDEXER_VELOCITY;
-                }));
-
-                shooterJoystick.y().toggleOnTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.LONG,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY));
+                shooterJoystick.rightBumper().onTrue(
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
+                                                .repeatedly());
+                shooterJoystick.rightBumper().onFalse(
+                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
 
         }
 
