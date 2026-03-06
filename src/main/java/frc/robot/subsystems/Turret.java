@@ -108,7 +108,7 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Turret Angle", turretEncoder.getPosition());
-        pointToTarget(controllerOfFire.getCurrentTarget());
+        // pointToTarget(controllerOfFire.getCurrentTarget()); TODO
     }
 
     public class TurretSwitch {

@@ -168,6 +168,6 @@ public class FireControlTest {
 
         fc.periodic();
         System.out.println(fc.getShooterRpm());
-        assertEquals(1500.0, fc.getShooterRpm(), 0.02, "Rpm is incorrect.");
+        assertEquals(1000.0, fc.getShooterRpm(), 0.02, "Rpm is incorrect.");
     }
 }

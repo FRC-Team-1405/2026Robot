@@ -164,7 +164,7 @@ public final class Constants {
 
   public static final class Intake {
     @CanId(CanId.Type.MOTOR)
-    public static final int INTAKE_LIFT_MOTOR_ID = 0;
+    public static final int INTAKE_LIFT_MOTOR_ID = 21;
     @CanId(CanId.Type.MOTOR)
     public static final int INTAKE_MOTOR_ID = 20;
     public static final double INTAKE_LIFT_SPEED = 0.5;

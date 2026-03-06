@@ -5,13 +5,16 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.sim.SparkFlexSim;
+import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLimitSwitch;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.LimitSwitchConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.LimitSwitchConfig.Behavior;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -31,19 +34,19 @@ import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
   // assuming these are singletons
-  private final SparkFlex liftMotor;
+  private final SparkMax liftMotor;
   private final SparkFlex intakeMotor;
   private final SparkLimitSwitch liftLimitSwitchUp;
   private final SparkLimitSwitch liftLimitSwitchDown;
 
   private final SparkFlexConfig intakeMotorConfig;
   private final LimitSwitchConfig liftLimitSwitchConfig;
-  private final SparkFlexConfig liftMotorConfig;
+  private final SparkMaxConfig liftMotorConfig;
 
   private final double intakeLiftSpeed;
   private final double intakeSpeed;
 
-  private final SparkFlexSim flexSim;
+  private final SparkMaxSim flexSim;
   private final SparkFlexSim intakeMotorSim;
 
   private final SingleJointedArmSim liftSimulator = new SingleJointedArmSim(
@@ -63,7 +66,7 @@ public class Intake extends SubsystemBase {
       DCMotor.getNeoVortex(1));
 
   public Intake(int liftMotorID, int intakeMotorID) {
-    liftMotor = new SparkFlex(liftMotorID, MotorType.kBrushless);
+    liftMotor = new SparkMax(liftMotorID, MotorType.kBrushless);
     intakeMotor = new SparkFlex(intakeMotorID, MotorType.kBrushless);
 
     liftLimitSwitchConfig = new LimitSwitchConfig();
@@ -85,7 +88,7 @@ public class Intake extends SubsystemBase {
         Constants.Intake.INAKE_kA);
     intakeMotor.configure(intakeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    liftMotorConfig = new SparkFlexConfig();
+    liftMotorConfig = new SparkMaxConfig();
     liftMotorConfig
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(Constants.Intake.CURRENT_LIMIT)
@@ -99,7 +102,7 @@ public class Intake extends SubsystemBase {
     intakeLiftSpeed = Constants.Intake.INTAKE_LIFT_SPEED;
     intakeSpeed = Constants.Intake.INTAKE_SPEED; // Using constant for now
 
-    flexSim = new SparkFlexSim(liftMotor, DCMotor.getNeoVortex(1));
+    flexSim = new SparkMaxSim(liftMotor, DCMotor.getNeoVortex(1));
     intakeMotorSim = new SparkFlexSim(intakeMotor, DCMotor.getNeoVortex(1));
   }
 
