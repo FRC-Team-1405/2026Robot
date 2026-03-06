@@ -109,6 +109,7 @@ public class FireControl extends SubsystemBase{
         return d;
     } 
 
+    @Override
     //Checks every cycle for the correct target loctation, distance, and robot sped
     public void periodic() { 
         target = getClosestTarget(robotSupplier.get());
@@ -148,7 +149,7 @@ public class FireControl extends SubsystemBase{
     /**
      * @return The offset needed to aim while moving
      */
-    public double getOffset() { //TODO
+    private double getOffset() {
         double offset;
         offset = 0.0;
         return offset;
@@ -160,7 +161,7 @@ public class FireControl extends SubsystemBase{
     public Rotation2d getCurrentTarget() {
         return currentTarget;
     }
-    
+
     /**
      * @return The distance from the current target
      */

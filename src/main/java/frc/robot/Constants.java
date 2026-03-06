@@ -86,6 +86,9 @@ public final class Constants {
       new Translation2d(Units.inchesToMeters(494.61), 0.0),
       new Translation2d(Units.inchesToMeters(651.22), Units.inchesToMeters(317.69)));
 
+  
+  public static final double CALISPEED = .2;
+
   /**
    * Annotate CAN ID fields with this annotation so we can detect duplicates in a
    * unit test
@@ -132,6 +135,12 @@ public final class Constants {
   public static final class LEDs {
     public static final int PWM_PIN = 0;
     public static final int LENGTH = 150;
+  }
+  public static final class Turret {
+    public static final int TURRET_MOTOR_ID = 10;
+    public static final double VOLTAGE = 10.0;
+    public static final int CURRENT = 50;
+    public static final double TURRET_GEAR_RATIO_IO = 20 * 200 / 28;
   }
 
   public static final class Vision {
