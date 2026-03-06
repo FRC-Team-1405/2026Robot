@@ -1,9 +1,11 @@
 package frc.robot.lib;
 
 import java.util.HashMap;
+import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -76,6 +78,17 @@ public class AutoCommands {
                 .forEach(name -> chooser.addOption(name, commandsToAddToChooser.get(name)));
     }
 
+    public static void initShootPosition(SendableChooser<Supplier<Pose2d>> shootingPositions) {
+        shootingPositions.addOption("FrontHub", AutoPilotCommands.blueShootCenter);
+        shootingPositions.setDefaultOption("FrontHub", AutoPilotCommands.blueShootCenter);
+        SmartDashboard.putData("shootingPositions", shootingPositions);
+    }
+
+    public static Supplier<Pose2d> getShootPosition(SendableChooser<Supplier<Pose2d>> shootingPositions) {
+        shootingPositions.getSelected();
+        return shootingPositions.getSelected();
+    }
+
     public static Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */
         if (DriverStation.isFMSAttached()
@@ -85,5 +98,7 @@ public class AutoCommands {
         } else {
             return Commands.print("Auto Disabled");
         }
+        SmartDashboard.getString(AUTO_SMARTDASHBOARD_FOLDER + "shooterPositions", "FrontHub");
+
     }
 }

@@ -71,7 +71,7 @@ public class AutoPilotCommands {
                         Rotation2d.fromDegrees(90));
 
         // Shooter Poses
-        public static Supplier<Pose2d> blueShootCenter = () -> new Pose2d(3.5, 4, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> blueShootCenter = () -> new Pose2d(2, 3.5, Rotation2d.fromDegrees(0));
 
         // Center Poses
         public static Supplier<Pose2d> farRightCenter = () -> new Pose2d(8.25, 1, Rotation2d.fromDegrees(0));
@@ -345,6 +345,7 @@ public class AutoPilotCommands {
                                 MoveTo_feedingStation.get(),
                                 Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
                                 MoveTo_blueShootCenter.get()
+
                 // Commands.parallel(MoveTo_fieldSideLeftBump.get(), cmd));
                 // Commands.print("climbing").andThen(Commands.waitSeconds(3))
                 );
