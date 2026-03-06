@@ -30,14 +30,17 @@ public class Shooter extends SubsystemBase {
   private final SparkFlex shooterLeftTopMotor;
   private final SparkFlex shooterRightBottomMotor;
   private final SparkFlex shooterRightTopMotor;
+  private SparkFlex shooterBittyBottomMotor;
 
   private final RelativeEncoder shooterLeftBottomEncoder;
   private final RelativeEncoder shooterLeftTopEncoder;
   private final RelativeEncoder shooterRightBottomEncoder;
   private final RelativeEncoder shooterRightTopEncoder;
+  private RelativeEncoder shooterBittyBottomEncoder;
 
   private final SparkClosedLoopController shooterBottomController;
   private final SparkClosedLoopController shooterTopController;
+  private SparkClosedLoopController shooterBittyBottomController;
   private boolean hardwareFollowConfigured = false;
   private double topTargetRPM = 0.0;
   private double bottomTargetRPM = 0.0;
@@ -54,7 +57,44 @@ public class Shooter extends SubsystemBase {
   private long bottomRecoveryStart = 0; // Time when bottom motor fell below tolerance
   private final List<Long> bottomRecoveryTimes = new ArrayList<>(); // List of recorded recovery times
 
-  /** Creates a new Shooter. */
+  /** Creates a new Shooter. 5 Motors*/
+  public Shooter(
+      final int TOP_LEFT_SHOOTER_ID,
+      final int BOTTOM_LEFT_SHOOTER_ID,
+      final int TOP_RIGHT_SHOOTER_ID,
+      final int BOTTOM_RIGHT_SHOOTER_ID,
+      final int TIPPY_TOP_SHOOTER_ID) {
+        this(TOP_LEFT_SHOOTER_ID, BOTTOM_LEFT_SHOOTER_ID, TOP_RIGHT_SHOOTER_ID, BOTTOM_RIGHT_SHOOTER_ID);
+
+      // CREATE EXTRA MOTOR
+      shooterBittyBottomMotor = new SparkFlex(TIPPY_TOP_SHOOTER_ID, MotorType.kBrushless);
+
+      // OBTAIN ENCODER
+      shooterBittyBottomEncoder = shooterBittyBottomMotor.getEncoder();
+
+      // CONFIG CONTROLLER
+      shooterBittyBottomController = shooterBittyBottomMotor.getClosedLoopController();
+      SparkFlexConfig shooterBittyBottomConfig = new SparkFlexConfig();
+      shooterBittyBottomConfig.closedLoop.feedForward
+          .kS(Constants.Shooter.BITTY_kS)
+          .kV(Constants.Shooter.BITTY_kV)
+          .kA(Constants.Shooter.BITTY_kA);
+
+      // PID CONFIG
+      shooterBittyBottomConfig.closedLoop
+          .p(Constants.Shooter.BITTY_BOTTOM_P)
+          .i(Constants.Shooter.BITTY_BOTTOM_I)
+          .d(Constants.Shooter.BITTY_BOTTOM_D);
+
+      try {
+        shooterBittyBottomConfig.follow(shooterLeftBottomMotor); //TODO
+        hardwareFollowConfigured = true;
+      } catch(Exception ex) {
+        hardwareFollowConfigured = false;
+      }
+    }
+
+  /** Creates a new Shooter. 4 Motors*/
   public Shooter(
       final int TOP_LEFT_SHOOTER_ID,
       final int BOTTOM_LEFT_SHOOTER_ID,
