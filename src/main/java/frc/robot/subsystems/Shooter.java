@@ -108,8 +108,8 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double leaderCurrentDraw = shooterMotor1.getSupplyCurrent().getValueAsDouble();
-    double followerCurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
+    double leaderCurrentDraw = shooterMotor1.getStatorCurrent().getValueAsDouble();
+    double followerCurrentDraw = shooterMotor2.getStatorCurrent().getValueAsDouble();
     double differentialCurrentDraw = Math.abs(leaderCurrentDraw - followerCurrentDraw);
 
     double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
@@ -152,5 +152,4 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
     SmartDashboard.putBoolean("Shooter/Locked", locked);
   }
-
 }

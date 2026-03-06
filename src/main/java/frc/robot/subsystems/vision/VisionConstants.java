@@ -22,7 +22,7 @@ public class VisionConstants {
                                         new Transform3d(
                                                         new Translation3d(
                                                                         Units.inchesToMeters(2.1),
-                                                                        Units.inchesToMeters(-10.9),
+                                                                        Units.inchesToMeters(10.9),
                                                                         Units.inchesToMeters(28.85)),
                                                         new Rotation3d(0, Math.toRadians(-34.5), Math.toRadians(-10))),
                                         new CameraIntrinsics(
@@ -39,7 +39,7 @@ public class VisionConstants {
                                         1.0,
                                         new Transform3d(
                                                         new Translation3d(Units.inchesToMeters(2.1),
-                                                                        Units.inchesToMeters(10.9),
+                                                                        Units.inchesToMeters(-10.9),
                                                                         Units.inchesToMeters(28.85)),
                                                         new Rotation3d(0, Math.toRadians(-34.5), Math.toRadians(10))),
                                         new CameraIntrinsics(
