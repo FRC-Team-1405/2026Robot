@@ -153,7 +153,8 @@ public final class Swerve extends AdvancedSubsystem {
           config,
           () -> {
             // Boolean supplier that controls when the path will be mirrored for the red
-            // alliance.  This will flip the path being followed to the red side of the field.
+            // alliance. This will flip the path being followed to the red side of the
+            // field.
             // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
             var alliance = DriverStation.getAlliance();
@@ -167,7 +168,7 @@ public final class Swerve extends AdvancedSubsystem {
       DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", e.getStackTrace());
     }
     SmartDashboard.putData("Check Swerve", systemCheckCommand());
-  } 
+  }
 
   public Command goToPoseCommand(Pose2d targetPose, Rotation2d approachAngle) {
     Rotation2d targetRotation = targetPose.getRotation();
@@ -180,16 +181,17 @@ public final class Swerve extends AdvancedSubsystem {
     poses.add(targetPoseWithApproach);
     List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(poses);
 
-    PathPlannerPath path = new PathPlannerPath(waypoints, 
-                                                new PathConstraints(4.0, 2.0, 2 * Math.PI, 4 * Math.PI),
-                                                new IdealStartingState(0.0, this.getPose().getRotation()), 
-                                                new GoalEndState(0.0, targetRotation));
+    PathPlannerPath path = new PathPlannerPath(waypoints,
+        new PathConstraints(4.0, 2.0, 2 * Math.PI, 4 * Math.PI),
+        new IdealStartingState(0.0, this.getPose().getRotation()),
+        new GoalEndState(0.0, targetRotation));
 
     return AutoBuilder.followPath(path);
-//     return new FollowPathCommand(path, this::getPose, this::getCurrentSpeeds, this::driveRobotRelativeWithFF, new PPHolonomicDriveController(Constants.Swerve.PathFollowing.TRANSLATION_CONSTANTS,
-//     Constants.Swerve.PathFollowing.ROTATION_CONSTANTS), config, null, this);
- }
- 
+    // return new FollowPathCommand(path, this::getPose, this::getCurrentSpeeds,
+    // this::driveRobotRelativeWithFF, new
+    // PPHolonomicDriveController(Constants.Swerve.PathFollowing.TRANSLATION_CONSTANTS,
+    // Constants.Swerve.PathFollowing.ROTATION_CONSTANTS), config, null, this);
+  }
 
   @Override
   public void periodic() {
@@ -264,8 +266,9 @@ public final class Swerve extends AdvancedSubsystem {
             modules[3].getTargetState().angle.getDegrees(),
             modules[3].getTargetState().speedMetersPerSecond,
         });
-    
-    SmartDashboard.putNumber("Swerve/ModuleDifference", modules[0].getTargetState().speedMetersPerSecond - modules[0].getDriveVelocityMetersPerSecond());
+
+    SmartDashboard.putNumber("Swerve/ModuleDifference",
+        modules[0].getTargetState().speedMetersPerSecond - modules[0].getDriveVelocityMetersPerSecond());
     // Rotation3d orientation = getOrientation();
     // SmartDashboard.putNumberArray(
     // "Swerve/Orientation",
@@ -440,7 +443,7 @@ public final class Swerve extends AdvancedSubsystem {
   public SwerveDrivePoseEstimator getPoseEstimator() {
     return odometry;
   }
-  
+
   /**
    * Set the desired states of all the swerve modules
    *
@@ -505,15 +508,16 @@ public final class Swerve extends AdvancedSubsystem {
   public ChassisSpeeds getCurrentSpeeds() {
     return kinematics.toChassisSpeeds(getStates());
   }
- public Command backUpCommand() {
-  return Commands.race(
-    Commands.run(()-> {
-      this.driveRobotRelative(new ChassisSpeeds(0.0 , -1.0, 0.0));
-    }),
-    Commands.waitSeconds(.30)
 
-  );
- }
+  public Command backUpCommand() {
+    return Commands.race(
+        Commands.run(() -> {
+          this.driveRobotRelative(new ChassisSpeeds(0.0, -1.0, 0.0));
+        }),
+        Commands.waitSeconds(.30)
+
+    );
+  }
 
   @Override
   protected Command systemCheckCommand() {

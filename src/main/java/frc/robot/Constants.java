@@ -34,8 +34,7 @@ public final class Constants {
   public static final Rectangle2d BLUE_ALLIANCE_BUMP = new Rectangle2d(
       new Translation2d(Units.inchesToMeters(158.61 - 13.0), Units.inchesToMeters(49.84)),
       new Translation2d(Units.inchesToMeters(205.61 + 13.0), Units.inchesToMeters(267.85)));
-  // Bump Field Constants manipulated to work with 45 degree robot lock^^ (keep
-  // when merging branches plz)
+  // Bump Field Constants manipulated to work with 45 degree robot lock^^ (keep when merging branches plz)
   static {
     try {
       apriltagLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2026RebuiltAndymark.m_resourceFile);
@@ -125,7 +124,7 @@ public final class Constants {
 
   public static final class Joystick {
 
-    // PID Constants for bump angle constraint
+    // TODO PID Constants for bump angle constraint
     public static final double kP = 2;
     public static final double kI = 0;
     public static final double kD = 0;
@@ -137,10 +136,19 @@ public final class Constants {
     public static final int LENGTH = 150;
   }
   public static final class Turret {
-    public static final int TURRET_MOTOR_ID = 10;
+    public static final int TURRET_MOTOR_ID = 50;
+    public static final int Turret_HALL_EFFECT_ID = 0; //TODO get Hall effect sensor id?
     public static final double VOLTAGE = 10.0;
     public static final int CURRENT = 50;
     public static final double TURRET_GEAR_RATIO_IO = 20 * 200 / 28;
+
+    public static final double TURRET_kV = 0.0010522;
+    public static final double TURRET_kA = 0.00010721;
+    public static final double TURRET_kS = 0.017925;
+    
+    public static final double TURRET_P = 0.00024301;
+    public static final double TURRET_I = 0.0;
+    public static final double TURRET_D = 0.0;
   }
 
   public static final class Vision {
@@ -152,17 +160,14 @@ public final class Constants {
                                                                                           // Single Tag StdDevs
     public static final Matrix<N3, N1> multiTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0); // TODO emperically tune Multi
                                                                                          // Tag StdDevs
-
   }
 
   public static final class Intake {
     @CanId(CanId.Type.MOTOR)
     public static final int INTAKE_LIFT_MOTOR_ID = 0;
     @CanId(CanId.Type.MOTOR)
-    public static final int INTAKE_MOTOR_ID = 1;
+    public static final int INTAKE_MOTOR_ID = 20;
     public static final double INTAKE_LIFT_SPEED = 0.5;
-    public static final int LIFT_LIMIT_SWITCH_UP_ID = 0;
-    public static final int LIFT_LIMIT_SWITCH_DOWN_ID = 0;
     public static final int CURRENT_LIMIT = 50;
     public static final int VOLTAGE_LIMIT = 10;
     public static final double INTAKE_SPEED = 0.5;
@@ -173,15 +178,32 @@ public final class Constants {
     public static final double LIFT_MAX_RADIANS = Math.PI / 2.0;
     public static final double WHEEL_MOMENT_OF_INERTIA = 0.00006;
     public static final double INTAKE_GEAR_RATIO = 1.0 / 3.0;
+
+    public static final double INAKE_P = 0.00005;
+    public static final double INAKE_I = 0.0;
+    public static final double INAKE_D = 0.0;
+
+    public static final double INAKE_kV = 0.0018096;
+    public static final double INAKE_kA = 0.0022961;
+    public static final double INAKE_kS = 0.3012;
   }
 
   public static final class Indexer {
-    public static final int INDEXER_MOTOR_ID = 55;
+    public static final int INDEXER_MOTOR_ID = 40;
     public static final int CURRENT_LIMIT = 50;
     public static final double VOLTAGE_LIMIT = 10;
     public static final double SPEED = 0.5;
     public static final double WHEEL_MOMENT_OF_INERTIA = 3.8;
     public static final double INDEXER_GEAR_RATIO = 1.0 / 10.0;
+
+    public static final double INDEXER_kS = 0.0019755;
+    public static final double INDEXER_kV = 0.00056382;
+    public static final double INDEXER_kA = 0.089733;
+
+    public static final double INDEXER_P = 0.00003;
+    public static final double INDEXER_I = 0.000001;
+    public static final double INDEXER_D = 0.00001;
+    // 0.00003,0.000001,0.00001
   }
 
   public static final class Swerve {
@@ -266,34 +288,48 @@ public final class Constants {
     // back bottom motor
     @CanId(CanId.Type.MOTOR)
     public static final int BOTTOM_RIGHT_SHOOTER_ID = 33;
+   
+    // back bottom motor
+    @CanId(CanId.Type.MOTOR)
+    public static final int BITTY_SHOOTER_ID = 34;
 
     // top motor controlling stuff
     public static final double TOP_TARGET_SHOOTER_RPM = 0.0;
-    public static final double TOP_SHOOTER_P = 0.0001;
-    public static final double TOP_SHOOTER_I = 0.0;
-    public static final double TOP_SHOOTER_D = 0.00001;
     public static final double TOP_SHOOTER_FF = 0.0;
+
+    public static final double TOP_SHOOTER_P = 0.0002;
+    public static final double TOP_SHOOTER_I = 0.0000015;
+    public static final double TOP_SHOOTER_D = 0.0001;
 
     // bottom motor controlling stuff
     public static final double BOTTOM_TARGET_SHOOTER_RPM = 0.0;
-    public static final double BOTTOM_SHOOTER_P = 0.00008;
-    public static final double BOTTOM_SHOOTER_I = 0.0;
-    public static final double BOTTOM_SHOOTER_D = 0.000001;
     public static final double BOTTOM_SHOOTER_FF = 0.0;
 
-    public static final double shooterMotorTolerance = 50.0;
-    public static final int SHOOTER_CURRENT_STALL_LIMIT = 80;
-    public static final int SHOOTER_CURRENT_FREE_LIMIT = 50;
-    public static final double SHOOTER_VOLTAGE_LIMIT = 10.0;
+    public static final double BOTTOM_SHOOTER_P = 0.0002;
+    public static final double BOTTOM_SHOOTER_I = 0.000001;
+    public static final double BOTTOM_SHOOTER_D = 0.0003;
 
-    public static final double TOP_kV = 0.002;
-    public static final double BOTTOM_kV = 0.0022;
-    public static final double TOP_kS = 0.01;
-    public static final double BOTTOM_kS = 0.01;
+    public static final double TOP_kV = 0.002199;
+    public static final double TOP_kA = 0.0022147;
+    public static final double TOP_kS = 0.97509;
 
-    public static final double TOP_kA = 0.0064;
-    public static final double BOTTOM_kA = 0.0038;
+    public static final double BOTTOM_kV = 0.001;
+    public static final double BOTTOM_kA = 0.00021225;
+    public static final double BOTTOM_kS = 0.25114;
 
     public static final double RAMP_RATE = 0.1;
+
+    public static final double BITTY_kV = 0.0018718;
+    public static final double BITTY_kA = 0.00015177;
+    public static final double BITTY_kS = 0.089733;
+
+    public static final double BITTY_BOTTOM_P = 0.0001;
+    public static final double BITTY_BOTTOM_I = 0.000001;
+    public static final double BITTY_BOTTOM_D = 0.0005;
+    
+    public static final double shooterMotorTolerance = 50.0;
+    public static final int SHOOTER_CURRENT_STALL_LIMIT = 100;
+    public static final int SHOOTER_CURRENT_FREE_LIMIT = 50;
+    public static final double SHOOTER_VOLTAGE_LIMIT = 10.0;
   }
 }

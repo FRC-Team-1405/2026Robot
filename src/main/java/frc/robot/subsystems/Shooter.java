@@ -4,24 +4,23 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode; // Import the new global ResetMode
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.ResetMode; // Import the new global ResetMode
-import com.revrobotics.PersistMode;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Shooter extends SubsystemBase {
@@ -57,44 +56,52 @@ public class Shooter extends SubsystemBase {
   private long bottomRecoveryStart = 0; // Time when bottom motor fell below tolerance
   private final List<Long> bottomRecoveryTimes = new ArrayList<>(); // List of recorded recovery times
 
-  /** Creates a new Shooter. 5 Motors*/
+  /** Creates a new Shooter. 5 Motors */
   public Shooter(
       final int TOP_LEFT_SHOOTER_ID,
       final int BOTTOM_LEFT_SHOOTER_ID,
       final int TOP_RIGHT_SHOOTER_ID,
       final int BOTTOM_RIGHT_SHOOTER_ID,
       final int TIPPY_TOP_SHOOTER_ID) {
-        this(TOP_LEFT_SHOOTER_ID, BOTTOM_LEFT_SHOOTER_ID, TOP_RIGHT_SHOOTER_ID, BOTTOM_RIGHT_SHOOTER_ID);
+    this(TOP_LEFT_SHOOTER_ID, BOTTOM_LEFT_SHOOTER_ID, TOP_RIGHT_SHOOTER_ID, BOTTOM_RIGHT_SHOOTER_ID);
 
-      // CREATE EXTRA MOTOR
-      shooterBittyBottomMotor = new SparkFlex(TIPPY_TOP_SHOOTER_ID, MotorType.kBrushless);
+    // CREATE EXTRA MOTOR
+    shooterBittyBottomMotor = new SparkFlex(TIPPY_TOP_SHOOTER_ID, MotorType.kBrushless);
 
-      // OBTAIN ENCODER
-      shooterBittyBottomEncoder = shooterBittyBottomMotor.getEncoder();
+    // OBTAIN ENCODER
+    shooterBittyBottomEncoder = shooterBittyBottomMotor.getEncoder();
 
-      // CONFIG CONTROLLER
-      shooterBittyBottomController = shooterBittyBottomMotor.getClosedLoopController();
-      SparkFlexConfig shooterBittyBottomConfig = new SparkFlexConfig();
-      shooterBittyBottomConfig.closedLoop.feedForward
-          .kS(Constants.Shooter.BITTY_kS)
-          .kV(Constants.Shooter.BITTY_kV)
-          .kA(Constants.Shooter.BITTY_kA);
+    // CONFIG CONTROLLER
+    shooterBittyBottomController = shooterBittyBottomMotor.getClosedLoopController();
+    SparkFlexConfig shooterBittyBottomConfig = new SparkFlexConfig();
+    shooterBittyBottomConfig
+        .idleMode(IdleMode.kCoast)
+        .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_STALL_LIMIT, Constants.Shooter.SHOOTER_CURRENT_FREE_LIMIT)
+        .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT)
+        .inverted(true);
 
-      // PID CONFIG
-      shooterBittyBottomConfig.closedLoop
-          .p(Constants.Shooter.BITTY_BOTTOM_P)
-          .i(Constants.Shooter.BITTY_BOTTOM_I)
-          .d(Constants.Shooter.BITTY_BOTTOM_D);
+    shooterBittyBottomConfig.closedLoop.feedForward
+        .kS(Constants.Shooter.BITTY_kS)
+        .kV(Constants.Shooter.BITTY_kV)
+        .kA(Constants.Shooter.BITTY_kA);
 
-      try {
-        shooterBittyBottomConfig.follow(shooterLeftBottomMotor); //TODO
-        hardwareFollowConfigured = true;
-      } catch(Exception ex) {
-        hardwareFollowConfigured = false;
-      }
+    // PID CONFIG
+    shooterBittyBottomConfig.closedLoop
+        .p(Constants.Shooter.BITTY_BOTTOM_P)
+        .i(Constants.Shooter.BITTY_BOTTOM_I)
+        .d(Constants.Shooter.BITTY_BOTTOM_D);
+
+    shooterBittyBottomMotor.configure(shooterBittyBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    
+    try {
+      shooterBittyBottomConfig.follow(shooterLeftBottomMotor); // TODO
+      hardwareFollowConfigured = true;
+    } catch (Exception ex) {
+      hardwareFollowConfigured = false;
     }
+  }
 
-  /** Creates a new Shooter. 4 Motors*/
+  /** Creates a new Shooter. 4 Motors */
   public Shooter(
       final int TOP_LEFT_SHOOTER_ID,
       final int BOTTOM_LEFT_SHOOTER_ID,
@@ -138,25 +145,28 @@ public class Shooter extends SubsystemBase {
         .i(Constants.Shooter.TOP_SHOOTER_I)
         .d(Constants.Shooter.TOP_SHOOTER_D);
 
-    shooterBottomConfig.closedLoopRampRate(Constants.Shooter.RAMP_RATE);
+    shooterBottomConfig.closedLoopRampRate(Constants.Shooter.RAMP_RATE); //TODO do we want ramp rate?
     shooterTopConfig.closedLoopRampRate(Constants.Shooter.RAMP_RATE);
 
     shooterLeftTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    shooterLeftBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters,PersistMode.kPersistParameters);
+    shooterLeftBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
 
     // configuring the motor
     shooterBottomConfig
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_STALL_LIMIT, Constants.Shooter.SHOOTER_CURRENT_FREE_LIMIT)
-        .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT);
+        .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT)
+        .inverted(true);
 
     shooterTopConfig
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_STALL_LIMIT, Constants.Shooter.SHOOTER_CURRENT_FREE_LIMIT)
-        .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT);
+        .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT)
+        .inverted(true);
 
-    
-    shooterRightBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    shooterRightBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
     shooterRightTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     try {
@@ -167,7 +177,8 @@ public class Shooter extends SubsystemBase {
       bottomFollower.follow(shooterLeftBottomMotor, true);
       // Don't reset previously-applied safe parameters; only enable follower mode
       shooterRightTopMotor.configure(topFollower, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-      shooterRightBottomMotor.configure(bottomFollower, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+      shooterRightBottomMotor.configure(bottomFollower, ResetMode.kNoResetSafeParameters,
+          PersistMode.kPersistParameters);
       hardwareFollowConfigured = true;
     } catch (Exception ex) {
       // If the follow configuration isn't available in this REVLib version,
@@ -175,6 +186,7 @@ public class Shooter extends SubsystemBase {
       hardwareFollowConfigured = false;
     }
   }
+
   // methods
   // simple, just stopping motors
   public void stopTopShooterMotors() {

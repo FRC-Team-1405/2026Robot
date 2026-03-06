@@ -30,61 +30,65 @@ public class Indexer extends SubsystemBase {
   private final SparkFlexSim flexSim;
 
   private final FlywheelSim indexerWheelSimulator = new FlywheelSim(
-    LinearSystemId.createFlywheelSystem(
-      DCMotor.getNeoVortex(1),
-      Constants.Indexer.WHEEL_MOMENT_OF_INERTIA,
-      Constants.Indexer.INDEXER_GEAR_RATIO),
-      DCMotor.getNeoVortex(1)
-  );
+      LinearSystemId.createFlywheelSystem(
+          DCMotor.getNeoVortex(1),
+          Constants.Indexer.WHEEL_MOMENT_OF_INERTIA,
+          Constants.Indexer.INDEXER_GEAR_RATIO),
+      DCMotor.getNeoVortex(1));
 
-  public Indexer() {
-    indexerMotor = new SparkFlex(Constants.Indexer.INDEXER_MOTOR_ID, MotorType.kBrushless);
-        indexerMotorConfig = new SparkFlexConfig();
-   indexerMotorConfig
-      .idleMode(IdleMode.kBrake)
-      .smartCurrentLimit(Constants.Indexer.CURRENT_LIMIT)
-      .voltageCompensation(Constants.Indexer.VOLTAGE_LIMIT);
+  public Indexer(int indexerMotorID) {
+    indexerMotor = new SparkFlex(indexerMotorID, MotorType.kBrushless);
+    indexerMotorConfig = new SparkFlexConfig();
+    indexerMotorConfig.closedLoop.feedForward.sva(Constants.Indexer.INDEXER_kS, Constants.Indexer.INDEXER_kV,
+        Constants.Indexer.INDEXER_kA);
+    indexerMotorConfig.closedLoop.pid(Constants.Indexer.INDEXER_P, Constants.Indexer.INDEXER_I,
+        Constants.Indexer.INDEXER_D);
+    indexerMotorConfig
+        .idleMode(IdleMode.kBrake)
+        .smartCurrentLimit(Constants.Indexer.CURRENT_LIMIT)
+        .voltageCompensation(Constants.Indexer.VOLTAGE_LIMIT)
+        .inverted(true);
     indexerMotor.configure(indexerMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
     flexSim = new SparkFlexSim(indexerMotor, DCMotor.getNeoVortex(1));
   }
 
   @Override
-    public void simulationPeriodic() {
-        indexerWheelSimulator.setInput(flexSim.getAppliedOutput() * RoboRioSim.getVInVoltage());
+  public void simulationPeriodic() {
+    indexerWheelSimulator.setInput(flexSim.getAppliedOutput() * RoboRioSim.getVInVoltage());
     indexerWheelSimulator.update(0.02);
 
     flexSim.iterate(
-      indexerWheelSimulator.getAngularVelocityRPM() * Constants.Indexer.INDEXER_GEAR_RATIO,
-      RoboRioSim.getVInVoltage(),
-      0.02);
+        indexerWheelSimulator.getAngularVelocityRPM() * Constants.Indexer.INDEXER_GEAR_RATIO,
+        RoboRioSim.getVInVoltage(),
+        0.02);
 
-      RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(indexerWheelSimulator.getCurrentDrawAmps()));
-      SmartDashboard.putNumber("Indexer/wheelSpeed", indexerWheelSimulator.getAngularVelocityRPM());
-    }
+    RoboRioSim
+        .setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(indexerWheelSimulator.getCurrentDrawAmps()));
+    SmartDashboard.putNumber("Indexer/wheelSpeed", indexerWheelSimulator.getAngularVelocityRPM());
+  }
 
-  public void indexerForward(){
+  public void indexerForward() {
     indexerMotor.set(Constants.Indexer.SPEED);
   }
 
-  public void indexerBackward(){
+  public void indexerBackward() {
     indexerMotor.set(Constants.Indexer.SPEED * -1);
   }
 
-   public void stopIndexer (){
+  public void stopIndexer() {
     indexerMotor.stopMotor();
-   }
+  }
 
-  public Command shootFuel(){
+  public Command shootFuel() {
     return Commands.startEnd(() -> indexerForward(), () -> stopIndexer(), this);
   }
 
-  public Command clearFuel(){
+  public Command clearFuel() {
     return Commands.startEnd(() -> indexerBackward(), () -> stopIndexer(), this);
   }
 
   @Override
   public void periodic() {
-    
+
   }
 }

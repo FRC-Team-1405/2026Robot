@@ -19,9 +19,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-
-
-public class FireControl extends SubsystemBase{
+public class FireControl extends SubsystemBase {
     private Supplier<Pose2d> robotSupplier;
     private Supplier<Alliance> allianceSupplier;
     private ArrayList<Pose2d> redList = new ArrayList<>(2);
@@ -33,23 +31,28 @@ public class FireControl extends SubsystemBase{
     InterpolatingDoubleTreeMap rpmFromDistance;
     private ChassisSpeeds currentChassisSpeeds;
 
-    public FireControl(Supplier<Pose2d> robSupplier, Supplier<Alliance> allSupplier, Supplier<ChassisSpeeds> vSupplier) {
+    public FireControl(Supplier<Pose2d> robSupplier, Supplier<Alliance> allSupplier,
+            Supplier<ChassisSpeeds> vSupplier) {
         this(robSupplier, allSupplier, vSupplier, "distance_rpm.csv");
     }
 
-    public FireControl(Supplier<Pose2d> robSupplier, Supplier<Alliance> allSupplier, Supplier<ChassisSpeeds> vSupplier, String rpmFile) {
+    public FireControl(Supplier<Pose2d> robSupplier, Supplier<Alliance> allSupplier, Supplier<ChassisSpeeds> vSupplier,
+            String rpmFile) {
         robotSupplier = robSupplier;
         allianceSupplier = allSupplier;
         speedSupplier = vSupplier;
-        blueList.add(Constants.BLUE_FEED_BOT); blueList.add(Constants.BLUE_FEED_TOP);
-        redList.add(Constants.RED_FEED_BOT); redList.add(Constants.RED_FEED_TOP);
+        blueList.add(Constants.BLUE_FEED_BOT);
+        blueList.add(Constants.BLUE_FEED_TOP);
+        redList.add(Constants.RED_FEED_BOT);
+        redList.add(Constants.RED_FEED_TOP);
         File deployDirectory = Filesystem.getDeployDirectory();
         File csvFile = new File(deployDirectory, rpmFile);
         readCsv(csvFile.getAbsolutePath());
     }
-    
+
     /**
-     * @return Finds the target angle off of the robot position and the target position
+     * @return Finds the target angle off of the robot position and the target
+     *         position
      */
     private static Rotation2d getTargetRotation(Pose2d robotPose, Pose2d targetPose) {
         Translation2d toTarget = targetPose.getTranslation().minus(robotPose.getTranslation());
@@ -58,27 +61,28 @@ public class FireControl extends SubsystemBase{
 
         return relativeAngle;
     }
+
     /**
      * @return A list of current available targets
      */
     private ArrayList<Pose2d> getValidTargets() {
         ArrayList<Pose2d> validTargets = new ArrayList<>();
         if (allianceSupplier.get() == Alliance.Blue) {
-            if(Constants.BLUE_ALLIANCE_ZONE.contains(robotSupplier.get().getTranslation())) {
+            if (Constants.BLUE_ALLIANCE_ZONE.contains(robotSupplier.get().getTranslation())) {
                 validTargets.add(Constants.HUB_BLUE);
             } else {
                 validTargets = blueList;
             }
         } else if (allianceSupplier.get() == Alliance.Red) {
-            if(Constants.RED_ALLIANCE_ZONE.contains(robotSupplier.get().getTranslation())) {
+            if (Constants.RED_ALLIANCE_ZONE.contains(robotSupplier.get().getTranslation())) {
                 validTargets.add(Constants.HUB_RED);
             } else {
-               validTargets = redList;
+                validTargets = redList;
             }
         }
         return validTargets;
     }
-    
+
     /**
      * @param robotPose
      * @return TargetLocation with lowest distance to robot
@@ -86,11 +90,11 @@ public class FireControl extends SubsystemBase{
     private Pose2d getClosestTarget(Pose2d robotPose) {
         ArrayList<Pose2d> targets = getValidTargets();
         Pose2d closestTarget = null;
-        if(targets.size() == 1) {
+        if (targets.size() == 1) {
             return targets.get(0);
         }
         double smallestValue = 1000.0;
-        for (Pose2d p: targets) {
+        for (Pose2d p : targets) {
             double d = getDistance(p, robotPose);
             if (d < smallestValue) {
                 smallestValue = d;
@@ -99,6 +103,7 @@ public class FireControl extends SubsystemBase{
         }
         return closestTarget;
     }
+
     /**
      * @param x
      * @param y
@@ -107,16 +112,16 @@ public class FireControl extends SubsystemBase{
     private double getDistance(Pose2d x, Pose2d y) {
         double d = x.getTranslation().getDistance(y.getTranslation());
         return d;
-    } 
+    }
 
     @Override
-    //Checks every cycle for the correct target loctation, distance, and robot sped
-    public void periodic() { 
+    // Checks every cycle for the correct target loctation, distance, and robot sped
+    public void periodic() {
         target = getClosestTarget(robotSupplier.get());
         currentTarget = getTargetRotation(robotSupplier.get(), target);
         distanceFromTarget = getDistance(target, robotSupplier.get());
         currentChassisSpeeds = speedSupplier.get();
-    }   
+    }
 
     private void readCsv(String filePath) {
         TreeMap<Double, Double> treeMap = new TreeMap<>();
@@ -176,4 +181,4 @@ public class FireControl extends SubsystemBase{
         return target;
     }
 
-} 
+}
