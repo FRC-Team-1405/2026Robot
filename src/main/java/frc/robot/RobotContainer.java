@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.SetHoodPosition;
@@ -96,6 +97,57 @@ public class RobotContainer {
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
         }
 
+        public Command getAutonomousCommand() {
+                return AutoCommands.getAutonomousCommand();
+        }
+
+        public void correctOdometry() {
+                // if (SIMULATE_VISION_FAILURES){
+                // int percentageFramesToDrop = 80;
+                // Random rnd = new Random();
+
+                // if(rnd.nextInt(100) < percentageFramesToDrop){
+                // return;
+                // }
+                // }
+
+                List<VisionSample> visionSamples = vision.flushSamples();
+                vision.updateSpeeds(drivetrain.getState().Speeds);
+                // System.out.println("vision sample count: " + visionSamples.size());
+                for (var sample : visionSamples) {
+
+                        double thetaStddev = 99999.0;
+                        if (true /* STRICT_VISION_ORIENTATION_WEIGHTING */) {
+                                // if sample weight isn't essentially perfect, don't trust orientation, sample
+                                // weighting is perfect when disabled
+                                thetaStddev = sample.weight() > 0.9 ? 10.0 : 99999.0;
+                        } else {
+                                // You will need to TUNE this scalar. A higher value (e.g., 5.0) means less
+                                // trust.
+                                thetaStddev = 1.0 / sample.weight();
+                        }
+
+                        drivetrain.addVisionMeasurement(
+                                        sample.pose(),
+                                        sample.timestamp(),
+                                        VecBuilder.fill(0.1 / sample.weight(), 0.1 / sample.weight(), thetaStddev));
+                }
+
+                Pose2d visionPose = null;
+                Pose2d odomPose = drivetrain.getState().Pose;
+                for (int i = 0; i < 2; i++) {
+                        if (i + 1 <= visionSamples.size()) {
+                                cameraEstimatedPosesPublisher.get(i).set(visionSamples.get(i).pose());
+                                visionPose = visionSamples.get(i).pose();
+                        }
+                }
+
+                // if (visionPose != null) {
+                // double yawError = yawDiffDegrees(visionPose, odomPose);
+                // yawErrorPub.set(yawError);
+                // }
+        }
+
         public static final double JOYSTICK_DEADBAND = 0.10;
 
         private void configureBindings() {
@@ -156,6 +208,12 @@ public class RobotContainer {
                 driverJoystick.x()
                                 .onTrue(drivetrain.driveToPose(() -> Optional.of(new Pose2d(2, 2, Rotation2d.kZero))));
 
+                Trigger hopperTrigger = new Trigger(() -> {
+                        return intake.isPickupRunning() || indexer.isIndexerRunning();
+                });
+                hopperTrigger.onTrue(hopper.runForwardHopper());
+                hopperTrigger.onFalse(hopper.runStopHopper());
+
                 // Idle while the robot is disabled. This ensures the configured
                 // neutral mode is applied to the drive motors while disabled.
                 final var idle = new SwerveRequest.Idle();
@@ -197,57 +255,6 @@ public class RobotContainer {
                 // .repeatedly());
                 // shooterJoystick.rightBumper().onFalse(
                 // Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
-        }
-
-        public Command getAutonomousCommand() {
-                return AutoCommands.getAutonomousCommand();
-        }
-
-        public void correctOdometry() {
-                // if (SIMULATE_VISION_FAILURES){
-                // int percentageFramesToDrop = 80;
-                // Random rnd = new Random();
-
-                // if(rnd.nextInt(100) < percentageFramesToDrop){
-                // return;
-                // }
-                // }
-
-                List<VisionSample> visionSamples = vision.flushSamples();
-                vision.updateSpeeds(drivetrain.getState().Speeds);
-                // System.out.println("vision sample count: " + visionSamples.size());
-                for (var sample : visionSamples) {
-
-                        double thetaStddev = 99999.0;
-                        if (true /* STRICT_VISION_ORIENTATION_WEIGHTING */) {
-                                // if sample weight isn't essentially perfect, don't trust orientation, sample
-                                // weighting is perfect when disabled
-                                thetaStddev = sample.weight() > 0.9 ? 10.0 : 99999.0;
-                        } else {
-                                // You will need to TUNE this scalar. A higher value (e.g., 5.0) means less
-                                // trust.
-                                thetaStddev = 1.0 / sample.weight();
-                        }
-
-                        drivetrain.addVisionMeasurement(
-                                        sample.pose(),
-                                        sample.timestamp(),
-                                        VecBuilder.fill(0.1 / sample.weight(), 0.1 / sample.weight(), thetaStddev));
-                }
-
-                Pose2d visionPose = null;
-                Pose2d odomPose = drivetrain.getState().Pose;
-                for (int i = 0; i < 2; i++) {
-                        if (i + 1 <= visionSamples.size()) {
-                                cameraEstimatedPosesPublisher.get(i).set(visionSamples.get(i).pose());
-                                visionPose = visionSamples.get(i).pose();
-                        }
-                }
-
-                // if (visionPose != null) {
-                // double yawError = yawDiffDegrees(visionPose, odomPose);
-                // yawErrorPub.set(yawError);
-                // }
         }
 
         public static double applyDeadband(double value) {

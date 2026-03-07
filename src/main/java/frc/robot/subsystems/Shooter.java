@@ -174,13 +174,9 @@ public class Shooter extends SubsystemBase {
       lowError += 1;
     }
 
-    if (target > 0.0) {
-      if (MathUtil.isNear(shooterTarget, target, 1.0) && Math.abs(error) < range) {
-        if (settleCount < ShooterPreferences.STABLE_COUNT) {
-          settleCount += 1;
-        }
-      } else {
-        settleCount = 0;
+    if (MathUtil.isNear(shooterTarget, target, 1.0) && Math.abs(error) < range) {
+      if (settleCount < ShooterPreferences.STABLE_COUNT) {
+        settleCount += 1;
       }
     } else {
       settleCount = 0;
