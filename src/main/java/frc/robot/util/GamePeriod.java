@@ -254,7 +254,7 @@ public final class GamePeriod {
         // Show everything to the SmartDashboard
         double matchTimeRemaining = DriverStation.getMatchTime();
         matchTimePublisher.set(matchTimeRemaining);
-        SmartDashboard.putNumber("Match Time", matchTimeRemaining);
+        SmartDashboard.putNumber("GamePeriod/Match Time", matchTimeRemaining);
 
         Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
         String allianceString;
@@ -268,25 +268,25 @@ public final class GamePeriod {
             allianceString = "Error";
         }
         alliancePublisher.set(allianceString);
-        SmartDashboard.putString("Our Alliance", allianceString);
+        SmartDashboard.putString("GamePeriod/Our Alliance", allianceString);
 
         GamePeriod.Period period = GamePeriod.getPeriod();
         String periodString = period.toString();
         periodPublisher.set(periodString);
-        SmartDashboard.putString("Period", periodString);
+        SmartDashboard.putString("GamePeriod/Period", periodString);
 
         Optional<Boolean> isActive = GamePeriod.isHubActive();
         boolean isActiveValue = isActive.orElse(false);
         isActivePublisher.set(isActiveValue);
-        SmartDashboard.putBoolean("Is Hub Active", isActiveValue);
+        SmartDashboard.putBoolean("GamePeriod/Is Hub Active", isActiveValue);
 
         // Game Data declared seperately
         gameDataPublisher.set(gameData);
-        SmartDashboard.putString("Game Data", gameData);
+        SmartDashboard.putString("GamePeriod/Game Data", gameData);
 
         double periodTimeRemaining = periodTimeRemaining();
         periodTimePublisher.set(periodTimeRemaining);
-        SmartDashboard.putNumber("Period Time Left", periodTimeRemaining);
+        SmartDashboard.putNumber("GamePeriod/Period Time Left", periodTimeRemaining);
     }
 
     /**
@@ -308,7 +308,7 @@ public final class GamePeriod {
      */
     public static void elasticTeleopPeriodic() {
         gameDataPublisher.set(gameData);
-        SmartDashboard.putString("Game Data", gameData);
+        SmartDashboard.putString("GamePeriod/Game Data", gameData);
     }
 
     /**

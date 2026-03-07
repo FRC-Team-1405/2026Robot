@@ -5,6 +5,10 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Feet;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -20,14 +24,32 @@ public class Constants {
         public static final int INTAKE_MOTOR = 28;
         public static final int PICKUP_MOTOR = 29;
 
+        public static final int INDEXER_MOTOR = 40;
         public static final int SHOOTER_MOTOR_1 = 41;
         public static final int SHOOTER_MOTOR_2 = 42;
         public static final int SHOOTER_MOTOR_3 = 43;
 
-        public static final int INDEXER_MOTOR = 22;
-
         public static final int ADJUSTABLE_SHOOTER_MOTOR = 24;
 
+    }
+
+    public static class ShooterPhysicalProperties {
+        // Flywheel physical properties
+        public static final double FLYWHEEL_DIAMETER_INCHES = 2.25;
+        public static final double FLYWHEEL_WEIGHT_LBS = 5.2;
+
+        // Gear ratio: wheel spins 1.5x faster than motor output (3:2 ratio)
+        public static final double MOTOR_TO_WHEEL_GEAR_RATIO = 1.5;
+
+        // Moment of inertia calculation for simulation
+        // Approximating flywheel as solid cylinder: I = (1/2) * m * r^2
+        // Using WPILib Units for conversion:
+        // mass = 5.2 lbs, radius = 1.125 inches
+        // I = 0.5 * mass_kg * radius_m^2
+        private static final double FLYWHEEL_MASS_KG = Pounds.of(FLYWHEEL_WEIGHT_LBS).in(Kilograms);
+        private static final double FLYWHEEL_RADIUS_M = Inches.of(FLYWHEEL_DIAMETER_INCHES / 2.0).in(Meters);
+        public static final double FLYWHEEL_MOMENT_OF_INERTIA = 0.5 * FLYWHEEL_MASS_KG * FLYWHEEL_RADIUS_M
+                * FLYWHEEL_RADIUS_M; // kg*m^2
     }
 
     public static class ShooterPreferences {
@@ -62,10 +84,10 @@ public class Constants {
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 20);
             INDEXER_VELOCITY = RotationsPerSecond.of(Preferences.getDouble("IndexerVelocities/IndexerVelocity", 20));
 
-            Preferences.initDouble("ShooterAccuracy/Tight", 1);
-            TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 1);
-            Preferences.initDouble("ShooterAccuracy/Wide", 10);
-            WIDE = Preferences.getDouble("ShooterAccuracy/Wide", 10);
+            Preferences.initDouble("ShooterAccuracy/Tight", 3);
+            TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 3);
+            Preferences.initDouble("ShooterAccuracy/Wide", 5);
+            WIDE = Preferences.getDouble("ShooterAccuracy/Wide", 5);
             Preferences.initInt("ShooterAccuracy/StableCount", 5);
             STABLE_COUNT = Preferences.getInt("ShooterAccuracy/StableCount", 5);
         }
@@ -102,23 +124,42 @@ public class Constants {
 
     public static class HoodPreferences {
 
-        public static final double SERVO_SPEED_SECONDS;
-        public static final double SERVO_SHORT;
-        public static final double SERVO_MEDIUM;
-        public static final double SERVO_LONG;
+        public static final double SERVO_FULL_RANGE_SECONDS;
+        public static final double SERVO_SHORT_PERCENTAGE;
+        public static final double SERVO_MEDIUM_PERCENTAGE;
+        public static final double SERVO_LONG_PERCENTAGE;
 
         static {
-            Preferences.initDouble("Hood/Servo Speed Seconds", 0.5);
-            SERVO_SPEED_SECONDS = Preferences.getDouble("Hood/Servo Speed Seconds", 0.5);
+            Preferences.initDouble("Hood/Servo Full Range Seconds", 0.5);
+            SERVO_FULL_RANGE_SECONDS = Preferences.getDouble("Hood/Servo Full Range Seconds", 0.5);
 
-            Preferences.initDouble("Hood/Servo Speed Short", 0.3);
-            SERVO_SHORT = Preferences.getDouble("Hood/Servo Speed Short", 0.3);
+            // Positions are a percentage of a full range of motion
+            Preferences.initDouble("Hood/Servo Short Position", 0.3);
+            SERVO_SHORT_PERCENTAGE = Preferences.getDouble("Hood/Servo Short Position", 0.3);
 
-            Preferences.initDouble("Hood/Servo Speed Medium", 0.6);
-            SERVO_MEDIUM = Preferences.getDouble("Hood/Servo Speed Medium", 0.6);
+            Preferences.initDouble("Hood/Servo Medium Position", 0.6);
+            SERVO_MEDIUM_PERCENTAGE = Preferences.getDouble("Hood/Servo Medium Position", 0.6);
 
-            Preferences.initDouble("Hood/Servo Speed Long", 1.0);
-            SERVO_LONG = Preferences.getDouble("Hood/Servo Speed Long", 1.0);
+            Preferences.initDouble("Hood/Servo Long Position", 1.0);
+            SERVO_LONG_PERCENTAGE = Preferences.getDouble("Hood/Servo Long Position", 1.0);
+        }
+
+        public enum HoodAngles {
+            ZERO(0),
+            SHORT(SERVO_SHORT_PERCENTAGE),
+            MEDIUM(SERVO_MEDIUM_PERCENTAGE),
+            LONG(SERVO_LONG_PERCENTAGE),
+            ONE(1);
+
+            double positionPercentage;
+
+            HoodAngles(double positionPercentage) {
+                this.positionPercentage = positionPercentage;
+            }
+
+            public double getPositionPercentage() {
+                return positionPercentage;
+            }
         }
 
     }

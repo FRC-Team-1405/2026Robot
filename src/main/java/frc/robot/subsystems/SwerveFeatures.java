@@ -102,6 +102,8 @@ public class SwerveFeatures {
             clearAimVisualization();
             m_lastAimUpdateTime = 0.0; // Reset so we don't keep clearing
         }
+
+        publishRobotVelocity();
     }
 
     /**
@@ -317,5 +319,20 @@ public class SwerveFeatures {
         // Should never reach here, but provide fallback
         fLogger.log("Warning: Interpolation failed, using fallback");
         return distance / 5.0;
+    }
+
+    /**
+     * Calculate and publish the robot's overall translational velocity (m/s) to
+     * SmartDashboard under the "SwerveDrive/" namespace.
+     */
+    public void publishRobotVelocity() {
+        try {
+            ChassisSpeeds currentSpeeds = m_drivetrain.getState().Speeds;
+            double speed = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+            SmartDashboard.putNumber("SwerveDrive/Velocity", speed);
+        } catch (Exception ex) {
+            // In case drivetrain state is not available yet, avoid crashing
+            fLogger.log("publishRobotVelocity: failed to read drivetrain state: %s", ex.getMessage());
+        }
     }
 }

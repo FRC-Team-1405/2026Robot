@@ -10,8 +10,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.VecBuilder;
@@ -24,28 +24,25 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
+import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.Shooter.AutoFire;
-import frc.robot.commands.Shooter.IndexerShooterStop;
 import frc.robot.generated.TunerConstants;
-import frc.robot.generated.TunerConstants_OldRobot;
-import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
 import frc.robot.lib.CommandTracker;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.MoveMode;
-import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.MoveMode;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.Intake;
 
 public class RobotContainer {
         private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
@@ -55,21 +52,25 @@ public class RobotContainer {
                                                                                           // second
                                                                                           // max angular velocity
 
+        private static final double DEADBAND = 0.10;
+
         /* Setting up bindings for necessary control of the swerve drive platform */
         private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-                        .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-                        .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive
-                                                                                 // motors
+                        .withDeadband(DEADBAND).withRotationalDeadband(DEADBAND); // Add a 10%
+                                                                                  // deadband
+        // .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop
+        // control for drive
+        // motors
         private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
         private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
         private final Telemetry logger = new Telemetry(MaxSpeed);
 
-        private final CommandXboxController joystick = new CommandXboxController(0);
-        private final CommandXboxController operator = new CommandXboxController(1);
+        private final CommandXboxController driverJoystick = new CommandXboxController(0);
+        private final CommandXboxController operatorJoystick = new CommandXboxController(1);
         private final CommandXboxController shooterJoystick = new CommandXboxController(2);
 
-        public final CommandSwerveDrivetrain drivetrain = TunerConstants_OldRobot.createDrivetrain();
+        public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
         // Vision publishers
         StructPublisher<Pose2d> cameraEstimatedPosePublisher1 = NetworkTableInstance.getDefault()
@@ -95,27 +96,65 @@ public class RobotContainer {
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
         }
 
+        public static final double JOYSTICK_DEADBAND = 0.10;
+
         private void configureBindings() {
                 // configure operator controls
                 Command cmd;
 
+                //
+                // Operator Controls
+                //
                 cmd = intake.runIntakeOut();
                 SmartDashboard.putData(cmd);
-                operator.povUp().onTrue(cmd);
+                operatorJoystick.povUp().onTrue(cmd);
 
                 cmd = intake.runIntakeIn();
                 SmartDashboard.putData(cmd);
-                operator.povDown().onTrue(cmd);
+                operatorJoystick.povDown().onTrue(cmd);
 
+                operatorJoystick.y().onTrue(new SetHoodPosition(hood, HoodAngles.SHORT));
+                operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));
+                operatorJoystick.a().onTrue(new SetHoodPosition(hood, HoodAngles.LONG));
+
+                operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
+                operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
+                operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                operatorJoystick.leftBumper().onTrue(
+                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
+
+                //
+                // Driver Controls
+                //
+                drivetrain.registerTelemetry(logger::telemeterize);
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
                                 drivetrain.applyRequest(() -> drive
-                                                .withVelocityX(-joystick.getLeftY() * MaxSpeed
+                                                .withVelocityX(-applyDeadband(driverJoystick.getLeftY()) * MaxSpeed
                                                                 * moveMode.selectSpeedMode().getAsDouble())
-                                                .withVelocityY(-joystick.getLeftX() * MaxSpeed
+                                                .withVelocityY(-applyDeadband(driverJoystick.getLeftX()) * MaxSpeed
                                                                 * moveMode.selectSpeedMode().getAsDouble())
-                                                .withRotationalRate(moveMode.selectRotationMode(joystick, drivetrain,
-                                                                MaxAngularRate).getAsDouble())));
+                                                .withRotationalRate(
+                                                                moveMode.selectRotationMode(driverJoystick, drivetrain,
+                                                                                MaxAngularRate).getAsDouble())));
+
+                // Zeroize/reset the field-centric heading on start and back press.
+                driverJoystick.start().and(driverJoystick.back()).onTrue(
+                                drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+                // Select speed mode
+                driverJoystick.leftTrigger().onTrue(moveMode.setToSlowMode());
+                driverJoystick.rightTrigger().onTrue(moveMode.setToFastMode());
+
+                // Select rotation mode
+                // driverJoystick.y().onTrue(moveMode.setToStandardMode());
+                // joystick.x().onTrue(moveMode.setToSnakeMode());
+                // joystick.b().onTrue(moveMode.setToCompassMode());
+
+                // Brake mode
+                driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
+                driverJoystick.x()
+                                .onTrue(drivetrain.driveToPose(() -> Optional.of(new Pose2d(2, 2, Rotation2d.kZero))));
 
                 // Idle while the robot is disabled. This ensures the configured
                 // neutral mode is applied to the drive motors while disabled.
@@ -123,70 +162,41 @@ public class RobotContainer {
                 RobotModeTriggers.disabled().whileTrue(
                                 drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-                joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-                // TODO: maybe uncomment joystick.b()... because IDK if my move algorithm
-                // overrides this algorithm
-                // joystick.b().whileTrue(drivetrain.applyRequest(
-                // () -> point.withModuleDirection(
-                // new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-                joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-                joystick.b().whileTrue(drivetrain.applyRequest(
-                                () -> point.withModuleDirection(
-                                                new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+                // Run Intake (Pickup)
+                driverJoystick.leftBumper().onFalse(
+                                Commands.parallel(
+                                                intake.runPickupStop(),
+                                                hopper.runStopHopper()));
+                driverJoystick.leftBumper().onTrue(
+                                Commands.parallel(
+                                                intake.runPickupIn(),
+                                                hopper.runForwardHopper()));
 
-                joystick.leftBumper().onTrue(
-                                Commands.either(intake.runPickupStop(), intake.runPickupIn(), intake::isPickupRunning));
+                // Shoot
+                driverJoystick.rightBumper().onFalse(
+                                Commands.parallel(
+                                                hopper.runStopHopper(),
+                                                indexer.runStopIndexer()));
 
-                // joystick.rightTrigger()
-                // .onTrue(intake.runPickupFuel())
-                // .onFalse(intake.runPickupStop("Driver/Intake/Stop"));
+                driverJoystick.rightBumper().onTrue(
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
+                                                .repeatedly());
 
-                // Run SysId routines when holding back/start and X/Y.
-                // Note that each routine should be run exactly once in a single log.
-                joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-                joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-                joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-                joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-                // Zeroize/reset the field-centric heading on start and back press.
-                joystick.start().and(joystick.back()).onTrue(
-                                drivetrain.runOnce(drivetrain::seedFieldCentric));
-
-                // Select speed mode
-                joystick.leftTrigger().onTrue(moveMode.setToSlowMode());
-                joystick.rightTrigger().onTrue(moveMode.setToFastMode());
-                // for the 2 lines below, ex. Left trigger is held, and right trigger is tapped
-                // quickly such that left trigger is still being held after right trigger is
-                // tapped. MoveMode.currentSpeedMode would be SLOW, then FAST, *then SLOW
-                // again*.
-                joystick.leftTrigger().and(joystick.rightTrigger().negate()).onTrue(moveMode.setToSlowMode());
-                joystick.rightTrigger().and(joystick.leftTrigger().negate()).onTrue(moveMode.setToFastMode());
-
-                joystick.leftTrigger().or(joystick.rightTrigger()).onFalse(moveMode.setToNormalMode());
-
-                // Select rotation mode
-                joystick.y().onTrue(moveMode.setToStandardMode());
-                // joystick.x().onTrue(moveMode.setToSnakeMode());
-                // joystick.b().onTrue(moveMode.setToCompassMode());
-                // Reset the field-centric heading on left bumper press.
-                joystick.start().and(joystick.back()).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-
-                drivetrain.registerTelemetry(logger::telemeterize);
-
-                shooterJoystick.a().toggleOnTrue(shooter.runShooter(() -> {
-                        return ShooterPreferences.INTERMEDIATE;
-                }));
-
-                shooterJoystick.x().onTrue(new IndexerShooterStop(shooter, indexer));
-
-                shooterJoystick.b().toggleOnTrue(indexer.runIndexer(() -> {
-                        return ShooterPreferences.INDEXER_VELOCITY;
-                }));
-
-                shooterJoystick.y().toggleOnTrue(
-                                new AutoFire(shooter, indexer, () -> ShooterPreferences.LONG,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY));
-
+                //
+                // Shooter Joystick (DEBUG) Controls
+                //
+                // shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.SHORT));
+                // shooterJoystick.b().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.MEDIUM));
+                // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.LONG));
+                // shooterJoystick.rightBumper().onTrue(
+                // new AutoFire(shooter, indexer, hopper, () ->
+                // ShooterPreferences.INDEXER_VELOCITY)
+                // .repeatedly());
+                // shooterJoystick.rightBumper().onFalse(
+                // Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
         }
 
         public Command getAutonomousCommand() {
@@ -238,6 +248,10 @@ public class RobotContainer {
                 // double yawError = yawDiffDegrees(visionPose, odomPose);
                 // yawErrorPub.set(yawError);
                 // }
+        }
+
+        public static double applyDeadband(double value) {
+                return (Math.abs(value) < JOYSTICK_DEADBAND) ? 0.0 : value;
         }
 
         /** Update NetworkTables with active commands from CommandTracker */
