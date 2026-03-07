@@ -24,11 +24,10 @@ public class Constants {
         public static final int INTAKE_MOTOR = 28;
         public static final int PICKUP_MOTOR = 29;
 
+        public static final int INDEXER_MOTOR = 40;
         public static final int SHOOTER_MOTOR_1 = 41;
         public static final int SHOOTER_MOTOR_2 = 42;
         public static final int SHOOTER_MOTOR_3 = 43;
-
-        public static final int INDEXER_MOTOR = 22;
 
         public static final int ADJUSTABLE_SHOOTER_MOTOR = 24;
 
