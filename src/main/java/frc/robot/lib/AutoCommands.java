@@ -27,7 +27,7 @@ public class AutoCommands {
 
         PidToPoseCommands.registerCommands(drivetrain);
         AutoPilotCommands.registerCommands(drivetrain, climber);
-
+        // this HAS to go after AutoPilotCommands
         AutoCommands.configureAutos(autoChooser, drivetrain);
 
         NamedCommands.registerCommand("Left - [My First Auto]",
@@ -48,7 +48,7 @@ public class AutoCommands {
         commandsToAddToChooser.put("AP_blueCenterToDepot", NamedCommands.getCommand("AP_blueCenterToDepot"));
         commandsToAddToChooser.put("AP_DepotFaceIn", NamedCommands.getCommand("AP_DepotFaceIn"));
         commandsToAddToChooser.put("AP_climb", NamedCommands.getCommand("AP_climb"));
-
+        commandsToAddToChooser.put("AP_JUSTSHOOT", NamedCommands.getCommand("AP_JUSTSHOOT"));
         commandsToAddToChooser.put("AP_rightBumpToField", NamedCommands.getCommand("AP_rightBumpToField"));
         commandsToAddToChooser.put("AP_leftBumpToField", NamedCommands.getCommand("AP_leftBumpToField"));
         commandsToAddToChooser.put("AP_rightBumpToAlliance", NamedCommands.getCommand("AP_rightBumpToAlliance"));
@@ -65,6 +65,10 @@ public class AutoCommands {
         commandsToAddToChooser.put("AP_fourMeters", NamedCommands.getCommand("AP_fourMeters"));
         commandsToAddToChooser.put("AP_RightStartCenterHarvestInLeft",
                 NamedCommands.getCommand("AP_RightStartCenterHarvestInLeft"));
+        commandsToAddToChooser.put("AP_RightFeedShootCenterHarvestInLeftShoot",
+                NamedCommands.getCommand("AP_RightFeedShootCenterHarvestInLeftShoot"));
+        commandsToAddToChooser.put("AP_LeftDepotShootCenterHarvestInLeftShoot",
+                NamedCommands.getCommand("AP_LeftDepotShootCenterHarvestInLeftShoot"));
 
         // endregion autopilot
         // commandsToAddToChooser.put("Left_First_Auto", NamedCommands.getCommand("Left
@@ -90,7 +94,6 @@ public class AutoCommands {
     }
 
     public static Supplier<Pose2d> getShootPosition() {
-        shootingPositions.getSelected();
         return shootingPositions.getSelected();
         // SmartDashboard.getString(AUTO_SMARTDASHBOARD_FOLDER + "shooterPositions",
         // NamedCommands.getCommand("AP_FrontHubShoot"));
