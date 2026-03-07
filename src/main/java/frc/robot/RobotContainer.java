@@ -11,45 +11,36 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.Arrays;
 import java.util.List;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.util.concurrent.Event;
-import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.ShooterPreferences;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
+import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.Shooter.AutoFire;
-import frc.robot.commands.Shooter.IndexerShooterStop;
 import frc.robot.generated.TunerConstants;
-import frc.robot.generated.TunerConstants_OldRobot;
-import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
 import frc.robot.lib.CommandTracker;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.MoveMode;
-import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.MoveMode;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.Intake;
 
 public class RobotContainer {
         private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
@@ -124,6 +115,12 @@ public class RobotContainer {
                 operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));
                 operatorJoystick.a().onTrue(new SetHoodPosition(hood, HoodAngles.LONG));
 
+                operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
+                operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
+                operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                operatorJoystick.leftBumper().onTrue(
+                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
+
                 //
                 // Driver Controls
                 //
@@ -175,23 +172,27 @@ public class RobotContainer {
                 driverJoystick.rightBumper().onFalse(
                                 Commands.parallel(
                                                 hopper.runStopHopper(),
-                                                indexer.runStopIndexer(),
-                                                shooter.stopShooter()));
+                                                indexer.runStopIndexer()));
 
                 driverJoystick.rightBumper().onTrue(
                                 new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
                                                 .repeatedly());
 
-                shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.SHORT));
-                shooterJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.MEDIUM));
-                shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.LONG));
-
-                shooterJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
-                                                .repeatedly());
-                shooterJoystick.rightBumper().onFalse(
-                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
-
+                //
+                // Shooter Joystick (DEBUG) Controls
+                //
+                // shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.SHORT));
+                // shooterJoystick.b().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.MEDIUM));
+                // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.LONG));
+                // shooterJoystick.rightBumper().onTrue(
+                // new AutoFire(shooter, indexer, hopper, () ->
+                // ShooterPreferences.INDEXER_VELOCITY)
+                // .repeatedly());
+                // shooterJoystick.rightBumper().onFalse(
+                // Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
         }
 
         public Command getAutonomousCommand() {
