@@ -43,7 +43,7 @@ public class AutoCommands {
         // NamedCommands.getCommand("P2P_auto1"));
         // endregion PidToPose
 
-        commandsToAddToChooser.put("AP_blueShootCenter", NamedCommands.getCommand("AP_blueShootCenter"));
+        commandsToAddToChooser.put("AP_FrontHubShoot", NamedCommands.getCommand("AP_FrontHubShoot"));
 
         commandsToAddToChooser.put("AP_blueCenterToDepot", NamedCommands.getCommand("AP_blueCenterToDepot"));
         commandsToAddToChooser.put("AP_DepotFaceIn", NamedCommands.getCommand("AP_DepotFaceIn"));
@@ -76,17 +76,25 @@ public class AutoCommands {
         // Add all commands in Map to chooser
         commandsToAddToChooser.keySet().stream()
                 .forEach(name -> chooser.addOption(name, commandsToAddToChooser.get(name)));
+
+        initShootPositions();
+
     }
 
-    public static void initShootPosition(SendableChooser<Supplier<Pose2d>> shootingPositions) {
-        shootingPositions.addOption("FrontHub", AutoPilotCommands.blueShootCenter);
-        shootingPositions.setDefaultOption("FrontHub", AutoPilotCommands.blueShootCenter);
-        SmartDashboard.putData("shootingPositions", shootingPositions);
+    public static SendableChooser<Supplier<Pose2d>> shootingPositions = new SendableChooser<>();
+
+    public static void initShootPositions() {
+        shootingPositions.addOption("FrontHub", AutoPilotCommands.FrontHubShoot);
+        shootingPositions.setDefaultOption("FrontHub", AutoPilotCommands.FrontHubShoot);
+        SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + " Shooting Position", shootingPositions);
     }
 
-    public static Supplier<Pose2d> getShootPosition(SendableChooser<Supplier<Pose2d>> shootingPositions) {
+    public static Supplier<Pose2d> getShootPosition() {
         shootingPositions.getSelected();
         return shootingPositions.getSelected();
+        // SmartDashboard.getString(AUTO_SMARTDASHBOARD_FOLDER + "shooterPositions",
+        // NamedCommands.getCommand("AP_FrontHubShoot"));
+
     }
 
     public static Command getAutonomousCommand() {
@@ -98,7 +106,6 @@ public class AutoCommands {
         } else {
             return Commands.print("Auto Disabled");
         }
-        SmartDashboard.getString(AUTO_SMARTDASHBOARD_FOLDER + "shooterPositions", "FrontHub");
 
     }
 }
