@@ -129,6 +129,19 @@
               "true_icon": "None",
               "false_icon": "None"
             }
+          },
+          {
+            "title": "Auto Shooting Position",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Shooting Position",
+              "period": 0.06,
+              "sort_options": false
+            }
           }
         ]
       }
