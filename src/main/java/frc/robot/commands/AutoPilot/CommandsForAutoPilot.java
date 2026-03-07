@@ -97,7 +97,7 @@ public class CommandsForAutoPilot {
         // Center Pose is 8,4, Blue Center Pose is 2,4,90
         public static Supplier<Pose2d> blueCenter = () -> new Pose2d(2, 4, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
-        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(4, 0, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(2, 0, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> preClimbPosition = () -> new Pose2d(2.5, 4, Rotation2d.fromDegrees(180));
         public static Supplier<Pose2d> climbPosition = () -> new Pose2d(1.5, 4, Rotation2d.fromDegrees(180));
 
