@@ -29,7 +29,7 @@ public class Shooter extends SubsystemBase {
   private final SparkFlex shooterLeftTopMotor;
   private final SparkFlex shooterRightBottomMotor;
   private final SparkFlex shooterRightTopMotor;
-  private SparkFlex shooterBittyBottomMotor;
+  private SparkFlex shooterBittyBottomMotor = null;
 
   private final RelativeEncoder shooterLeftBottomEncoder;
   private final RelativeEncoder shooterLeftTopEncoder;
@@ -157,17 +157,17 @@ public class Shooter extends SubsystemBase {
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_STALL_LIMIT, Constants.Shooter.SHOOTER_CURRENT_FREE_LIMIT)
         .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT)
-        .inverted(true);
+        .inverted(false);
 
     shooterTopConfig
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(Constants.Shooter.SHOOTER_CURRENT_STALL_LIMIT, Constants.Shooter.SHOOTER_CURRENT_FREE_LIMIT)
         .voltageCompensation(Constants.Shooter.SHOOTER_VOLTAGE_LIMIT)
-        .inverted(true);
+        .inverted(false);
 
-    shooterRightBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters,
+    shooterLeftBottomMotor.configure(shooterBottomConfig, ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-    shooterRightTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    shooterLeftTopMotor.configure(shooterTopConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     try {
       SparkFlexConfig topFollower = new SparkFlexConfig();
@@ -190,13 +190,14 @@ public class Shooter extends SubsystemBase {
   // methods
   // simple, just stopping motors
   public void stopTopShooterMotors() {
-    shooterLeftTopMotor.set(0.0);
-    shooterRightTopMotor.set(0.0);
+    shooterLeftTopMotor.stopMotor();
   }
 
   public void stopBottomShooterMotors() {
-    shooterRightBottomMotor.set(0.0);
-    shooterLeftBottomMotor.set(0.0);
+    shooterLeftBottomMotor.stopMotor();
+    if (shooterBittyBottomMotor != null) {
+      shooterBittyBottomMotor.stopMotor();
+    }
   }
 
   // find out if motors are at correct speeds :) will be important in testing
@@ -204,28 +205,34 @@ public class Shooter extends SubsystemBase {
   // Check if both top motors are at speed
   // Check if both TOP shooter motors are at speed
   public boolean topMotorsAtSpeed(double topTargetRPM) {
-    return Math.abs(shooterLeftTopEncoder.getVelocity() - topTargetRPM) < Constants.Shooter.shooterMotorTolerance
-        && Math.abs(shooterRightTopEncoder.getVelocity() - topTargetRPM) < Constants.Shooter.shooterMotorTolerance;
+    return Math.abs(shooterLeftTopEncoder.getVelocity() - topTargetRPM) < Constants.Shooter.shooterMotorTolerance;
   }
 
   // Check if both BOTTOM shooter motors are at speed
   public boolean bottomMotorsAtSpeed(double bottomRPM) {
     return Math.abs(shooterLeftBottomEncoder.getVelocity() - bottomRPM) < Constants.Shooter.shooterMotorTolerance;
-
   }
 
-  // setting the shoote rpm based off of the table
+  // setting the shooter rpm based off of the table
   public void setShooterRPM(double topRPM, double bottomRPM) {
     topTargetRPM = topRPM;
     bottomTargetRPM = bottomRPM;
 
     shooterTopController.setSetpoint(topRPM, ControlType.kVelocity);
     shooterBottomController.setSetpoint(bottomRPM, ControlType.kVelocity);
+
+    if (shooterBittyBottomMotor != null) {
+      shooterBittyBottomController.setSetpoint(bottomRPM, ControlType.kVelocity);
+    }
   }
 
   public void setShooter(double speed) {
     shooterLeftTopMotor.set(speed);
     shooterLeftBottomMotor.set(speed);
+
+    if (shooterBittyBottomMotor != null) {
+      shooterBittyBottomMotor.set(speed);
+    }
   }
 
   public double getTopSetpoint() {
@@ -234,6 +241,15 @@ public class Shooter extends SubsystemBase {
 
   public double getBottomSetpoint() {
     return shooterBottomController.getSetpoint();
+  }
+
+  public void stopShooterMotors() {
+    shooterLeftTopMotor.stopMotor();
+    shooterLeftBottomMotor.stopMotor();
+
+    if (shooterBittyBottomMotor != null) {
+      shooterBittyBottomMotor.stopMotor();
+    }
   }
 
   // Starting shooter commands!!
@@ -254,19 +270,10 @@ public class Shooter extends SubsystemBase {
   // }
 
   public Command shootCommand(double topRPM, double bottomRPM) {
-    return Commands.sequence(
-        // Spin up top motors
+    return 
         Commands.runOnce(() -> {
-          shooterTopController.setSetpoint(topRPM, ControlType.kVelocity);
-        }, this),
-
-        // Wait until top motors are at target speed
-        Commands.waitUntil(() -> topMotorsAtSpeed(topRPM)),
-
-        // Spin up bottom motors
-        Commands.runOnce(() -> {
-          shooterBottomController.setSetpoint(bottomRPM, ControlType.kVelocity);
-        }, this));
+          setShooterRPM(topRPM, bottomRPM);
+        }, this);
   }
 
   // Command to run the shooter backwards at a set speed

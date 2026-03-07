@@ -179,13 +179,13 @@ public final class Constants {
     public static final double WHEEL_MOMENT_OF_INERTIA = 0.00006;
     public static final double INTAKE_GEAR_RATIO = 1.0 / 3.0;
 
-    public static final double INAKE_P = 0.00005;
-    public static final double INAKE_I = 0.0;
-    public static final double INAKE_D = 0.0;
+    public static final double INTAKE_P = 0.00005;
+    public static final double INTAKE_I = 0.0;
+    public static final double INTAKE_D = 0.0;
 
-    public static final double INAKE_kV = 0.0018096;
-    public static final double INAKE_kA = 0.0022961;
-    public static final double INAKE_kS = 0.3012;
+    public static final double INTAKE_kV = 0.0018096;
+    public static final double INTAKE_kA = 0.0022961;
+    public static final double INTAKE_kS = 0.3012;
   }
 
   public static final class Indexer {

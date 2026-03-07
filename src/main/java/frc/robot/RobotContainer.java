@@ -12,7 +12,9 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.input.controllers.XboxControllerWrapper;
 import edu.wpi.first.wpilibj2.command.*;
+import frc.robot.commands.CalibrateTurret;
 import frc.robot.commands.SwerveDriveWithGamepad;
+import frc.robot.commands.ZeroTurret;
 import frc.robot.commands.testRPM;
 import frc.robot.subsystems.*;
 
@@ -35,13 +37,13 @@ public class RobotContainer {
   public static final Intake intake = new Intake(Constants.Intake.INTAKE_LIFT_MOTOR_ID,
       Constants.Intake.INTAKE_MOTOR_ID);
   public static final Indexer indexer = new Indexer(Constants.Indexer.INDEXER_MOTOR_ID);
-  public static final Turret turret = new Turret(Constants.Turret.TURRET_MOTOR_ID,
+  public static final Turret turret = new Turret("Turret", Constants.Turret.TURRET_MOTOR_ID,
       Constants.Turret.Turret_HALL_EFFECT_ID, null); // TODO obtain transform from robot to turret
   public static final Shooter shooter = new Shooter(
       Constants.Shooter.TOP_LEFT_SHOOTER_ID,
+      Constants.Shooter.BOTTOM_LEFT_SHOOTER_ID,
       Constants.Shooter.TOP_RIGHT_SHOOTER_ID,
       Constants.Shooter.BOTTOM_RIGHT_SHOOTER_ID,
-      Constants.Shooter.BOTTOM_LEFT_SHOOTER_ID,
       Constants.Shooter.BITTY_SHOOTER_ID);
   public static final FireControl fireControl = new FireControl(() -> swerve.getPose(),
       () -> DriverStation.getAlliance().orElse(Alliance.Blue), () -> new ChassisSpeeds());
@@ -68,18 +70,18 @@ public class RobotContainer {
 
   private void configureButtonBindings() {
     coDriver.START();
-    // driver.RT().whileTrue(shootTestFuelCommand());
-    // driver.LT().whileTrue(intake.intakeFuel());
-    // driver.LB().whileTrue(new testRPM());
-
-    // coDriver.X().whileTrue(intake.extakeFuel());
-    // coDriver.B().whileTrue(shooter.reverseShooter(400));
+    SmartDashboard.putData(new ZeroTurret(turret));
+    SmartDashboard.putData(new CalibrateTurret(turret));
+    driver.LT().whileTrue(Commands.sequence(intake.putDownIntake(), intake.intakeFuel()));
+    driver.LB().whileTrue(intake.extakeFuel());
+    driver.RT().whileTrue(shootTestFuelCommand());
+    driver.Y().onTrue(intake.putUpIntake());
   }
 
   public Command shootTestFuelCommand() {
     return Commands.sequence(
         shooter.shootCommand(2500, 2500),
         Commands.waitUntil(() -> shooter.shooterAtSpeed(2500, 2500)),
-        Commands.run(() -> shooter.stopMotors(), shooter));
+        Commands.run(() -> indexer.indexerForward(), indexer)).finallyDo(() -> {shooter.stopShooterMotors(); indexer.stopIndexer();});
   }
 }
