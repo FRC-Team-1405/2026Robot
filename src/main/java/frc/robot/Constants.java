@@ -184,7 +184,6 @@ public class Constants {
         static {
             Preferences.initDouble("Hopper/Forward", 1.0);
             HOPPER_FORWARD_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Forward", 1.0));
-
             Preferences.initDouble("Hopper/Reverse", -1.0);
             HOPPER_REVERSE_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Reverse", -1.0));
 

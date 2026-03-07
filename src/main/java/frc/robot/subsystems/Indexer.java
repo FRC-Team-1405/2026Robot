@@ -15,9 +15,11 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.CANBus;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.sim.SimProfiles;
@@ -33,11 +35,19 @@ public class Indexer extends SubsystemBase {
 
     private void setIndexerSpeed(Supplier<AngularVelocity> speed) {
         isIndexerActive = true;
+        SmartDashboard.putBoolean("isIndexerActive", isIndexerActive);
         indexerMotor.setControl(velocityVoltage.withVelocity(speed.get()));
+    }
+
+    private void setIndexerSpeed() {
+        isIndexerActive = true;
+        SmartDashboard.putBoolean("isIndexerActive", isIndexerActive);
+        indexerMotor.setControl(velocityVoltage.withVelocity(Constants.ShooterPreferences.INDEXER_VELOCITY));
     }
 
     private void indexerStop() {
         isIndexerActive = false;
+        SmartDashboard.putBoolean("isIndexerActive", isIndexerActive);
         indexerMotor.setControl(m_Brake);
     }
 
@@ -47,18 +57,22 @@ public class Indexer extends SubsystemBase {
     }
 
     public Command runIndexer(Supplier<AngularVelocity> speed) {
-        return Commands.runOnce(() -> setIndexerSpeed(speed), this);
+        return startEnd(() -> setIndexerSpeed(speed), () -> indexerStop());
+    }
+
+    public Command runIndexer() {
+        return startEnd(() -> setIndexerSpeed(), () -> indexerStop());
     }
 
     public Command runStopIndexer() {
         return runOnce(this::indexerStop);
     }
 
-    @Override
-    public void periodic() {
-    }
-
     public boolean isIndexerRunning() {
         return isIndexerActive;
+    }
+
+    @Override
+    public void periodic() {
     }
 }
