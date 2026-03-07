@@ -99,9 +99,11 @@ public class Shooter extends SubsystemBase {
   public Shooter() {
     SimProfiles.initShooter(shooterMotor1);
     SimProfiles.initShooter(shooterMotor2);
+    SimProfiles.initShooter(shooterMotor3);
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
+    shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     stopShooter();
-    setShooterMotor();
+    // setShooterMotor();
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
@@ -136,7 +138,7 @@ public class Shooter extends SubsystemBase {
     setShooterSpeed(requestedSpeed);
   }
 
-  public Command runSetSpeed(Supplier<AngularVelocity> speed) {
+  public Command runSetRequestedSpeed(Supplier<AngularVelocity> speed) {
     return Commands.runOnce(() -> setRequestedSpeed(speed));
   }
 
@@ -147,8 +149,11 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     double leaderCurrentDraw = shooterMotor1.getStatorCurrent().getValueAsDouble();
-    double followerCurrentDraw = shooterMotor2.getStatorCurrent().getValueAsDouble();
-    double differentialCurrentDraw = Math.abs(leaderCurrentDraw - followerCurrentDraw);
+    double followerCurrentDraw2 = shooterMotor2.getStatorCurrent().getValueAsDouble();
+    double followerCurrentDraw3 = shooterMotor3.getStatorCurrent().getValueAsDouble();
+
+    double differentialCurrentDraw2 = Math.abs(leaderCurrentDraw - followerCurrentDraw2);
+    double differentialCurrentDraw3 = Math.abs(leaderCurrentDraw - followerCurrentDraw3);
 
     double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
     double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
@@ -187,8 +192,10 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/ShooterMotor2RPS", shooterMotor2.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/ShooterMotor3RPS", shooterMotor3.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/LeaderCurrentDraw", leaderCurrentDraw);
-    SmartDashboard.putNumber("Shooter/FollowerCurrentDraw", followerCurrentDraw);
-    SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw", differentialCurrentDraw);
+    SmartDashboard.putNumber("Shooter/FollowerCurrentDraw2", followerCurrentDraw2);
+    SmartDashboard.putNumber("Shooter/FollowerCurrentDraw3", followerCurrentDraw3);
+    SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw2", differentialCurrentDraw2);
+    SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw3", differentialCurrentDraw3);
     SmartDashboard.putNumber("Shooter/Error", error);
     SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
     SmartDashboard.putNumber("Shooter/AverageError", averageError);
