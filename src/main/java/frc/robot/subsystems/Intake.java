@@ -180,4 +180,9 @@ public class Intake extends SubsystemBase {
     return isPickupActive;
   }
 
+  public void publishMotorCurrents() {
+    SmartDashboard.putNumber("Intake/IntakeCurrent", intakeMotor.getStatorCurrent().getValueAsDouble());
+    SmartDashboard.putNumber("Intake/PickupCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
+  }
+
 }
