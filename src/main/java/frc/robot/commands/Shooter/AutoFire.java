@@ -21,15 +21,14 @@ import edu.wpi.first.units.measure.AngularVelocity;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class AutoFire extends SequentialCommandGroup {
   /** Creates a new AutoFire. */
-  public AutoFire(Shooter shooterSubsytem, Indexer indexerSubsystem, Supplier<AngularVelocity> indexerVelocity) {
+  public AutoFire(Shooter shooterSubsytem, Indexer indexerSubsystem, Hopper hopper,
+      Supplier<AngularVelocity> indexerVelocity) {
 
     addCommands(
-        Commands.print("shooter is running"),
         shooterSubsytem.runShooter(),
         Commands.waitUntil(() -> {
           return shooterSubsytem.isReadyToFire();
         }),
-        Commands.print("indexer is running"),
         indexerSubsystem.runIndexer(indexerVelocity),
         Commands.waitUntil(() -> {
           if (!shooterSubsytem.isReadyToFire()) {
@@ -37,7 +36,8 @@ public class AutoFire extends SequentialCommandGroup {
           }
           return !shooterSubsytem.isReadyToFire();
         }),
-        Commands.print("indexer has stopped running"),
-        indexerSubsystem.runStopIndexer());
+        indexerSubsystem.runStopIndexer(),
+        hopper.runStopHopper());
+
   };
 }

@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
+import java.util.prefs.Preferences;
 import java.lang.Math;
 import java.lang.annotation.Target;
 import java.security.spec.DSAPrivateKeySpec;
@@ -83,6 +84,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
+    double value = speed.get().in(RotationsPerSecond);
     shooterMotor1.setControl(m_VelocityVoltage.withVelocity(speed.get()));
     shooterTarget = speed.get().in(RotationsPerSecond);
 
@@ -144,8 +146,8 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double leaderCurrentDraw = shooterMotor1.getSupplyCurrent().getValueAsDouble();
-    double followerCurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
+    double leaderCurrentDraw = shooterMotor1.getStatorCurrent().getValueAsDouble();
+    double followerCurrentDraw = shooterMotor2.getStatorCurrent().getValueAsDouble();
     double differentialCurrentDraw = Math.abs(leaderCurrentDraw - followerCurrentDraw);
 
     double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
@@ -179,9 +181,11 @@ public class Shooter extends SubsystemBase {
       settleCount = 0;
     }
 
-    locked = settleCount >= ShooterPreferences.STABLE_COUNT;
+    locked = settleCount >= ShooterPreferences.STABLE_COUNT && shooterTarget > 0.0;
 
-    SmartDashboard.putNumber("Shooter/RPS", shooterMotor1.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter/ShooterMotor1RPS", shooterMotor1.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter/ShooterMotor2RPS", shooterMotor2.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter/ShooterMotor3RPS", shooterMotor3.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/LeaderCurrentDraw", leaderCurrentDraw);
     SmartDashboard.putNumber("Shooter/FollowerCurrentDraw", followerCurrentDraw);
     SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw", differentialCurrentDraw);
@@ -193,4 +197,5 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
     SmartDashboard.putBoolean("Shooter/Locked", locked);
   }
+
 }

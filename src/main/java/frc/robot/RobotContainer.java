@@ -216,18 +216,15 @@ public class RobotContainer {
 
                 drivetrain.registerTelemetry(logger::telemeterize);
 
-                shooterJoystick.a().toggleOnTrue(shooter.runShooter(() -> {
-                        return ShooterPreferences.MEDIUM;
-                }));
+                shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.SHORT));
+                shooterJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.MEDIUM));
+                shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.LONG));
 
-                shooterJoystick.x().onTrue(new IndexerShooterStop(shooter, indexer));
-
-                shooterJoystick.b().toggleOnTrue(indexer.runIndexer(() -> {
-                        return ShooterPreferences.INDEXER_VELOCITY;
-                }));
-
-                shooterJoystick.y().toggleOnTrue(
-                                new AutoFire(shooter, indexer, () -> ShooterPreferences.MEDIUM).repeatedly());
+                shooterJoystick.rightBumper().onTrue(
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
+                                                .repeatedly());
+                shooterJoystick.rightBumper().onFalse(
+                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
 
                 operatorJoystick.y().onTrue(shooter.runSetSpeed(() -> ShooterPreferences.LONG));
                 operatorJoystick.b().onTrue(shooter.runSetSpeed(() -> ShooterPreferences.MEDIUM));

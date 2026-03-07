@@ -58,7 +58,7 @@ public class TunerConstants {
 
         // The stator current at which the wheels start to slip;
         // This needs to be tuned to your individual robot
-        private static final Current kSlipCurrent = Amps.of(40);
+        private static final Current kSlipCurrent = Amps.of(65); // measured at 75
 
         // Initial configs for the drive and steer motors and the azimuth encoder; these
         // cannot be null.
@@ -69,10 +69,12 @@ public class TunerConstants {
                                         new CurrentLimitsConfigs()
                                                         // TUNE THIS FOR YOUR ROBOT. This should be set to the current
                                                         // at which your robot's drive motors start to slip.
-                                                        .withStatorCurrentLimit(Amps.of(50))
+                                                        .withStatorCurrentLimit(Amps.of(65))
                                                         .withStatorCurrentLimitEnable(true)
-                                                        .withSupplyCurrentLimit(Amps.of(40))
+                                                        .withSupplyCurrentLimit(45)
                                                         .withSupplyCurrentLimitEnable(true));
+        // .withSupplyCurrentLimit(Amps.of(40))
+        // .withSupplyCurrentLimitEnable(true));
         private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
                         .withCurrentLimits(
                                         new CurrentLimitsConfigs()
@@ -94,7 +96,7 @@ public class TunerConstants {
 
         // Theoretical free speed (m/s) at 12 V applied output;
         // This needs to be tuned to your individual robot
-        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.0);
+        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.25);
 
         // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
         // This may need to be tuned to your individual robot
@@ -107,7 +109,7 @@ public class TunerConstants {
         private static final boolean kInvertLeftSide = false;
         private static final boolean kInvertRightSide = true;
 
-        private static final int kPigeonId = 42;
+        private static final int kPigeonId = 60;
 
         // These are only used for simulation
         private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);

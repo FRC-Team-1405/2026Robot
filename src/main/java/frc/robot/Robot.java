@@ -83,6 +83,8 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         GamePeriod.elasticTeleopPeriodic();
+        m_robotContainer.drivetrain.publishMotorCurrent();
+        m_robotContainer.intake.publishMotorCurrents();
     }
 
     @Override
