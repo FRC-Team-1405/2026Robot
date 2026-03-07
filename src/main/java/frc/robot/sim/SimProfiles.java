@@ -207,6 +207,11 @@ public class SimProfiles {
         configs.Voltage.withPeakForwardVoltage(Volts.of(8))
                 .withPeakReverseVoltage(Volts.of(-8));
 
+        configs.MotionMagic
+                .withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
+                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(10))
+                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
+
         motor.getConfigurator().apply(configs);
 
         simIndexer = new TalonFXSimProfile(motor) {

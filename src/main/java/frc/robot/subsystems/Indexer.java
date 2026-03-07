@@ -56,6 +56,10 @@ public class Indexer extends SubsystemBase {
         return startEnd(() -> setIndexerSpeed(speed), () -> indexerStop());
     }
 
+    public Command runIndexer() {
+        return startEnd(() -> setIndexerSpeed(), () -> indexerStop());
+    }
+
     public Command runStopIndexer() {
         return runOnce(this::indexerStop);
     }
