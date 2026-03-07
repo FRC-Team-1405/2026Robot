@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.*;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 import java.lang.Math;
+import java.lang.annotation.Target;
 import java.security.spec.DSAPrivateKeySpec;
 
 import com.ctre.phoenix6.controls.Follower;
@@ -27,6 +28,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterPreferences;
@@ -54,16 +57,17 @@ public class Shooter extends SubsystemBase {
 
   public void setShooterMotor() {
     TalonFXConfiguration configs = new TalonFXConfiguration();
-    configs.Slot0.kP = 0.0;
-    configs.Slot0.kI = 0.07;
-    configs.Slot0.kD = 0.02;
-    configs.Slot0.kV = 0.12;
-    configs.Slot0.kS = 0.0;
+    configs.Slot0.kP = 0.0; // 0.00
+    configs.Slot0.kI = 0.0015; // 0.006
+    configs.Slot0.kD = 0.0; // 0.00
+    configs.Slot0.kV = 0.12; // 0.149 0.1232
+    configs.Slot0.kS = 0.0; // 0.00
 
     configs.Voltage.withPeakForwardVoltage(Volts.of(8)).withPeakReverseVoltage(Volts.of(-8));
 
-    configs.MotionMagic.MotionMagicCruiseVelocity = 15;
-    configs.MotionMagic.MotionMagicAcceleration = 5;
+    configs.MotionMagic.MotionMagicAcceleration = 30; // whatever RobotContainer.
+                                                      // shooterJoystick.a()...ShooterPreference is equal to
+    // configs.MotionMagic.MotionMagicJerk = 0/*1000*/;
 
     StatusCode status = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
@@ -82,9 +86,8 @@ public class Shooter extends SubsystemBase {
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
     double value = speed.get().in(RotationsPerSecond);
     shooterMotor1.setControl(m_VelocityVoltage.withVelocity(speed.get()));
-    settleCount = 0;
     shooterTarget = speed.get().in(RotationsPerSecond);
-    locked = false;
+
   }
 
   private void shooterStop() {
@@ -97,7 +100,9 @@ public class Shooter extends SubsystemBase {
     SimProfiles.initShooter(shooterMotor1);
     SimProfiles.initShooter(shooterMotor2);
     SimProfiles.initShooter(shooterMotor3);
+    SimProfiles.initShooter(shooterMotor3);
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
+    shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     stopShooter();
     // setShooterMotor();
@@ -106,6 +111,38 @@ public class Shooter extends SubsystemBase {
   public Command runShooter(Supplier<AngularVelocity> speed) {
     return Commands.runOnce(() -> setShooterSpeed(speed), this);
   };
+
+  public Command runShooter() {
+    return Commands.runOnce(() -> setShooterSpeed(requestedSpeed), this);
+  };
+
+  private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.SHORT;
+
+  private void setRequestedSpeed(Supplier<AngularVelocity> speed) {
+    if (speed.get() == Constants.ShooterPreferences.LONG) {
+      SmartDashboard.putBoolean("Shooter/Long Speed", true);
+      SmartDashboard.putBoolean("Shooter/Medium Speed", false);
+      SmartDashboard.putBoolean("Shooter/Short Speed", false);
+    } else if (speed.get() == Constants.ShooterPreferences.MEDIUM) {
+      SmartDashboard.putBoolean("Shooter/Long Speed", false);
+      SmartDashboard.putBoolean("Shooter/Medium Speed", true);
+      SmartDashboard.putBoolean("Shooter/Short Speed", false);
+    } else if (speed.get() == Constants.ShooterPreferences.SHORT) {
+      SmartDashboard.putBoolean("Shooter/Long Speed", false);
+      SmartDashboard.putBoolean("Shooter/Medium Speed", false);
+      SmartDashboard.putBoolean("Shooter/Short Speed", true);
+    } else {
+      SmartDashboard.putBoolean("Shooter/Long Speed", false);
+      SmartDashboard.putBoolean("Shooter/Medium Speed", false);
+      SmartDashboard.putBoolean("Shooter/Short Speed", false);
+    }
+    requestedSpeed = speed;
+    setShooterSpeed(requestedSpeed);
+  }
+
+  public Command runSetRequestedSpeed(Supplier<AngularVelocity> speed) {
+    return Commands.runOnce(() -> setRequestedSpeed(speed));
+  }
 
   public Command stopShooter() {
     return Commands.runOnce(() -> shooterStop(), this);
@@ -137,9 +174,13 @@ public class Shooter extends SubsystemBase {
       lowError += 1;
     }
 
-    if (MathUtil.isNear(shooterTarget, target, 1.0) && Math.abs(error) < range) {
-      if (settleCount < ShooterPreferences.STABLE_COUNT) {
-        settleCount += 1;
+    if (target > 0.0) {
+      if (MathUtil.isNear(shooterTarget, target, 1.0) && Math.abs(error) < range) {
+        if (settleCount < ShooterPreferences.STABLE_COUNT) {
+          settleCount += 1;
+        }
+      } else {
+        settleCount = 0;
       }
     } else {
       settleCount = 0;
@@ -155,26 +196,12 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/ShooterMotor3CurrentDraw", shooterMotor3CurrentDraw);
     SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw", differentialCurrentDraw);
     SmartDashboard.putNumber("Shooter/Error", error);
+    SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
     SmartDashboard.putNumber("Shooter/AverageError", averageError);
     SmartDashboard.putNumber("Shooter/HighError", highError);
     SmartDashboard.putNumber("Shooter/LowError", lowError);
     SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
     SmartDashboard.putBoolean("Shooter/Locked", locked);
-  }
-
-  private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.SHORT;
-
-  private void setRequestedSpeed(Supplier<AngularVelocity> speed) {
-    requestedSpeed = speed;
-    setShooterSpeed(requestedSpeed);
-  }
-
-  public Command runShooter() {
-    return Commands.runOnce(() -> setShooterSpeed(requestedSpeed));
-  }
-
-  public Command runSetRequestedSpeed(Supplier<AngularVelocity> speed) {
-    return Commands.runOnce(() -> setRequestedSpeed(speed));
   }
 
 }
