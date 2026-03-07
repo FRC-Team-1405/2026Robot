@@ -271,12 +271,15 @@ public class CommandsForAutoPilot {
                 // );
 
                 Command AP_FrontHubShoot = new SequentialCommandGroup(
-                                MoveTo_FrontHubShoot.get());
+                                MoveTo_FrontHubShoot.get()
+                // shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT)
+                );
                 Command AP_blueCenterToDepot = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get(),
                                 MoveTo_depotFaceIn.get());
 
                 Command AP_fourMeters = new SequentialCommandGroup(
+                                intake.runIntakeOut(),
                                 Commands.parallel(MoveTo_fourMeters.get(), intake.runPickupIn()).withTimeout(5.0),
                                 intake.runPickupStop());
                 Command AP_JUSTSHOOT = new SequentialCommandGroup(
@@ -315,8 +318,9 @@ public class CommandsForAutoPilot {
                                 MoveTo_leftBump_FieldToAllianceEnd.get());
                 // Center Harvest
                 Command AP_CenterHarvest = new SequentialCommandGroup(
-                                MoveTo_farRightLeftCenter.get(),
-                                MoveTo_farLeftLeftCenter.get());
+                                Commands.parallel(MoveTo_farRightLeftCenter.get(), intake.runPickupIn()),
+                                MoveTo_farLeftLeftCenter.get(),
+                                intake.runPickupStop());
                 Command AP_CenterRtoLSupplying = new SequentialCommandGroup(
                                 MoveTo_leftLoadInZone.get(),
                                 MoveTo_rightLoadInZone.get());
