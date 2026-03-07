@@ -92,7 +92,7 @@ public class RobotContainer {
         public RobotContainer() {
                 configureBindings();
 
-                AutoCommands.registerCommands(drivetrain, climber);
+                AutoCommands.registerCommands(drivetrain, climber, intake, shooter);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
         }
 

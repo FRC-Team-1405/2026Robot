@@ -17,6 +17,8 @@ import frc.robot.Constants;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
 import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class CommandsForAutoPilot {
@@ -99,7 +101,8 @@ public class CommandsForAutoPilot {
         public static Supplier<Pose2d> preClimbPosition = () -> new Pose2d(2.5, 4, Rotation2d.fromDegrees(180));
         public static Supplier<Pose2d> climbPosition = () -> new Pose2d(1.5, 4, Rotation2d.fromDegrees(180));
 
-        public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber) {
+        public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber, Intake intake,
+                        Shooter shooter) {
                 /* Commands */
                 // Uses command suppliers instead of commands so that we can reuse the same
                 // command in an autonomous
@@ -256,6 +259,12 @@ public class CommandsForAutoPilot {
                                 .build();
 
                 /* Full Autos */ // TODO: DON'T FORGET THE COMMAS
+
+                Command climbCommand = climber.runClimbUp().withName("Auto Climb Up");
+                SmartDashboard.putData(climbCommand);
+
+                Command runIntake = intake.runPickupIn().withName("Auto Run Intake");
+                SmartDashboard.putData(runIntake);
                 // Test/Move to a position
                 // Command AP_blueCenter = new SequentialCommandGroup(
                 // // MoveTo_blueCenter.get()
@@ -266,8 +275,10 @@ public class CommandsForAutoPilot {
                 Command AP_blueCenterToDepot = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get(),
                                 MoveTo_depotFaceIn.get());
+
                 Command AP_fourMeters = new SequentialCommandGroup(
-                                MoveTo_fourMeters.get());
+                                Commands.parallel(MoveTo_fourMeters.get(), intake.runPickupIn()).withTimeout(5.0),
+                                intake.runPickupStop());
                 Command AP_JUSTSHOOT = new SequentialCommandGroup(
                                 // MoveTo_blueCenter.get(),
                                 MoveTo_selectedShootPosition.get(),
@@ -279,8 +290,7 @@ public class CommandsForAutoPilot {
                 // MoveTo_rightLoadInZone.get()
                 );
                 // Mini Autos
-                Command climbCommand = climber.runClimbUp().withName("Auto Climb Up");
-                SmartDashboard.putData(climbCommand);
+
                 // Depot
                 Command AP_DepotFaceIn = new SequentialCommandGroup(
                                 MoveTo_leftOfDepotFaceIn.get(),

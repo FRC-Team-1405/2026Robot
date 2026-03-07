@@ -14,6 +14,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
 import frc.robot.commands.PidToPose.PidToPoseCommands;
 import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
+
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class AutoCommands {
@@ -21,12 +24,13 @@ public class AutoCommands {
 
     private static final String AUTO_SMARTDASHBOARD_FOLDER = "Auto";
 
-    public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber) {
+    public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber, Intake intake,
+            Shooter shooter) {
         SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
         SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
 
         PidToPoseCommands.registerCommands(drivetrain);
-        CommandsForAutoPilot.registerCommands(drivetrain, climber);
+        CommandsForAutoPilot.registerCommands(drivetrain, climber, intake, shooter);
         // this HAS to go after AutoPilotCommands
         AutoCommands.configureAutos(autoChooser, drivetrain);
 
