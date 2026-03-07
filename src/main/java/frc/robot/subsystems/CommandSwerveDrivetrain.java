@@ -422,6 +422,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return m_swerveFeatures.getAngleToTargetWithVelocityCompensation(targetPose);
     }
 
+    public void simulationInit() {
+
+    }
+
     public void publishMotorCurrent() {
         SwerveModule<TalonFX, TalonFX, CANcoder>[] modules = this.getModules();
 
