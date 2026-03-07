@@ -124,23 +124,42 @@ public class Constants {
 
     public static class HoodPreferences {
 
-        public static final double SERVO_SPEED_SECONDS;
-        public static final double SERVO_SHORT;
-        public static final double SERVO_MEDIUM;
-        public static final double SERVO_LONG;
+        public static final double SERVO_FULL_RANGE_SECONDS;
+        public static final double SERVO_SHORT_PERCENTAGE;
+        public static final double SERVO_MEDIUM_PERCENTAGE;
+        public static final double SERVO_LONG_PERCENTAGE;
 
         static {
-            Preferences.initDouble("Hood/Servo Speed Seconds", 0.5);
-            SERVO_SPEED_SECONDS = Preferences.getDouble("Hood/Servo Speed Seconds", 0.5);
+            Preferences.initDouble("Hood/Servo Full Range Seconds", 0.5);
+            SERVO_FULL_RANGE_SECONDS = Preferences.getDouble("Hood/Servo Full Range Seconds", 0.5);
 
-            Preferences.initDouble("Hood/Servo Speed Short", 0.3);
-            SERVO_SHORT = Preferences.getDouble("Hood/Servo Speed Short", 0.3);
+            // Positions are a percentage of a full range of motion
+            Preferences.initDouble("Hood/Servo Short Position", 0.3);
+            SERVO_SHORT_PERCENTAGE = Preferences.getDouble("Hood/Servo Short Position", 0.3);
 
-            Preferences.initDouble("Hood/Servo Speed Medium", 0.6);
-            SERVO_MEDIUM = Preferences.getDouble("Hood/Servo Speed Medium", 0.6);
+            Preferences.initDouble("Hood/Servo Medium Position", 0.6);
+            SERVO_MEDIUM_PERCENTAGE = Preferences.getDouble("Hood/Servo Medium Position", 0.6);
 
-            Preferences.initDouble("Hood/Servo Speed Long", 1.0);
-            SERVO_LONG = Preferences.getDouble("Hood/Servo Speed Long", 1.0);
+            Preferences.initDouble("Hood/Servo Long Position", 1.0);
+            SERVO_LONG_PERCENTAGE = Preferences.getDouble("Hood/Servo Long Position", 1.0);
+        }
+
+        public enum HoodAngles {
+            ZERO(0),
+            SHORT(SERVO_SHORT_PERCENTAGE),
+            MEDIUM(SERVO_MEDIUM_PERCENTAGE),
+            LONG(SERVO_LONG_PERCENTAGE),
+            ONE(1);
+
+            double positionPercentage;
+
+            HoodAngles(double positionPercentage) {
+                this.positionPercentage = positionPercentage;
+            }
+
+            public double getPositionPercentage() {
+                return positionPercentage;
+            }
         }
 
     }
