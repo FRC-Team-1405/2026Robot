@@ -164,8 +164,7 @@ public class RobotContainer {
                                                 shooter.stopShooter()));
 
                 driverJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, () -> ShooterPreferences.INTERMEDIATE,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY).repeatedly());
+                                new AutoFire(shooter, indexer, () -> ShooterPreferences.INTERMEDIATE).repeatedly());
                 // driverJoystick.rightBumper().onTrue(
                 // Commands.parallel(
                 // hopper.runForwardHopper(),
@@ -228,9 +227,11 @@ public class RobotContainer {
                 }));
 
                 shooterJoystick.y().toggleOnTrue(
-                                new AutoFire(shooter, indexer, () -> ShooterPreferences.MEDIUM,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY).repeatedly());
+                                new AutoFire(shooter, indexer, () -> ShooterPreferences.MEDIUM).repeatedly());
 
+                operatorJoystick.y().onTrue(shooter.runSetSpeed(() -> ShooterPreferences.LONG));
+                operatorJoystick.b().onTrue(shooter.runSetSpeed(() -> ShooterPreferences.MEDIUM));
+                operatorJoystick.a().onTrue(shooter.runSetSpeed(() -> ShooterPreferences.SHORT));
         }
 
         public Command getAutonomousCommand() {

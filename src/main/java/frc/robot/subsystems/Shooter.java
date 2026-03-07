@@ -27,6 +27,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -104,6 +105,38 @@ public class Shooter extends SubsystemBase {
   public Command runShooter(Supplier<AngularVelocity> speed) {
     return Commands.runOnce(() -> setShooterSpeed(speed), this);
   };
+
+  public Command runShooter() {
+    return Commands.runOnce(() -> setShooterSpeed(requestedSpeed), this);
+  };
+
+  private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.SHORT;
+
+  private void setRequestedSpeed(Supplier<AngularVelocity> speed) {
+    if (speed.get() == Constants.ShooterPreferences.LONG) {
+      SmartDashboard.putBoolean("Shooter/Long Speed", true);
+      SmartDashboard.putBoolean("Shooter/Medium Speed", false);
+      SmartDashboard.putBoolean("Shooter/Short Speed", false);
+    } else if (speed.get() == Constants.ShooterPreferences.MEDIUM) {
+      SmartDashboard.putBoolean("Shooter/Long Speed", false);
+      SmartDashboard.putBoolean("Shooter/Medium Speed", true);
+      SmartDashboard.putBoolean("Shooter/Short Speed", false);
+    } else if (speed.get() == Constants.ShooterPreferences.SHORT) {
+      SmartDashboard.putBoolean("Shooter/Long Speed", false);
+      SmartDashboard.putBoolean("Shooter/Medium Speed", false);
+      SmartDashboard.putBoolean("Shooter/Short Speed", true);
+    } else {
+      SmartDashboard.putBoolean("Shooter/Long Speed", false);
+      SmartDashboard.putBoolean("Shooter/Medium Speed", false);
+      SmartDashboard.putBoolean("Shooter/Short Speed", false);
+    }
+    requestedSpeed = speed;
+    setShooterSpeed(requestedSpeed);
+  }
+
+  public Command runSetSpeed(Supplier<AngularVelocity> speed) {
+    return Commands.runOnce(() -> setRequestedSpeed(speed));
+  }
 
   public Command stopShooter() {
     return Commands.runOnce(() -> shooterStop(), this);
