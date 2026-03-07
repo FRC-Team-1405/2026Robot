@@ -10,11 +10,13 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -150,7 +152,9 @@ public class RobotContainer {
                 // joystick.b().onTrue(moveMode.setToCompassMode());
 
                 // Brake mode
-                driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+                driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
+                driverJoystick.x()
+                                .onTrue(drivetrain.driveToPose(() -> Optional.of(new Pose2d(2, 2, Rotation2d.kZero))));
 
                 // Idle while the robot is disabled. This ensures the configured
                 // neutral mode is applied to the drive motors while disabled.
