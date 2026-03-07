@@ -96,7 +96,9 @@ public class Shooter extends SubsystemBase {
   public Shooter() {
     SimProfiles.initShooter(shooterMotor1);
     SimProfiles.initShooter(shooterMotor2);
+    SimProfiles.initShooter(shooterMotor3);
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
+    shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     stopShooter();
     // setShooterMotor();
   }
@@ -111,9 +113,10 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double leaderCurrentDraw = shooterMotor1.getSupplyCurrent().getValueAsDouble();
-    double followerCurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
-    double differentialCurrentDraw = Math.abs(leaderCurrentDraw - followerCurrentDraw);
+    double shooterMotor1CurrentDraw = shooterMotor1.getSupplyCurrent().getValueAsDouble();
+    double shooterMotor2CurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
+    double shooterMotor3CurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
+    double differentialCurrentDraw = Math.abs(shooterMotor1CurrentDraw - shooterMotor2CurrentDraw);
 
     double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
     double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
@@ -147,8 +150,9 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/ShooterMotor1RPS", shooterMotor1.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/ShooterMotor2RPS", shooterMotor2.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Shooter/ShooterMotor3RPS", shooterMotor3.getVelocity().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter/LeaderCurrentDraw", leaderCurrentDraw);
-    SmartDashboard.putNumber("Shooter/FollowerCurrentDraw", followerCurrentDraw);
+    SmartDashboard.putNumber("Shooter/ShooterMotor1CurrentDraw", shooterMotor1CurrentDraw);
+    SmartDashboard.putNumber("Shooter/ShooterMotor2CurrentDraw", shooterMotor2CurrentDraw);
+    SmartDashboard.putNumber("Shooter/ShooterMotor3CurrentDraw", shooterMotor3CurrentDraw);
     SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw", differentialCurrentDraw);
     SmartDashboard.putNumber("Shooter/Error", error);
     SmartDashboard.putNumber("Shooter/AverageError", averageError);
