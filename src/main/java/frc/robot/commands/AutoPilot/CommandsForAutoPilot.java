@@ -1,463 +1,423 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.commands.AutoPilot;
 
-import static edu.wpi.first.units.Units.Centimeters;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
-import java.util.Optional;
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.therekrab.autopilot.APConstraints;
-import com.therekrab.autopilot.APProfile;
-import com.therekrab.autopilot.APTarget;
-import com.therekrab.autopilot.Autopilot;
-import com.therekrab.autopilot.Autopilot.APResult;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.lib.AllianceSymmetry;
-import frc.robot.lib.FinneyCommand;
-import frc.robot.lib.FinneyLogger;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Constants;
+import frc.robot.lib.AprilTags;
+import frc.robot.lib.AutoCommands;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
-// AutoPilot Documentation: https://therekrab.github.io/autopilot/index.html
-/**
- * Command that uses AutoPilot to navigate the robot to a target pose.
- * 
- * <p>
- * Use the Builder pattern to create instances:
- * 
- * <pre>
- * // Simple usage
- * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
- *         .build();
- * 
- * // With entry angle
- * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
- *         .withEntryAngle(Rotation2d.fromDegrees(90))
- *         .build();
- * 
- * // With alliance flipping
- * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
- *         .withFlipPoseForAlliance(true)
- *         .build();
- * 
- * // Point towards a target during motion (e.g., track a game piece)
- * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
- *         .withPointTowardsDuringMotion(() -> gamePiecePose)
- *         .build();
- * 
- * // Point towards target with custom transition threshold
- * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
- *         .withPointTowardsDuringMotion(() -> gamePiecePose)
- *         .withPointTowardsTransitionThreshold(0.9) // transition at 90% distance
- *         .build();
- * 
- * // With custom constraints (acceleration, velocity, jerk)
- * APConstraints customConstraints = new APConstraints()
- *         .withAcceleration(6.0)
- *         .withVelocity(5.0)
- *         .withJerk(15.0);
- * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
- *         .withConstraints(customConstraints)
- *         .build();
- *
- * // With custom profile thresholds (when a path is considered finished)
- * // Parameters: errorXY (cm), errorTheta (deg), beelineRadius (cm)
- * new AutoPilotCommand.Builder(targetSupplier, drivetrain, "commandName")
- *         .withProfileThresholds(3.0, 1.0, 20.0)
- *         .build();
- * </pre>
- */
-public class CommandsForAutoPilot extends FinneyCommand {
-    private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
+public class CommandsForAutoPilot {
 
-    // Publishes AP's target position
-    private StructPublisher<Pose2d> apTargetPublisher = NetworkTableInstance.getDefault()
-            .getStructTopic("SmartDashboard/Auto/AUTOPILOT/TargetPose", Pose2d.struct).publish();
+        // Velocity is max speed overall/ in a sec, how much can position change
+        // Acceleration in a second, how much can velocity change
+        // Jerk is how fast it starts and stops
 
-    // Publishes AP's point-towards target position
-    private StructPublisher<Pose2d> apPointTowardsTargetPublisher = NetworkTableInstance.getDefault()
-            .getStructTopic("SmartDashboard/Auto/AUTOPILOT/PointTowardsTargetPose", Pose2d.struct).publish();
+        private static final APConstraints bumpConstraints = new APConstraints()
+                        .withAcceleration(2.0) // TUNE THIS TO YOUR ROBOT!
+                        .withVelocity(3.0)
+                        .withJerk(5.0);
 
-    public final SwerveRequest.ApplyRobotSpeeds applyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds()
-            .withDriveRequestType(DriveRequestType.Velocity);
+        // Rotations
+        // Positive rotations are CCW:
+        // https://frcdocs.wpi.edu/en/latest/docs/software/advanced-controls/geometry/pose.html#rotation
+        public static final Rotation2d CW_30deg = Rotation2d.fromDegrees(-30);
+        public static final Rotation2d CCW_30deg = Rotation2d.fromDegrees(30);
 
-    // Default constraints
-    private static final APConstraints kDefaultConstraints = new APConstraints()
-            .withAcceleration(4.0) // TUNE THIS TO YOUR ROBOT!
-            .withVelocity(4.0)
-            .withJerk(10.0);
+        // Poses
+        // off blue center only used for Right Start Depot Score
+        public static Supplier<Pose2d> offBlueCenter1 = () -> new Pose2d(2, 4.85, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> offBlueCenter2 = () -> new Pose2d(0.40, 4.85, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> feedingStation = () -> new Pose2d(0.5, 0.75, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> rightLoadInZone = () -> new Pose2d(5.75, 2.5, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> leftLoadInZone = () -> new Pose2d(5.75, 5.5, Rotation2d.fromDegrees(180));
 
-    // Instance-specific AutoPilot components (final but constructed per instance)
-    private final APConstraints kConstraints;
-    private final APProfile kProfile;
-    private final Autopilot kAutopilot;
+        // Start Poses
+        public static Supplier<Pose2d> startRightFaceIn = () -> new Pose2d(3.55, 0.37, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> startLeftFaceIn = () -> new Pose2d(3.55, 7.65, Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> startRightFaceFront = () -> new Pose2d(3.55, 0.37, Rotation2d.fromDegrees(0));
 
-    private APTarget m_target;
-    private final Supplier<Pose2d> m_targetSupplier;
-    private final CommandSwerveDrivetrain m_drivetrain;
-    private final Optional<Rotation2d> m_entryAngle;
-    private final boolean m_flipPoseForAlliance;
-    private final Optional<Supplier<Pose2d>> m_pointTowardsDuringMotionSupplier;
-    private Optional<Supplier<Pose2d>> m_pointTowardsDuringMotion;
-    private final double m_pointTowardsTransitionThreshold;
-    private double startingDistanceFromTarget;
-    private Pose2d startingPosition;
-    private final String commandName;
+        // Bump Poses
+        // Left Bump
+        public static Supplier<Pose2d> leftBump_AllianceToFieldStart = () -> new Pose2d(3.45, 5.5,
+                        Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> leftBump_AllianceToFieldEnd = () -> new Pose2d(5.55, 5.5,
+                        Rotation2d.fromDegrees(270));
 
-    private ProfiledPIDController m_thetaController;
-    private final ProfiledPIDController m_thetaController_endMotion;
+        public static Supplier<Pose2d> leftBump_FieldToAllianceStart = () -> new Pose2d(5.55, 5.5,
+                        Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> leftBump_FieldToAllianceEnd = () -> new Pose2d(3.45, 5.5,
+                        Rotation2d.fromDegrees(270));
+        // Right Bump
+        public static Supplier<Pose2d> rightBump_AllianceToFieldStart = () -> new Pose2d(3.45, 2.5,
+                        Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> rightBump_AllianceToFieldEnd = () -> new Pose2d(5.55, 2.5,
+                        Rotation2d.fromDegrees(90));
 
-    private final SwerveRequest.FieldCentricFacingAngle m_request = new SwerveRequest.FieldCentricFacingAngle()
-            .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance)
-            .withDriveRequestType(DriveRequestType.Velocity)
-            .withHeadingPID(2, 0, 0); /* auto pilots angle PID, TUNE THIS TO YOUR ROBOT! */
+        public static Supplier<Pose2d> rightBump_FieldToAllianceStart = () -> new Pose2d(5.55, 2.5,
+                        Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> rightBump_FieldToAllianceEnd = () -> new Pose2d(3.45, 2.5,
+                        Rotation2d.fromDegrees(90));
 
-    /**
-     * Private constructor - use Builder to create instances
-     */
-    private CommandsForAutoPilot(Builder builder) {
-        m_targetSupplier = builder.targetSupplier;
-        m_drivetrain = builder.drivetrain;
-        m_entryAngle = builder.entryAngle;
-        m_flipPoseForAlliance = builder.flipPoseForAlliance;
-        m_pointTowardsDuringMotionSupplier = builder.pointTowardsDuringMotion;
-        m_pointTowardsTransitionThreshold = builder.pointTowardsTransitionThreshold;
-        this.commandName = builder.commandName;
+        // Shooter Poses
+        public static Supplier<Pose2d> FrontHubShoot = () -> new Pose2d(3.555, 4, Rotation2d.fromDegrees(0));
 
-        // Initialize AutoPilot components with custom or default constraints
-        // These are the ENDING THREASHOLDS
-        this.kConstraints = builder.constraints;
-        this.kProfile = new APProfile(kConstraints)
-                .withErrorXY(Centimeters.of(builder.errorXYCentimeters))
-                .withErrorTheta(Degrees.of(builder.errorThetaDegrees))
-                .withBeelineRadius(Centimeters.of(builder.beelineRadiusCentimeters));
-        this.kAutopilot = new Autopilot(kProfile);
+        // Center Poses
+        public static Supplier<Pose2d> farRightCenter = () -> new Pose2d(8.25, 1, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> farLeftCenter = () -> new Pose2d(8.25, 6, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> farRightLeftCenter = () -> new Pose2d(7.75, 1, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> farLeftLeftCenter = () -> new Pose2d(7.75, 6, Rotation2d.fromDegrees(90));
 
-        // TODO:Tune PID Loop
-        m_thetaController = new ProfiledPIDController(
-                8, 0.0, 0, // PID gains, TUNE THIS TO YOUR ROBOT!
-                new TrapezoidProfile.Constraints(20, 25) // max velocity (rad/s) and acceleration (rad/s^2)
-        );
-        m_thetaController.enableContinuousInput(-Math.PI, Math.PI); // Enable angle wrapping
+        // Depot Poses
+        // wall pose is 0.40
+        public static Supplier<Pose2d> depotFaceIn = () -> new Pose2d(0.50, 6.5, Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> leftOfDepotFaceIn = () -> new Pose2d(0.50, 7, Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> midOfDepotFaceIn = () -> new Pose2d(0.50, 6, Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> rightOfDepotFaceIn = () -> new Pose2d(0.50, 5.5, Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> depotFaceOut = () -> new Pose2d(0.50, 6.5, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> leftOfDepotFaceOut = () -> new Pose2d(0.50, 7, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> midOfDepotFaceOut = () -> new Pose2d(0.50, 6, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> rightOfDepotFaceOut = () -> new Pose2d(0.50, 5.5, Rotation2d.fromDegrees(90));
 
-        m_thetaController_endMotion = new ProfiledPIDController(
-                10, 0.0, 0.1, // PID gains for end motion, TUNE THIS TO YOUR ROBOT!
-                new TrapezoidProfile.Constraints(10, 15) // max velocity (rad/s) and acceleration (rad/s^2)
-        );
-        m_thetaController_endMotion.enableContinuousInput(-Math.PI, Math.PI); // Enable angle wrapping
+        // Constant Poses
+        // Center Pose is 8,4, Blue Center Pose is 2,4,90
+        public static Supplier<Pose2d> blueCenter = () -> new Pose2d(2, 4, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(4, 0, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> preClimbPosition = () -> new Pose2d(2.5, 4, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> climbPosition = () -> new Pose2d(1.5, 4, Rotation2d.fromDegrees(180));
 
-        addRequirements(m_drivetrain);
-    }
+        public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber) {
+                /* Commands */
+                // Uses command suppliers instead of commands so that we can reuse the same
+                // command in an autonomous
 
-    public static class Builder {
-        // Required parameters
-        private final Supplier<Pose2d> targetSupplier;
-        private final CommandSwerveDrivetrain drivetrain;
-        private final String commandName;
+                Supplier<Command> MoveTo_blueCenter = () -> new AutoPilotCommand.Builder(
+                                () -> blueCenter.get(), drivetrain, "MoveTo_blueCenter")
+                                .withFlipPoseForAlliance(true)
+                                .build();
 
-        // Optional parameters with default values
-        private Optional<Rotation2d> entryAngle = Optional.empty();
-        private boolean flipPoseForAlliance = false;
-        private Optional<Supplier<Pose2d>> pointTowardsDuringMotion = Optional.empty();
-        private double pointTowardsTransitionThreshold = 0.8; // 80% of distance
-        private APConstraints constraints = kDefaultConstraints;
-        // Profile threshold defaults (units: centimeters / degrees)
-        private double errorXYCentimeters = 2.0;
-        private double errorThetaDegrees = 0.5;
-        private double beelineRadiusCentimeters = 16.0;
+                Supplier<Command> MoveTo_centerOfField = () -> new AutoPilotCommand.Builder(
+                                () -> centerOfField.get(), drivetrain, "MoveTo_centerOfField")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_feedingStation = () -> new AutoPilotCommand.Builder(
+                                () -> feedingStation.get(), drivetrain, "MoveTo_feedingStation")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_fourMeters = () -> new AutoPilotCommand.Builder(
+                                () -> fourMeters.get(), drivetrain, "MoveTo_fourMeters")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_preClimbPosition = () -> new AutoPilotCommand.Builder(
+                                () -> preClimbPosition.get(), drivetrain, "MoveTo_preClimbPosition")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_climbPosition = () -> new AutoPilotCommand.Builder(
+                                () -> climbPosition.get(), drivetrain, "MoveTo_climbPosition")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                // Shooter
+                Supplier<Command> MoveTo_FrontHubShoot = () -> new AutoPilotCommand.Builder(
+                                () -> FrontHubShoot.get(), drivetrain, "MoveTo_FrontHubShoot")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                // Center Harvest(s)
+                Supplier<Command> MoveTo_farRightLeftCenter = () -> new AutoPilotCommand.Builder(
+                                () -> farRightLeftCenter.get(), drivetrain, "MoveTo_farRightLeftCenter")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_farLeftLeftCenter = () -> new AutoPilotCommand.Builder(
+                                () -> farLeftLeftCenter.get(), drivetrain, "MoveTo_farLeftLeftCenter")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_rightLoadInZone = () -> new AutoPilotCommand.Builder(
+                                () -> rightLoadInZone.get(), drivetrain, "MoveTo_rightLoadInZone")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_leftLoadInZone = () -> new AutoPilotCommand.Builder(
+                                () -> leftLoadInZone.get(), drivetrain, "MoveTo_leftLoadInZone")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                // Depot
+                Supplier<Command> MoveTo_depotFaceIn = () -> new AutoPilotCommand.Builder(
+                                () -> depotFaceIn.get(), drivetrain, "MoveTo_depotFaceIn")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_leftOfDepotFaceIn = () -> new AutoPilotCommand.Builder(
+                                () -> leftOfDepotFaceIn.get(), drivetrain, "MoveTo_leftOfDepotFaceIn")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_midOfDepotFaceIn = () -> new AutoPilotCommand.Builder(
+                                () -> midOfDepotFaceIn.get(), drivetrain, "MoveTo_midOfDepotFaceIn")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_rightOfDepotFaceIn = () -> new AutoPilotCommand.Builder(
+                                () -> rightOfDepotFaceIn.get(), drivetrain, "MoveTo_rightOfDepotFaceIn")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_depotFaceOut = () -> new AutoPilotCommand.Builder(
+                                () -> depotFaceOut.get(), drivetrain, "MoveTo_depotFaceIn")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_leftOfDepotFaceOut = () -> new AutoPilotCommand.Builder(
+                                () -> leftOfDepotFaceOut.get(), drivetrain, "MoveTo_leftOfDepotFaceOut")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_midOfDepotFaceOut = () -> new AutoPilotCommand.Builder(
+                                () -> midOfDepotFaceOut.get(), drivetrain, "MoveTo_midOfDepotFaceOut")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_rightOfDepotFaceOut = () -> new AutoPilotCommand.Builder(
+                                () -> rightOfDepotFaceOut.get(), drivetrain, "MoveTo_rightOfDepotFaceOut")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_offBlueCenter1 = () -> new AutoPilotCommand.Builder(
+                                () -> offBlueCenter1.get(), drivetrain, "MoveTo_offBlueCenter1")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_offBlueCenter2 = () -> new AutoPilotCommand.Builder(
+                                () -> offBlueCenter2.get(), drivetrain, "MoveTo_offBlueCenter2")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_selectedShootPosition = () -> new AutoPilotCommand.Builder(
+                                AutoCommands.getShootPosition(), drivetrain, "MoveTo_selectedShootPosition")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                // right from the driver station view
+                // Bump Stuff
 
-        public Builder(Supplier<Pose2d> targetSupplier, CommandSwerveDrivetrain drivetrain, String commandName) {
-            this.targetSupplier = targetSupplier;
-            this.drivetrain = drivetrain;
-            this.commandName = commandName;
+                Supplier<Command> MoveTo_leftBump_AllianceToFieldStart = () -> new AutoPilotCommand.Builder(
+                                () -> leftBump_AllianceToFieldStart.get(), drivetrain,
+                                "MoveTo_leftBump_AllianceToFieldStart")
+                                .withFlipPoseForAlliance(true)
+                                // .withConstraints(bumpConstraints)
+                                .build();
+
+                Supplier<Command> MoveTo_leftBump_AllianceToFieldEnd = () -> new AutoPilotCommand.Builder(
+                                () -> leftBump_AllianceToFieldEnd.get(), drivetrain,
+                                "MoveTo_leftBump_AllianceToFieldEnd")
+                                .withFlipPoseForAlliance(true)
+                                .withConstraints(bumpConstraints)
+                                .build();
+
+                Supplier<Command> MoveTo_rightBump_AllianceToFieldStart = () -> new AutoPilotCommand.Builder(
+                                () -> rightBump_AllianceToFieldStart.get(), drivetrain,
+                                "MoveTo_rightBump_AllianceToFieldStart")
+                                .withFlipPoseForAlliance(true)
+                                // .withConstraints(bumpConstraints)
+                                .build();
+
+                Supplier<Command> MoveTo_rightBump_AllianceToFieldEnd = () -> new AutoPilotCommand.Builder(
+                                () -> rightBump_AllianceToFieldEnd.get(), drivetrain,
+                                "MoveTo_rightBump_AllianceToFieldEnd")
+                                .withFlipPoseForAlliance(true)
+                                .withConstraints(bumpConstraints)
+                                .build();
+
+                Supplier<Command> MoveTo_leftBump_FieldToAllianceStart = () -> new AutoPilotCommand.Builder(
+                                () -> leftBump_FieldToAllianceStart.get(), drivetrain,
+                                "MoveTo_leftBump_FieldToAllianceStart")
+                                .withFlipPoseForAlliance(true)
+                                // .withConstraints(bumpConstraints)
+                                .build();
+
+                Supplier<Command> MoveTo_leftBump_FieldToAllianceEnd = () -> new AutoPilotCommand.Builder(
+                                () -> leftBump_FieldToAllianceEnd.get(), drivetrain,
+                                "MoveTo_leftBump_FieldToAllianceEnd")
+                                .withFlipPoseForAlliance(true)
+                                .withConstraints(bumpConstraints)
+                                .build();
+
+                Supplier<Command> MoveTo_rightBump_FieldToAllianceStart = () -> new AutoPilotCommand.Builder(
+                                () -> rightBump_FieldToAllianceStart.get(), drivetrain,
+                                "MoveTo_rightBump_FieldToAllianceStart")
+                                .withFlipPoseForAlliance(true)
+                                // .withConstraints(bumpConstraints)
+                                .build();
+
+                Supplier<Command> MoveTo_rightBump_FieldToAllianceEnd = () -> new AutoPilotCommand.Builder(
+                                () -> rightBump_FieldToAllianceEnd.get(), drivetrain,
+                                "MoveTo_rightBump_FieldToAllianceEnd")
+                                .withFlipPoseForAlliance(true)
+                                .withConstraints(bumpConstraints)
+                                .build();
+
+                /* Full Autos */ // TODO: DON'T FORGET THE COMMAS
+                // Test/Move to a position
+                // Command AP_blueCenter = new SequentialCommandGroup(
+                // // MoveTo_blueCenter.get()
+                // );
+
+                Command AP_FrontHubShoot = new SequentialCommandGroup(
+                                MoveTo_FrontHubShoot.get());
+                Command AP_blueCenterToDepot = new SequentialCommandGroup(
+                                MoveTo_blueCenter.get(),
+                                MoveTo_depotFaceIn.get());
+                Command AP_fourMeters = new SequentialCommandGroup(
+                                MoveTo_fourMeters.get());
+                Command AP_JUSTSHOOT = new SequentialCommandGroup(
+                                // MoveTo_blueCenter.get(),
+                                MoveTo_selectedShootPosition.get(),
+                                MoveTo_rightBump_AllianceToFieldStart.get(),
+                                MoveTo_rightBump_AllianceToFieldEnd.get(),
+                                MoveTo_farRightLeftCenter.get(),
+                                MoveTo_farLeftLeftCenter.get(),
+                                MoveTo_leftLoadInZone.get()
+                // MoveTo_rightLoadInZone.get()
+                );
+                // Mini Autos
+                Command climbCommand = climber.runClimbUp().withName("Auto Climb Up");
+                SmartDashboard.putData(climbCommand);
+                // Depot
+                Command AP_DepotFaceIn = new SequentialCommandGroup(
+                                MoveTo_leftOfDepotFaceIn.get(),
+                                MoveTo_depotFaceIn.get(),
+                                MoveTo_midOfDepotFaceIn.get(),
+                                MoveTo_rightOfDepotFaceIn.get());
+                // Bumps
+                Command AP_rightBumpToField = new SequentialCommandGroup(
+                                MoveTo_rightBump_AllianceToFieldStart.get(),
+                                MoveTo_rightBump_AllianceToFieldEnd.get());
+
+                Command AP_leftBumpToField = new SequentialCommandGroup(
+                                MoveTo_leftBump_AllianceToFieldStart.get(),
+                                MoveTo_leftBump_AllianceToFieldEnd.get());
+
+                Command AP_rightBumpToAlliance = new SequentialCommandGroup(
+                                MoveTo_rightBump_FieldToAllianceStart.get(),
+                                MoveTo_rightBump_FieldToAllianceEnd.get());
+
+                Command AP_leftBumpToAlliance = new SequentialCommandGroup(
+                                MoveTo_leftBump_FieldToAllianceStart.get(),
+                                MoveTo_leftBump_FieldToAllianceEnd.get());
+                // Center Harvest
+                Command AP_CenterHarvest = new SequentialCommandGroup(
+                                MoveTo_farRightLeftCenter.get(),
+                                MoveTo_farLeftLeftCenter.get());
+                Command AP_CenterRtoLSupplying = new SequentialCommandGroup(
+                                MoveTo_leftLoadInZone.get(),
+                                MoveTo_rightLoadInZone.get());
+
+                Command AP_climb = new SequentialCommandGroup(
+                                MoveTo_preClimbPosition.get(),
+                                climbCommand,
+                                MoveTo_climbPosition.get(),
+                                climber.runClimbDown(),
+                                Commands.print("climbing"));
+
+                // Actual Full autos
+                Command AP_LeftStartDepotScore = new SequentialCommandGroup(
+                                MoveTo_leftOfDepotFaceIn.get(),
+                                MoveTo_depotFaceIn.get(),
+                                MoveTo_midOfDepotFaceIn.get(),
+                                MoveTo_rightOfDepotFaceIn.get(),
+                                MoveTo_FrontHubShoot.get());
+
+                Command AP_RightStartDepotScore = new SequentialCommandGroup(
+                                MoveTo_blueCenter.get(),
+                                MoveTo_offBlueCenter1.get(),
+                                MoveTo_offBlueCenter2.get(),
+                                MoveTo_rightOfDepotFaceOut.get(),
+                                MoveTo_midOfDepotFaceOut.get(),
+                                MoveTo_depotFaceOut.get(),
+                                MoveTo_leftOfDepotFaceOut.get(),
+                                MoveTo_FrontHubShoot.get());
+                Command cmd = climber.runExtendClimber().withName("Auto Climb");
+                SmartDashboard.putData(cmd);
+
+                Command AP_RightStartFeedingStationScore = new SequentialCommandGroup(
+                                MoveTo_feedingStation.get(),
+                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
+                                MoveTo_FrontHubShoot.get()
+                // Commands.parallel(MoveTo_fieldSideLeftBump.get(), cmd));
+                // Commands.print("climbing").andThen(Commands.waitSeconds(3))
+                );
+
+                Command AP_RightStartCenterHarvestInLeft = new SequentialCommandGroup(
+                                MoveTo_rightBump_AllianceToFieldStart.get(),
+                                MoveTo_rightBump_AllianceToFieldEnd.get(),
+                                MoveTo_farRightLeftCenter.get(),
+                                MoveTo_farLeftLeftCenter.get(),
+                                MoveTo_leftBump_FieldToAllianceStart.get(),
+                                MoveTo_leftBump_FieldToAllianceEnd.get(),
+                                MoveTo_blueCenter.get(),
+                                MoveTo_FrontHubShoot.get());
+
+                Command AP_RightFeedShootCenterHarvestInLeftShoot = new SequentialCommandGroup(
+                                MoveTo_feedingStation.get(),
+                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
+                                MoveTo_FrontHubShoot.get(),
+                                MoveTo_rightBump_AllianceToFieldStart.get(),
+                                MoveTo_rightBump_AllianceToFieldEnd.get(),
+                                MoveTo_farRightLeftCenter.get(),
+                                MoveTo_farLeftLeftCenter.get(),
+                                MoveTo_leftBump_FieldToAllianceStart.get(),
+                                MoveTo_leftBump_FieldToAllianceEnd.get(),
+                                MoveTo_FrontHubShoot.get());
+
+                Command AP_LeftDepotShootCenterHarvestInLeftShoot = new SequentialCommandGroup(
+                                MoveTo_leftOfDepotFaceIn.get(),
+                                MoveTo_depotFaceIn.get(),
+                                MoveTo_midOfDepotFaceIn.get(),
+                                MoveTo_rightOfDepotFaceIn.get(),
+                                MoveTo_FrontHubShoot.get(),
+                                MoveTo_rightBump_AllianceToFieldStart.get(),
+                                MoveTo_rightBump_AllianceToFieldEnd.get(),
+                                MoveTo_farRightLeftCenter.get(),
+                                MoveTo_farLeftLeftCenter.get(),
+                                MoveTo_leftBump_FieldToAllianceStart.get(),
+                                MoveTo_leftBump_FieldToAllianceEnd.get(),
+                                MoveTo_blueCenter.get(),
+                                MoveTo_FrontHubShoot.get());
+
+                // TODO:Edit and refine
+                Command AP_TheShowboater = new SequentialCommandGroup(
+                                MoveTo_leftOfDepotFaceIn.get(),
+                                MoveTo_depotFaceIn.get(),
+                                MoveTo_midOfDepotFaceIn.get(),
+                                MoveTo_rightOfDepotFaceIn.get(),
+                                MoveTo_FrontHubShoot.get(),
+                                MoveTo_feedingStation.get(),
+                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
+                                MoveTo_FrontHubShoot.get());
+
+                /* Register Commands */ // any auto added here needs to be registered in AutoCommands to show up on
+                                        // Elastic
+                // NamedCommands.registerCommand("AP_blueCenter", AP_blueCenter);
+                NamedCommands.registerCommand("AP_FrontHubShoot", AP_FrontHubShoot);
+                NamedCommands.registerCommand("AP_blueCenterToDepot", AP_blueCenterToDepot);
+                NamedCommands.registerCommand("AP_fourMeters", AP_fourMeters);
+                NamedCommands.registerCommand("AP_DepotFaceIn", AP_DepotFaceIn);
+                NamedCommands.registerCommand("AP_climb", AP_climb);
+                NamedCommands.registerCommand("AP_JUSTSHOOT", AP_JUSTSHOOT);
+
+                NamedCommands.registerCommand("AP_rightBumpToField", AP_rightBumpToField);
+                NamedCommands.registerCommand("AP_leftBumpToField", AP_leftBumpToField);
+                NamedCommands.registerCommand("AP_rightBumpToAlliance", AP_rightBumpToAlliance);
+                NamedCommands.registerCommand("AP_leftBumpToAlliance", AP_leftBumpToAlliance);
+
+                NamedCommands.registerCommand("AP_CenterHarvest", AP_CenterHarvest);
+                NamedCommands.registerCommand("AP_LeftStartDepotScore", AP_LeftStartDepotScore);
+                NamedCommands.registerCommand("AP_RightStartDepotScore", AP_RightStartDepotScore);
+                NamedCommands.registerCommand("AP_RightStartFeedingStationScore", AP_RightStartFeedingStationScore);
+                NamedCommands.registerCommand("AP_RightStartCenterHarvestInLeft", AP_RightStartCenterHarvestInLeft);
+                NamedCommands.registerCommand("AP_RightFeedShootCenterHarvestInLeftShoot",
+                                AP_RightFeedShootCenterHarvestInLeftShoot);
+                NamedCommands.registerCommand("AP_LeftDepotShootCenterHarvestInLeftShoot",
+                                AP_LeftDepotShootCenterHarvestInLeftShoot);
+                NamedCommands.registerCommand("AP_TheShowboater", AP_TheShowboater);
         }
-
-        public Builder withEntryAngle(Rotation2d entryAngle) {
-            this.entryAngle = Optional.of(entryAngle);
-            return this;
-        }
-
-        public Builder withFlipPoseForAlliance(boolean flipPoseForAlliance) {
-            this.flipPoseForAlliance = flipPoseForAlliance;
-            return this;
-        }
-
-        public Builder withPointTowardsDuringMotion(Supplier<Pose2d> pointTowardsPose) {
-            this.pointTowardsDuringMotion = Optional.of(pointTowardsPose);
-            return this;
-        }
-
-        public Builder withPointTowardsTransitionThreshold(double threshold) {
-            this.pointTowardsTransitionThreshold = threshold;
-            return this;
-        }
-
-        /**
-         * Override the default profile thresholds used to determine when a path
-         * is considered finished.
-         *
-         * @param errorXYCentimeters       XY error threshold in centimeters
-         * @param errorThetaDegrees        theta error threshold in degrees
-         * @param beelineRadiusCentimeters beeline radius in centimeters
-         * @return this Builder
-         */
-        public Builder withProfileThresholds(double errorXYCentimeters, double errorThetaDegrees,
-                double beelineRadiusCentimeters) {
-            this.errorXYCentimeters = errorXYCentimeters;
-            this.errorThetaDegrees = errorThetaDegrees;
-            this.beelineRadiusCentimeters = beelineRadiusCentimeters;
-            return this;
-        }
-
-        /**
-         * Set custom AutoPilot constraints for acceleration, velocity, and jerk.
-         * 
-         * @param constraints Custom APConstraints
-         * @return this Builder
-         */
-        public Builder withConstraints(APConstraints constraints) {
-            this.constraints = constraints;
-            return this;
-        }
-
-        public CommandsForAutoPilot build() {
-            return new CommandsForAutoPilot(this);
-        }
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
-
-        m_pointTowardsDuringMotion = m_pointTowardsDuringMotionSupplier;
-        if (m_flipPoseForAlliance && DriverStation.Alliance.Red.equals(DriverStation.getAlliance().get())) {
-            // flip pose for red alliance
-            m_target = new APTarget(AllianceSymmetry.flip(m_targetSupplier.get()));
-
-            if (m_pointTowardsDuringMotionSupplier.isPresent()) {
-                m_pointTowardsDuringMotion = Optional
-                        .of(() -> AllianceSymmetry.flip(m_pointTowardsDuringMotionSupplier.get().get()));
-            }
-        } else {
-            m_target = new APTarget(m_targetSupplier.get());
-        }
-        apTargetPublisher.set(m_target.getReference());
-        if (m_pointTowardsDuringMotion.isPresent()) {
-            apPointTowardsTargetPublisher.set(m_pointTowardsDuringMotion.get().get());
-        }
-
-        startingDistanceFromTarget = getDistanceToTarget();
-        startingPosition = m_drivetrain.getState().Pose;
-
-        m_thetaController.reset(startingPosition.getRotation().getRadians());
-        m_thetaController_endMotion.reset(startingPosition.getRotation().getRadians());
-
-        fLogger.log("Initializing %s to target Pose (x: %.1f, y: %.1f, rot: %.1f deg)",
-                getName(),
-                m_target.getReference().getX(), m_target.getReference().getY(),
-                m_target.getReference().getRotation().getDegrees());
-    }
-
-    @Override
-    public void execute() {
-        ChassisSpeeds robotRelativeSpeeds = m_drivetrain.getState().Speeds;
-        Pose2d pose = m_drivetrain.getState().Pose;
-        // System.out.println(String.format("Robot Pose (x: %.1f, y: %.1f)",
-        // pose.getX(), pose.getY()));
-
-        double vxMetersPerSecond = robotRelativeSpeeds.vxMetersPerSecond;
-        double vyMetersPerSecond = robotRelativeSpeeds.vyMetersPerSecond;
-        // double omegaRadiansPerSecond = robotRelativeSpeeds.omegaRadiansPerSecond;
-
-        double linearVelocity = Math.hypot(vxMetersPerSecond, vyMetersPerSecond);
-        // double linearAcceleration = m_drivetrain.getFilteredAcceleration();
-
-        Optional<Rotation2d> correctedEntryAngle = m_entryAngle;
-
-        if (correctedEntryAngle.isPresent()) {
-            // convert from input of robot relative entry angle to field relative entry
-            // angle
-            correctedEntryAngle = Optional.of(
-                    correctedEntryAngle.get().plus(m_target.getReference().getRotation()));
-        }
-
-        APResult out;
-        if (m_entryAngle.isPresent()) {
-            out = kAutopilot.calculate(pose, robotRelativeSpeeds, m_target.withEntryAngle(correctedEntryAngle.get()));
-        } else {
-            out = kAutopilot.calculate(pose, robotRelativeSpeeds, m_target.withoutEntryAngle());
-        }
-
-        Rotation2d currentRotation = pose.getRotation();
-        Rotation2d targetRotation = out.targetAngle(); // from Autopilot
-
-        // Determine which rotation to use based on point-towards feature
-        Rotation2d rotationToUse = targetRotation;
-        Rotation2d rotationalError = targetRotation.minus(currentRotation);
-        boolean shouldPointTowardsTarget = m_pointTowardsDuringMotion.isPresent()
-                && getPercentageOfDistanceToTarget() < m_pointTowardsTransitionThreshold;
-        if (shouldPointTowardsTarget) {
-            // Calculate rotation to point towards the specified pose
-            Translation2d currentTranslation = pose.getTranslation();
-
-            Translation2d pointTowardsTranslation = m_pointTowardsDuringMotion.get().get().getTranslation();
-
-            Translation2d delta = pointTowardsTranslation.minus(currentTranslation);
-            rotationToUse = delta.getAngle();
-
-            rotationalError = rotationToUse.minus(currentRotation);
-        } else if (m_pointTowardsDuringMotion.isPresent()) {
-            // We've crossed the threshold, use final target rotation
-            fLogger.log("Transitioning to final rotation, error: %.1fdeg (at %.1f%% distance)",
-                    rotationalError.getDegrees(),
-                    getPercentageOfDistanceToTarget() * 100);
-        }
-
-        if (0.9 < getPercentageOfDistanceToTarget()) {
-            // Nearing the end of motion towards target, use end-motion theta PID
-            double thetaOutput = m_thetaController_endMotion.calculate(
-                    currentRotation.getRadians(),
-                    rotationToUse.getRadians());
-
-            ChassisSpeeds outRobotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                    out.vx(),
-                    out.vy(),
-                    AngularVelocity.ofBaseUnits(thetaOutput, RadiansPerSecond),
-                    m_drivetrain.getState().Pose.getRotation());
-
-            m_drivetrain.setControl(applyRobotSpeeds.withSpeeds(outRobotRelativeSpeeds));
-
-            fLogger.log(
-                    "End-motion PID, kP=%.1f, error: %.1fdeg (e: %.3frad) (e: %.3f), linearVelocity: %.3f - (at %.1f%% distance)",
-                    m_thetaController_endMotion.getP(),
-                    rotationalError.getDegrees(),
-                    m_thetaController_endMotion.getPositionError(),
-                    m_thetaController_endMotion.getAccumulatedError(),
-                    linearVelocity,
-                    getPercentageOfDistanceToTarget() * 100);
-        } else if (0.1 < getPercentageOfDistanceToTarget()) {
-            // System.out.println("percentageToTarget: +10%");
-            if (shouldPointTowardsTarget && Math.abs(rotationalError.getDegrees()) < 20) {
-                // use custom theta PID when close to target rotation
-
-                double thetaOutput = m_thetaController.calculate(
-                        currentRotation.getRadians(),
-                        rotationToUse.getRadians());
-
-                ChassisSpeeds outRobotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                        out.vx(),
-                        out.vy(),
-                        AngularVelocity.ofBaseUnits(thetaOutput, RadiansPerSecond),
-                        m_drivetrain.getState().Pose.getRotation());
-
-                m_drivetrain.setControl(applyRobotSpeeds.withSpeeds(outRobotRelativeSpeeds));
-
-                fLogger.log(
-                        "Custom PID, Pointing towards target kP=%.1f, error: %.1fdeg (e: %.3frad) (e: %.3f), linearVelocity: %.3f - (at %.1f%% distance)",
-                        m_thetaController.getP(),
-                        rotationalError.getDegrees(),
-                        m_thetaController.getPositionError(),
-                        m_thetaController.getAccumulatedError(),
-                        linearVelocity,
-                        getPercentageOfDistanceToTarget() * 100);
-            } else {
-                // use autopilot's angle output
-                m_drivetrain.setControl(m_request
-                        .withVelocityX(out.vx())
-                        .withVelocityY(out.vy())
-                        .withTargetDirection(rotationToUse));
-
-                fLogger.log(
-                        "AP output, error: %.1fdeg, linearVelocity: %.3f - (at %.1f%% distance)",
-                        rotationalError.getDegrees(),
-                        linearVelocity,
-                        getPercentageOfDistanceToTarget() * 100);
-
-                // keep resetting custom theta controller to avoid sudden jumps when switching
-                m_thetaController.reset(currentRotation.getRadians());
-            }
-
-            // keep resetting end-motion controller to avoid sudden jumps when switching
-            m_thetaController_endMotion.reset(currentRotation.getRadians());
-        } else {
-            // Beginning of motion towards target, don't start rotation yet
-            // to allow for movement away from walls before rotation begins.
-
-            fLogger.log("vx: %.3f, vy: %.3f, noRotationOutput, rotationDifference(deg): %.2f",
-                    out.vx().baseUnitMagnitude(),
-                    out.vy().baseUnitMagnitude(),
-                    (m_target.getReference().getRotation().getDegrees() -
-                            pose.getRotation().getDegrees()));
-
-            m_drivetrain.setControl(m_request
-                    .withVelocityX(out.vx())
-                    .withVelocityY(out.vy())
-                    .withTargetDirection(startingPosition.getRotation()));
-        }
-    }
-
-    @Override
-    public boolean isFinished() {
-        // fLogger.log(String.format("Angle Difference: %.1f, Target
-        // angle: %.1f, Current Angle: %.1f",
-        // m_target.getReference().getRotation().minus(m_drivetrain.getState().Pose.getRotation()).getDegrees(),
-        // m_target.getReference().getRotation().getDegrees(),
-        // m_drivetrain.getState().Pose.getRotation().getDegrees()));
-        // fLogger.log(String.format("Location Difference: %.1f, Angle Difference:
-        // %.1f",
-        // m_target.getReference().getTranslation().getDistance(m_drivetrain.getState().Pose.getTranslation()),
-        // m_target.getReference().getRotation().minus(m_drivetrain.getState().Pose.getRotation()).getDegrees()));
-        return kAutopilot.atTarget(m_drivetrain.getState().Pose, m_target);
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        super.end(interrupted);
-        m_drivetrain.setControl(m_request
-                .withVelocityX(0)
-                .withVelocityY(0)
-                .withTargetDirection(m_drivetrain.getState().Pose.getRotation()));
-
-        fLogger.log(
-                "%s ended, final Pose (x: %.1f, y: %.1f, rot: %.1f deg), target Pose (x: %.1f, y: %.1f, rot: %.1f deg), interrupted: %s",
-                getName(),
-                m_drivetrain.getState().Pose.getX(), m_drivetrain.getState().Pose.getY(),
-                m_drivetrain.getState().Pose.getRotation().getDegrees(),
-                m_target.getReference().getX(), m_target.getReference().getY(),
-                m_target.getReference().getRotation().getDegrees(),
-                interrupted);
-    }
-
-    @Override
-    public String getName() {
-        String instanceSpecificValue = commandName;
-        return "AutoPilot(" + instanceSpecificValue + ")";
-    }
-
-    public double getDistanceToTarget() {
-        Pose2d currentPose = m_drivetrain.getState().Pose;
-        double distance = currentPose.getTranslation().getDistance(m_target.getReference().getTranslation());
-        return Math.abs(distance);
-    }
-
-    public double getPercentageOfDistanceToTarget() {
-        return Math.abs(startingDistanceFromTarget - getDistanceToTarget()) / startingDistanceFromTarget;
-    }
 }

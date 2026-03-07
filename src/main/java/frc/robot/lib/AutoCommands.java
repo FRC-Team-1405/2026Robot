@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.AutoPilot.AutoPilotCommands;
+import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
 import frc.robot.commands.PidToPose.PidToPoseCommands;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -26,7 +26,7 @@ public class AutoCommands {
         SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
 
         PidToPoseCommands.registerCommands(drivetrain);
-        AutoPilotCommands.registerCommands(drivetrain, climber);
+        CommandsForAutoPilot.registerCommands(drivetrain, climber);
         // this HAS to go after AutoPilotCommands
         AutoCommands.configureAutos(autoChooser, drivetrain);
 
@@ -88,8 +88,8 @@ public class AutoCommands {
     public static SendableChooser<Supplier<Pose2d>> shootingPositions = new SendableChooser<>();
 
     public static void initShootPositions() {
-        shootingPositions.addOption("FrontHub", AutoPilotCommands.FrontHubShoot);
-        shootingPositions.setDefaultOption("FrontHub", AutoPilotCommands.FrontHubShoot);
+        shootingPositions.addOption("FrontHub", CommandsForAutoPilot.FrontHubShoot);
+        shootingPositions.setDefaultOption("FrontHub", CommandsForAutoPilot.FrontHubShoot);
         SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + " Shooting Position", shootingPositions);
     }
 
