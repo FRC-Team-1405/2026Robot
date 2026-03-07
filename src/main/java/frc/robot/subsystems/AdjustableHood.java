@@ -10,12 +10,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.HoodPreferences.HoodAngles;
+import frc.robot.commands.SetHoodPosition;
 
 public class AdjustableHood extends SubsystemBase {
-  private final Servo servo = new Servo(0);
-  private double position = 0.0;
+  private final Servo servo1 = new Servo(0);
+  private final Servo servo2 = new Servo(1);
   private double target = 0.0;
-  private long lastTime = System.nanoTime();
+
+  private HoodAngles currentHoodPosition = HoodAngles.ZERO;
 
   /** Creates a new AdjustableHood. */
   /**
@@ -27,28 +30,27 @@ public class AdjustableHood extends SubsystemBase {
 
   @Override
   public void periodic() {
-    long currentTime = System.nanoTime();
-    long elapsedTime = currentTime - lastTime;
-    double distance = Constants.HoodPreferences.SERVO_SPEED_SECONDS * (elapsedTime / 1e9);
-    if (target > position) {
-      position = Math.min(position + distance, target);
-    } else if (target < position) {
-      position = Math.max(position - distance, target);
-    }
-    lastTime = currentTime;
 
-    SmartDashboard.putNumber("Hood Position", position);
-    SmartDashboard.putNumber("Hood Target", target);
-  }
-
-  private boolean isAtTarget() {
-    return Math.abs(position - target) < 0.01;
   }
 
   // private function to set servo position (double)
-  private void setServo(double position) {
+  public void setServo(double position) {
     target = position;
-    servo.set(position);
+    SmartDashboard.putNumber("Hood/Hood Target", target);
+    servo1.set(position);
+    servo2.set(position);
+  }
+
+  public void stopServo() {
+    servo1.setDisabled();
+    servo2.setDisabled();
+  }
+
+  /**
+   * @return the last set servo target, used to calculate distance to next target.
+   */
+  public double getTarget() {
+    return target;
   }
 
   /**
@@ -58,6 +60,26 @@ public class AdjustableHood extends SubsystemBase {
    * @return
    */
   public Command runSet(double position) {
-    return runOnce(() -> setServo(position)).andThen(Commands.waitUntil(this::isAtTarget));
+    return runOnce(() -> setServo(position))
+        .andThen(Commands.waitSeconds(position * Constants.HoodPreferences.SERVO_FULL_RANGE_SECONDS));
+  }
+
+  public Command rotateHoodPosition() {
+    switch (currentHoodPosition) {
+      case ZERO:
+        return new SetHoodPosition(this, HoodAngles.SHORT);
+
+      case SHORT:
+        return new SetHoodPosition(this, HoodAngles.MEDIUM);
+
+      case MEDIUM:
+        return new SetHoodPosition(this, HoodAngles.LONG);
+
+      case LONG:
+        return new SetHoodPosition(this, HoodAngles.SHORT);
+
+      default:
+        return Commands.none();
+    }
   }
 }

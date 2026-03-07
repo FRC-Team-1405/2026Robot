@@ -10,8 +10,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.VecBuilder;
@@ -19,35 +19,31 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.util.concurrent.Event;
-import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
+import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.Shooter.AutoFire;
-import frc.robot.commands.Shooter.IndexerShooterStop;
 import frc.robot.generated.TunerConstants;
-import frc.robot.generated.TunerConstants_OldRobot;
-import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
 import frc.robot.lib.CommandTracker;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.MoveMode;
-import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.MoveMode;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.Intake;
 
 public class RobotContainer {
         private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
@@ -158,14 +154,31 @@ public class RobotContainer {
                 // configure operator controls
                 Command cmd;
 
+                //
+                // Operator Controls
+                //
                 cmd = intake.runIntakeOut();
                 SmartDashboard.putData(cmd);
-                driverJoystick.povUp().onTrue(cmd);
+                operatorJoystick.povUp().onTrue(cmd);
 
                 cmd = intake.runIntakeIn();
                 SmartDashboard.putData(cmd);
-                driverJoystick.povDown().onTrue(cmd);
+                operatorJoystick.povDown().onTrue(cmd);
 
+                operatorJoystick.y().onTrue(new SetHoodPosition(hood, HoodAngles.SHORT));
+                operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));
+                operatorJoystick.a().onTrue(new SetHoodPosition(hood, HoodAngles.LONG));
+
+                operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
+                operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
+                operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                operatorJoystick.leftBumper().onTrue(
+                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
+
+                //
+                // Driver Controls
+                //
+                drivetrain.registerTelemetry(logger::telemeterize);
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
                                 drivetrain.applyRequest(() -> drive
@@ -177,77 +190,6 @@ public class RobotContainer {
                                                                 moveMode.selectRotationMode(driverJoystick, drivetrain,
                                                                                 MaxAngularRate).getAsDouble())));
 
-                // Idle while the robot is disabled. This ensures the configured
-                // neutral mode is applied to the drive motors while disabled.
-                final var idle = new SwerveRequest.Idle();
-                RobotModeTriggers.disabled().whileTrue(
-                                drivetrain.applyRequest(() -> idle).ignoringDisable(true));
-
-                driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-                // TODO: maybe uncomment joystick.b()... because IDK if my move algorithm
-                // overrides this algorithm
-                // joystick.b().whileTrue(drivetrain.applyRequest(
-                // () -> point.withModuleDirection(
-                // new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-                driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-                driverJoystick.b().whileTrue(drivetrain.applyRequest(
-                                () -> point.withModuleDirection(
-                                                new Rotation2d(-driverJoystick.getLeftY(),
-                                                                -driverJoystick.getLeftX()))));
-                Trigger hopperTrigger = new Trigger(() -> {
-                        return intake.isPickupRunning() || indexer.isIndexerRunning();
-                });
-                hopperTrigger.onTrue(hopper.runForwardHopper());
-                hopperTrigger.onFalse(hopper.runStopHopper());
-                driverJoystick.leftBumper().toggleOnTrue(
-                                intake.runPickupIn());
-
-                driverJoystick.rightBumper().toggleOnTrue(
-                                indexer.runIndexer());
-                // driverJoystick.leftBumper().onFalse(
-                // Commands.parallel(
-                // intake.runPickupStop(),
-                // hopper.runStopHopper()));
-                // driverJoystick.leftBumper().onTrue(
-                // Commands.parallel(
-                // intake.runPickupIn(),
-                // hopper.runForwardHopper()));
-
-                // driverJoystick.rightBumper().onFalse(
-                // Commands.parallel(
-                // hopper.runStopHopper(),
-                // indexer.runStopIndexer(),
-                // shooter.stopShooter()));
-
-                // driverJoystick.rightBumper().onTrue(
-                // new AutoFire(shooter, indexer, hopper, () ->
-                // ShooterPreferences.INDEXER_VELOCITY)
-                // .repeatedly());
-                // driverJoystick.rightBumper().onFalse(
-                // Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
-                // driverJoystick.rightBumper().onTrue(
-                // Commands.parallel(
-                // hopper.runForwardHopper(),
-                // indexer.runIndexer(() -> {
-                // return ShooterPreferences.INDEXER_VELOCITY;
-                // }),
-                // shooter.runShooter(() -> {
-                // return ShooterPreferences.INTERMEDIATE;
-                // })));
-
-                // joystick.rightTrigger()
-                // .onTrue(intake.runPickupFuel())
-                // .onFalse(intake.runPickupStop("Driver/Intake/Stop"));
-
-                // Run SysId routines when holding back/start and X/Y.
-                // Note that each routine should be run exactly once in a single log.
-                driverJoystick.back().and(driverJoystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-                driverJoystick.back().and(driverJoystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-                driverJoystick.start().and(driverJoystick.y())
-                                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-                driverJoystick.start().and(driverJoystick.x())
-                                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
                 // Zeroize/reset the field-centric heading on start and back press.
                 driverJoystick.start().and(driverJoystick.back()).onTrue(
                                 drivetrain.runOnce(drivetrain::seedFieldCentric));
@@ -255,37 +197,64 @@ public class RobotContainer {
                 // Select speed mode
                 driverJoystick.leftTrigger().onTrue(moveMode.setToSlowMode());
                 driverJoystick.rightTrigger().onTrue(moveMode.setToFastMode());
-                // for the 2 lines below, ex. Left trigger is held, and right trigger is tapped
-                // quickly such that left trigger is still being held after right trigger is
-                // tapped. MoveMode.currentSpeedMode would be SLOW, then FAST, *then SLOW
-                // again*.
-                driverJoystick.leftTrigger().and(driverJoystick.rightTrigger().negate())
-                                .onTrue(moveMode.setToSlowMode());
-                driverJoystick.rightTrigger().and(driverJoystick.leftTrigger().negate())
-                                .onTrue(moveMode.setToFastMode());
-
-                driverJoystick.leftTrigger().or(driverJoystick.rightTrigger()).onFalse(moveMode.setToNormalMode());
 
                 // Select rotation mode
-                driverJoystick.y().onTrue(moveMode.setToStandardMode());
+                // driverJoystick.y().onTrue(moveMode.setToStandardMode());
                 // joystick.x().onTrue(moveMode.setToSnakeMode());
                 // joystick.b().onTrue(moveMode.setToCompassMode());
-                // Reset the field-centric heading on left bumper press.
-                driverJoystick.start().and(driverJoystick.back())
-                                .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-                drivetrain.registerTelemetry(logger::telemeterize);
+                // Brake mode
+                driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
+                driverJoystick.x()
+                                .onTrue(drivetrain.driveToPose(() -> Optional.of(new Pose2d(2, 2, Rotation2d.kZero))));
 
-                shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.SHORT));
-                shooterJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.MEDIUM));
-                shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> Constants.ShooterPreferences.LONG));
+                Trigger hopperTrigger = new Trigger(() -> {
+                        return intake.isPickupRunning() || indexer.isIndexerRunning();
+                });
+                hopperTrigger.onTrue(hopper.runForwardHopper());
+                hopperTrigger.onFalse(hopper.runStopHopper());
 
-                shooterJoystick.rightBumper().onTrue(
+                // Idle while the robot is disabled. This ensures the configured
+                // neutral mode is applied to the drive motors while disabled.
+                final var idle = new SwerveRequest.Idle();
+                RobotModeTriggers.disabled().whileTrue(
+                                drivetrain.applyRequest(() -> idle).ignoringDisable(true));
+
+                // Run Intake (Pickup)
+                driverJoystick.leftBumper().onFalse(
+                                Commands.parallel(
+                                                intake.runPickupStop(),
+                                                hopper.runStopHopper()));
+                driverJoystick.leftBumper().onTrue(
+                                Commands.parallel(
+                                                intake.runPickupIn(),
+                                                hopper.runForwardHopper()));
+
+                // Shoot
+                driverJoystick.rightBumper().onFalse(
+                                Commands.parallel(
+                                                hopper.runStopHopper(),
+                                                indexer.runStopIndexer()));
+
+                driverJoystick.rightBumper().onTrue(
                                 new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
                                                 .repeatedly());
-                shooterJoystick.rightBumper().onFalse(
-                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
 
+                //
+                // Shooter Joystick (DEBUG) Controls
+                //
+                // shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.SHORT));
+                // shooterJoystick.b().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.MEDIUM));
+                // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.LONG));
+                // shooterJoystick.rightBumper().onTrue(
+                // new AutoFire(shooter, indexer, hopper, () ->
+                // ShooterPreferences.INDEXER_VELOCITY)
+                // .repeatedly());
+                // shooterJoystick.rightBumper().onFalse(
+                // Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
         }
 
         public static double applyDeadband(double value) {

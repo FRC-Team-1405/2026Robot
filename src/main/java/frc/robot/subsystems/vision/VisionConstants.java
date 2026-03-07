@@ -21,10 +21,10 @@ public class VisionConstants {
                                         1.0,
                                         new Transform3d(
                                                         new Translation3d(
-                                                                        Units.inchesToMeters(2.1),
-                                                                        Units.inchesToMeters(10.9),
-                                                                        Units.inchesToMeters(28.85)),
-                                                        new Rotation3d(0, Math.toRadians(-34.5), Math.toRadians(-10))),
+                                                                        Units.inchesToMeters(2.19),
+                                                                        Units.inchesToMeters(10.91),
+                                                                        Units.inchesToMeters(28.7)),
+                                                        new Rotation3d(0, Math.toRadians(-25), Math.toRadians(-10))),
                                         new CameraIntrinsics(
                                                         1280.0,
                                                         800.0,
@@ -38,10 +38,10 @@ public class VisionConstants {
                                         "Right",
                                         1.0,
                                         new Transform3d(
-                                                        new Translation3d(Units.inchesToMeters(2.1),
-                                                                        Units.inchesToMeters(-10.9),
-                                                                        Units.inchesToMeters(28.85)),
-                                                        new Rotation3d(0, Math.toRadians(-34.5), Math.toRadians(10))),
+                                                        new Translation3d(Units.inchesToMeters(2.19),
+                                                                        Units.inchesToMeters(-10.91),
+                                                                        Units.inchesToMeters(28.7)),
+                                                        new Rotation3d(0, Math.toRadians(-25), Math.toRadians(10))),
                                         new CameraIntrinsics(
                                                         1280.0,
                                                         800.0,
