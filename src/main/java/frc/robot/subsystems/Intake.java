@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -24,7 +25,7 @@ public class Intake extends SubsystemBase {
   private final MotionMagicVoltage intakeMotorSpeed = new MotionMagicVoltage(0);
   private final NeutralOut stop = new NeutralOut();
   private TalonFX pickupMotor = new TalonFX(Constants.CANBus.PICKUP_MOTOR);
-  private final VelocityVoltage pickupMotorSpeed = new VelocityVoltage(0);
+  private final MotionMagicVelocityVoltage pickupMotorSpeed = new MotionMagicVelocityVoltage(0);
   /** Creates a new Intake. */
   private int intakeSettleCount = 0;
   private double intakePositionTarget = 0;
