@@ -142,6 +142,7 @@ public class AutoPilotCommand extends FinneyCommand {
         this.commandName = builder.commandName;
 
         // Initialize AutoPilot components with custom or default constraints
+        // These are the ENDING THREASHOLDS
         this.kConstraints = builder.constraints;
         this.kProfile = new APProfile(kConstraints)
                 .withErrorXY(Centimeters.of(builder.errorXYCentimeters))

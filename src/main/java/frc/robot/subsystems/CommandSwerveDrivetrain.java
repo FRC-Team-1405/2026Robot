@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -27,9 +28,12 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.RobotContainer;
+import frc.robot.commands.PidToPose.PidToPoseCommand;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -431,4 +435,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    public Command driveToPose(Supplier<Optional<Pose2d>> targetPoseSupplier) {
+        Supplier<Pose2d> poseSupplier = () -> (targetPoseSupplier.get().get());
+        new PidToPoseCommand.Builder(this, poseSupplier, "DriveToPose");
+
+        return Commands.sequence(
+                Commands.runOnce(() -> {
+                    System.out.println("DriveToPose Called with targetPose: " +
+                            targetPoseSupplier.get());
+                }),
+                new PidToPoseCommand.Builder(this, poseSupplier, "DriveToPose").withTolerance(2)
+                        .withFieldSymmetry(true).build());
+    }
 }
