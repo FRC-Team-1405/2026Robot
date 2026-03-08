@@ -177,6 +177,9 @@ public class RobotContainer {
                 operatorJoystick.leftBumper().onTrue(
                                 Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
 
+                operatorJoystick.leftTrigger().onTrue(moveMode.setToBumpMode());
+                operatorJoystick.rightTrigger().onTrue(moveMode.setToNormalMode());
+
                 //
                 // Driver Controls
                 //
@@ -184,10 +187,14 @@ public class RobotContainer {
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
                                 drivetrain.applyRequest(() -> drive
-                                                .withVelocityX(-applyDeadband(driverJoystick.getLeftY()) * MaxSpeed
-                                                                * moveMode.selectSpeedMode().getAsDouble())
-                                                .withVelocityY(-applyDeadband(driverJoystick.getLeftX()) * MaxSpeed
-                                                                * moveMode.selectSpeedMode().getAsDouble())
+                                                .withVelocityX(MaxSpeed
+                                                                * moveMode.selectSpeedMode(driverJoystick::getLeftY,
+                                                                                true)
+                                                                                .getAsDouble())
+                                                .withVelocityY(MaxSpeed
+                                                                * moveMode.selectSpeedMode(
+                                                                                driverJoystick::getLeftX, false)
+                                                                                .getAsDouble())
                                                 .withRotationalRate(
                                                                 moveMode.selectRotationMode(driverJoystick, drivetrain,
                                                                                 MaxAngularRate).getAsDouble())));
@@ -199,6 +206,17 @@ public class RobotContainer {
                 // Select speed mode
                 driverJoystick.leftTrigger().onTrue(moveMode.setToSlowMode());
                 driverJoystick.rightTrigger().onTrue(moveMode.setToFastMode());
+
+                // for the 2 lines below, ex. Left trigger is held, and right trigger is tapped
+                // quickly such that left trigger is still being held after right trigger is
+                // tapped. MoveMode.currentSpeedMode would be SLOW, then FAST, *then SLOW
+                // again*.
+                driverJoystick.leftTrigger().and(
+                                driverJoystick.rightTrigger().negate()).onTrue(moveMode.setToSlowMode());
+                driverJoystick.rightTrigger().and(
+                                driverJoystick.leftTrigger().negate()).onTrue(moveMode.setToFastMode());
+
+                driverJoystick.leftTrigger().or(driverJoystick.rightTrigger()).onFalse(moveMode.setToNormalMode());
 
                 // Select rotation mode
                 // driverJoystick.y().onTrue(moveMode.setToStandardMode());

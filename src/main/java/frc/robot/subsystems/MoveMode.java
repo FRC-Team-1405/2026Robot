@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.signals.AppliedRotorPolarityValue;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.NetworkTable;
@@ -53,7 +55,8 @@ public class MoveMode {
     private enum Speed {
         SLOW,
         NORMAL,
-        FAST
+        FAST,
+        BUMP
     }
 
     /**
@@ -124,17 +127,19 @@ public class MoveMode {
     /**
      * Selects the speed mode to perform based on which Mode currentSpeedMode is
      * equal to. A parent method for all the other speed modes.
+     * 
+     * Applies Deadband and flips joystick input
      */
-    public DoubleSupplier selectSpeedMode() {
-        return new DoubleSupplier() {
-            @Override
-            public double getAsDouble() {
-                return switch (currentSpeedMode) {
-                    case SLOW -> slowMode();
-                    case NORMAL -> normalMode();
-                    case FAST -> fastMode();
-                };
-            }
+    public DoubleSupplier selectSpeedMode(DoubleSupplier joystickSupplier, boolean isRobotForward) {
+        return () -> {
+            double input = -applyDeadband(joystickSupplier.getAsDouble());
+
+            return switch (currentSpeedMode) {
+                case SLOW -> slowMode() * input;
+                case NORMAL -> normalMode() * input;
+                case FAST -> fastMode() * input;
+                case BUMP -> bumpMode(input, isRobotForward);
+            };
         };
     }
 
@@ -193,6 +198,10 @@ public class MoveMode {
      */
     public ModeCommand setToFastMode() {
         return new ModeCommand(Speed.FAST);
+    }
+
+    public ModeCommand setToBumpMode() {
+        return new ModeCommand(Speed.BUMP);
     }
 
     /**
@@ -259,6 +268,28 @@ public class MoveMode {
      */
     private double fastMode() {
         return 1.0d;
+    }
+
+    private double bumpMode(double joystickInput, boolean applyLimits) {
+        double minSpeed = 0.35; // minimum % of max speed to clear bump
+        double maxSpeed = 0.6; // cap bump mode so it’s not too fast
+
+        double scaled = joystickInput * maxSpeed;
+
+        if (!applyLimits) {
+            // the scaler here represents how fast the robot should move horizontally when
+            // crossing the bump
+            return joystickInput * 0.3; // TODO TUNE THIS TO THE ROBOT
+        }
+
+        // If the joystick is pushed at all, enforce minimum speed
+        if (Math.abs(joystickInput) > 0.05) {
+            return Math.copySign(
+                    Math.max(Math.abs(scaled), minSpeed),
+                    joystickInput);
+        }
+
+        return 0.0; // no movement if joystick is centered
     }
 
     /**
