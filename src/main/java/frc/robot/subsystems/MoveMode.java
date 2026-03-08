@@ -205,17 +205,12 @@ public class MoveMode {
     }
 
     public static boolean inAllianceZone(CommandSwerveDrivetrain drivetrain) {
-        double flippedRobotPosition = AllianceSymmetry.isRed()
-                ? AllianceSymmetry.flipX(drivetrain.getState().Pose.getX(), SymmetryStrategy.VERTICAL)
-                : drivetrain.getState().Pose.getX();
-        double flippedHubPosition = AllianceSymmetry.isRed()
-                ? AllianceSymmetry.flipX(FieldConstants.BLUE_HUB.getX(), SymmetryStrategy.VERTICAL)
-                : FieldConstants.BLUE_HUB.getX();
-
+        double robotX = drivetrain.getState().Pose.getX();
+        double allianceZoneBoundaryX = FieldConstants.BLUE_HUB.getX();
         if (AllianceSymmetry.isRed()) {
-            return flippedRobotPosition < flippedHubPosition ? false : true;
+            return robotX < AllianceSymmetry.flipX(allianceZoneBoundaryX, SymmetryStrategy.VERTICAL) ? false : true;
         } else {
-            return flippedRobotPosition < flippedHubPosition ? true : false;
+            return robotX < allianceZoneBoundaryX ? true : false;
         }
     }
 
