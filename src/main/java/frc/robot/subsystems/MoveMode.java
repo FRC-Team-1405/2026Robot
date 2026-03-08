@@ -6,6 +6,8 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.BooleanEntry;
+import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
@@ -15,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.RobotContainer;
 import frc.robot.constants.FieldConstants;
 import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.AllianceSymmetry.SymmetryStrategy;
@@ -143,6 +144,23 @@ public class MoveMode {
 
     private static StringPublisher speedModePublisher; // For Eclipse
     private static StringPublisher rotationModePublisher; // For Eclipse
+
+    /**
+     * Feature switch: when {@code true} the Y-button point toggle activates
+     * velocity-compensated aiming ({@link Rotation#POINT_VELOCITY_COMPENSATED})
+     * instead of plain line-of-sight aiming ({@link Rotation#POINT}).
+     * <p>
+     * The value is exposed as a two-way NetworkTables entry under
+     * {@code MoveMode/Use Velocity Compensated Point} so it can be flipped
+     * live from an Elastic Dashboard boolean toggle widget without redeploying.
+     */
+    private static boolean useVelocityCompensatedPoint = false;
+
+    /**
+     * NT entry that mirrors {@link #useVelocityCompensatedPoint} (readable +
+     * writable).
+     */
+    private static BooleanEntry velocityCompPointEntry;
 
     // TODO: Tune rotationController for physical robot
     public static final PIDController rotationController = new PIDController(12, 0, 0);
@@ -453,22 +471,65 @@ public class MoveMode {
     }
 
     /**
-     * Toggles between point mode and standard mode for robot rotation.
-     * 
-     * @return
+     * Cycles rotation between STANDARD and the point mode selected by
+     * {@link #useVelocityCompensatedPoint}:
+     * <ul>
+     * <li>If currently in STANDARD: activates POINT or
+     * POINT_VELOCITY_COMPENSATED depending on the feature switch.</li>
+     * <li>If currently in any point mode: returns to STANDARD.</li>
+     * </ul>
+     * The feature switch ({@code MoveMode/Use Velocity Compensated Point}) can be
+     * flipped live from Elastic Dashboard and takes effect on the next toggle
+     * press.
+     *
+     * @return a Command that advances the rotation mode
      */
     public Command togglePointMode() {
         return Commands.runOnce(() -> {
-            if (Rotation.POINT.equals(currentRotationMode)) {
-                setToStandardMode();
+            // Read the live NT value each time the button is pressed so a mid-run
+            // dashboard change takes effect immediately on the next press.
+            useVelocityCompensatedPoint = velocityCompPointEntry.get(useVelocityCompensatedPoint);
+
+            boolean inAnyPointMode = Rotation.POINT.equals(currentRotationMode)
+                    || Rotation.POINT_VELOCITY_COMPENSATED.equals(currentRotationMode);
+
+            if (inAnyPointMode) {
+                setToStandardMode().initialize();
+            } else if (useVelocityCompensatedPoint) {
+                new ModeCommand(Rotation.POINT_VELOCITY_COMPENSATED).initialize();
             } else {
-                setToPointMode();
+                setToPointMode().initialize();
             }
         });
     }
 
+    /**
+     * Point velocity-compensated mode: behaves like {@link #pointMode} but uses
+     * {@link CommandSwerveDrivetrain#getAngleToTargetWithVelocityCompensation} so
+     * the robot leads the target by the projectile flight time, compensating for
+     * the robot's own translational velocity.
+     *
+     * @param drivetrain the Swerve Drivetrain
+     * @return rotation rate in rad/s
+     */
     private double pointVelocityCompensatedMode(final CommandSwerveDrivetrain drivetrain) {
-        return 0.0;
+        Pose2d targetPose = FieldConstants.BLUE_HUB;
+
+        if (AllianceSymmetry.isRed()) {
+            targetPose = AllianceSymmetry.flip(targetPose);
+        }
+
+        Rotation2d compensatedAngle = drivetrain.getAngleToTargetWithVelocityCompensation(targetPose);
+        rotationController.setSetpoint(compensatedAngle.getRadians());
+
+        double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
+        double rateToRotate = rotationController.calculate(currentRad);
+
+        System.out.printf("[VelComp] PID error: %.3f, target: %.3f, current: %.3f, rate: %.3f\n",
+                rotationController.getError(),
+                rotationController.getSetpoint(), currentRad, rateToRotate);
+
+        return rateToRotate;
     }
 
     /**
@@ -511,6 +572,13 @@ public class MoveMode {
 
         final StringTopic rotationModeTopic = table.getStringTopic("Rotation Mode");
         rotationModePublisher = rotationModeTopic.publish();
+
+        // Two-way boolean entry so Elastic toggle widget can read and write the flag
+        final NetworkTable moveModeTable = NetworkTableInstance.getDefault().getTable("SmartDashboard")
+                .getSubTable("MoveMode");
+        final BooleanTopic velocityCompTopic = moveModeTable.getBooleanTopic("Use Velocity Compensated Point");
+        velocityCompPointEntry = velocityCompTopic.getEntry(useVelocityCompensatedPoint);
+        velocityCompPointEntry.set(useVelocityCompensatedPoint); // publish initial value
 
         elasticUpdate();
     }

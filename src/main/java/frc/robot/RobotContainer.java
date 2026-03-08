@@ -236,12 +236,10 @@ public class RobotContainer {
                                 .whileTrue(drivetrain
                                                 .driveToPose(() -> Optional.of(FieldConstants.BLUE_HUB_SHOOT_CLOSE)));
 
-                // Point at hub
-                driverJoystick.y().toggleOnTrue(
-                                Commands.either(
-                                                moveMode.setToStandardMode(),
-                                                moveMode.setToPointMode(),
-                                                () -> MoveMode.Rotation.POINT.equals(moveMode.getRotationMode())));
+                // Point at hub toggle (STANDARD ↔ POINT or POINT_VELOCITY_COMPENSATED).
+                // Which point mode is active is controlled by the
+                // "MoveMode/Use Velocity Compensated Point" NT toggle in Elastic Dashboard.
+                driverJoystick.y().onTrue(moveMode.togglePointMode());
 
                 Trigger hopperTrigger = new Trigger(() -> {
                         return intake.isPickupRunning() || indexer.isIndexerRunning();
