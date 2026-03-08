@@ -58,12 +58,10 @@ public class Indexer extends SubsystemBase {
 
     public Command runIndexer(Supplier<AngularVelocity> speed) {
         return runOnce(() -> setIndexerSpeed(speed));
-        // return startEnd(() -> setIndexerSpeed(speed), () -> indexerStop());
     }
 
     public Command runIndexer() {
         return runOnce(() -> setIndexerSpeed());
-        // return startEnd(() -> setIndexerSpeed(), () -> indexerStop());
     }
 
     public Command runStopIndexer() {

@@ -118,9 +118,9 @@ public class SwerveFeatures {
         Pose2d currentPose = m_drivetrain.getState().Pose;
         Rotation2d fieldAngle = targetPose.getTranslation().minus(currentPose.getTranslation()).getAngle();
 
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            fieldAngle = AllianceSymmetry.flip(fieldAngle);
-        }
+        // if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+        // fieldAngle = AllianceSymmetry.flip(fieldAngle);
+        // }
         fLogger.log("Angle to target (field coords): " + fieldAngle.getDegrees() + " deg");
 
         // Update visualization - show standard angle in blue
