@@ -178,7 +178,7 @@ public class RobotContainer {
                                 Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
                 operatorJoystick.leftBumper().toggleOnTrue(intake.runIntakeCenter());
 
-                operatorJoystick.leftTrigger().onTrue(moveMode.setToBumpMode());
+                operatorJoystick.leftTrigger().onTrue(moveMode.setToBumpMode(drivetrain));
                 operatorJoystick.rightTrigger().onTrue(moveMode.setToNormalMode());
 
                 //
