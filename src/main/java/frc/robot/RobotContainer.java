@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
+import frc.robot.commands.PointAtTarget;
 import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.generated.TunerConstants;
@@ -56,7 +57,7 @@ public class RobotContainer {
         private static final double DEADBAND = 0.10;
 
         /* Setting up bindings for necessary control of the swerve drive platform */
-        private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+        public static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
                         .withDeadband(DEADBAND).withRotationalDeadband(DEADBAND); // Add a 10%
                                                                                   // deadband
         // .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop
@@ -205,8 +206,17 @@ public class RobotContainer {
 
                 // Brake mode
                 driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
+
+                // Auto Align
                 driverJoystick.x()
                                 .onTrue(drivetrain.driveToPose(() -> Optional.of(new Pose2d(2, 2, Rotation2d.kZero))));
+
+                // Point at hub
+                driverJoystick.y().toggleOnTrue(
+                                Commands.either(
+                                                moveMode.setToStandardMode(),
+                                                moveMode.setToPointMode(),
+                                                () -> MoveMode.Rotation.POINT.equals(moveMode.getRotationMode())));
 
                 Trigger hopperTrigger = new Trigger(() -> {
                         return intake.isPickupRunning() || indexer.isIndexerRunning();

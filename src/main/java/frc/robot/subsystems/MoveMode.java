@@ -3,13 +3,19 @@ package frc.robot.subsystems;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringTopic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.constants.FieldConstants;
+import frc.robot.lib.AllianceSymmetry;
+
 import static frc.robot.RobotContainer.applyDeadband;
 
 /*
@@ -53,10 +59,12 @@ public class MoveMode {
     /**
      * The rotation modes the robot can be in.
      */
-    private enum Rotation {
+    public enum Rotation {
         STANDARD,
         SNAKE,
-        COMPASS
+        COMPASS,
+        POINT,
+        POINT_VELOCITY_COMPENSATED
     }
 
     /**
@@ -64,7 +72,7 @@ public class MoveMode {
      * Command class to communicate with the RobotContainer.java's XboxController
      * joystick.
      */
-    private class ModeCommand extends InstantCommand {
+    public class ModeCommand extends InstantCommand {
         private final Speed speedToSet;
         private final Rotation rotationToSet;
 
@@ -103,7 +111,7 @@ public class MoveMode {
     private static StringPublisher rotationModePublisher; // For Eclipse
 
     // TODO: Tune rotationController for physical robot
-    private final PIDController rotationController = new PIDController(12, 0, 0);
+    public static final PIDController rotationController = new PIDController(12, 0, 0);
     private double goalAngle;
     private double currentAngle;
     private double calculate;
@@ -130,6 +138,10 @@ public class MoveMode {
         };
     }
 
+    public Rotation getRotationMode() {
+        return currentRotationMode;
+    }
+
     /**
      * Selects the rotation mode to perform based on which Mode currentRotationMode
      * is equal to. A parent method for all the other rotation modes.
@@ -148,6 +160,8 @@ public class MoveMode {
                     case STANDARD -> standardMode(joystick, maxAngularRate);
                     case SNAKE -> snakeMode(joystick, drivetrain);
                     case COMPASS -> compassMode(joystick, drivetrain);
+                    case POINT -> pointMode(drivetrain);
+                    case POINT_VELOCITY_COMPENSATED -> pointVelocityCompensatedMode(drivetrain);
                 };
             }
         };
@@ -206,6 +220,15 @@ public class MoveMode {
      */
     public ModeCommand setToCompassMode() {
         return new ModeCommand(Rotation.COMPASS);
+    }
+
+    /**
+     * Sets currentRotationMode to Rotation.POINT.
+     * 
+     * @return
+     */
+    public ModeCommand setToPointMode() {
+        return new ModeCommand(Rotation.POINT);
     }
 
     /**
@@ -288,6 +311,45 @@ public class MoveMode {
         final double joystickX = applyDeadband(joystick.getRightX());
 
         return calculateForJoystick(joystickX, joystickY, drivetrain);
+    }
+
+    private double pointMode(final CommandSwerveDrivetrain drivetrain) {
+        // Setup point target
+        Pose2d targetPose = FieldConstants.BLUE_HUB;
+
+        if (AllianceSymmetry.isRed()) {
+            targetPose = AllianceSymmetry.flip(targetPose);
+        }
+
+        rotationController.setSetpoint(drivetrain.getAngleToTarget(targetPose).getRadians());
+
+        double currentAngle = drivetrain.getState().Pose.getRotation().getRadians();
+
+        double rateToRotate = rotationController.calculate(currentAngle);
+        System.out.printf("PID error: %.3f, target: %.3f, current: %.3f, rateToRotate: %.3f\n",
+                rotationController.getError(),
+                rotationController.getSetpoint(), currentAngle, rateToRotate);
+
+        return rateToRotate;
+    }
+
+    /**
+     * Toggles between point mode and standard mode for robot rotation.
+     * 
+     * @return
+     */
+    public Command togglePointMode() {
+        return Commands.runOnce(() -> {
+            if (Rotation.POINT.equals(currentRotationMode)) {
+                setToStandardMode();
+            } else {
+                setToPointMode();
+            }
+        });
+    }
+
+    private double pointVelocityCompensatedMode(final CommandSwerveDrivetrain drivetrain) {
+        return 0.0;
     }
 
     /**
