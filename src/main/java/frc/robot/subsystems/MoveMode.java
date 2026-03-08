@@ -6,6 +6,7 @@ import com.ctre.phoenix6.signals.AppliedRotorPolarityValue;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
@@ -17,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.FieldConstants;
 import frc.robot.lib.AllianceSymmetry;
+import frc.robot.lib.AllianceSymmetry.SymmetryStrategy;
 
 import static frc.robot.RobotContainer.applyDeadband;
 
@@ -110,6 +112,8 @@ public class MoveMode {
      */
     private static Rotation currentRotationMode = Rotation.STANDARD;
 
+    private static Rotation2d bumpTargetRotation = Rotation2d.kZero;
+
     private static StringPublisher speedModePublisher; // For Eclipse
     private static StringPublisher rotationModePublisher; // For Eclipse
 
@@ -200,7 +204,21 @@ public class MoveMode {
         return new ModeCommand(Speed.FAST);
     }
 
-    public ModeCommand setToBumpMode() {
+    public ModeCommand setToBumpMode(CommandSwerveDrivetrain drivetrain) {
+        double flippedRobotPosition = AllianceSymmetry.isRed()
+                ? AllianceSymmetry.flipX(drivetrain.getState().Pose.getX(), SymmetryStrategy.VERTICAL)
+                : drivetrain.getState().Pose.getX();
+        double flippedHubPosition = AllianceSymmetry.isRed()
+                ? AllianceSymmetry.flipX(FieldConstants.BLUE_HUB.getX(), SymmetryStrategy.VERTICAL)
+                : FieldConstants.BLUE_HUB.getX();
+
+        if (flippedRobotPosition < flippedHubPosition) {
+            // on the alliance side of bump
+            bumpTargetRotation = Rotation2d.kZero;
+        } else {
+            // on neutral zone side of bump
+            bumpTargetRotation = Rotation2d.k180deg;
+        }
         return new ModeCommand(Speed.BUMP);
     }
 
