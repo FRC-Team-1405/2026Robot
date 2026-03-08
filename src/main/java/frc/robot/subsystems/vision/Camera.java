@@ -143,9 +143,9 @@ public class Camera {
       }
     }
 
-    for (int tagId : seenTags) {
-      trust *= Filtering.TAG_RANKINGS.getOrDefault(tagId, 0.0);
-    }
+    // for (int tagId : seenTags) {
+    // trust *= Filtering.TAG_RANKINGS.getOrDefault(tagId, 0.0);
+    // }
 
     trust *= Filtering.AREA_WEIGHT_COEFFICIENT.lerp(sumArea);
     trust *= Filtering.PIXEL_OFFSET_WEIGHT_COEFFICIENT.lerp(avgNormalizedPixelsFromCenter);
