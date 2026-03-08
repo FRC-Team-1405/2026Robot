@@ -1,8 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-
-import com.ctre.phoenix6.signals.AppliedRotorPolarityValue;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.RobotContainer;
 import frc.robot.constants.FieldConstants;
 import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.AllianceSymmetry.SymmetryStrategy;
@@ -80,15 +80,24 @@ public class MoveMode {
     public class ModeCommand extends InstantCommand {
         private final Speed speedToSet;
         private final Rotation rotationToSet;
+        private final CommandSwerveDrivetrain drivetrain;
 
         private ModeCommand(final Speed speedToSet) {
             this.speedToSet = speedToSet;
             this.rotationToSet = null;
+            this.drivetrain = null;
         }
 
         private ModeCommand(final Rotation rotationToSet) {
             this.speedToSet = null;
             this.rotationToSet = rotationToSet;
+            this.drivetrain = null;
+        }
+
+        private ModeCommand(final Speed speedToSet, final CommandSwerveDrivetrain drivetrain) {
+            this.speedToSet = speedToSet;
+            this.rotationToSet = null;
+            this.drivetrain = drivetrain;
         }
 
         @Override
@@ -98,6 +107,24 @@ public class MoveMode {
             } else if (rotationToSet != null) {
                 currentRotationMode = rotationToSet;
             }
+
+            if (Speed.BUMP.equals(currentSpeedMode) && drivetrain != null) {
+                if (inAllianceZone(drivetrain).getAsBoolean()) {
+                    // Alliance side: face 0 deg (blue) or 180 deg (red) — i.e. always face away
+                    // from
+                    // the bump toward the alliance wall so the robot crosses backwards.
+                    bumpTargetRotation = AllianceSymmetry.isRed()
+                            ? Rotation2d.kZero
+                            : Rotation2d.k180deg;
+                } else {
+                    // Neutral zone side: face 180 deg (blue) or 0 deg (red) — again, backwards into
+                    // bump.
+                    bumpTargetRotation = AllianceSymmetry.isRed()
+                            ? Rotation2d.k180deg
+                            : Rotation2d.kZero;
+                }
+            }
+
             elasticUpdate();
         }
     }
@@ -119,6 +146,17 @@ public class MoveMode {
 
     // TODO: Tune rotationController for physical robot
     public static final PIDController rotationController = new PIDController(12, 0, 0);
+
+    /** Separate PID controller used exclusively for bump-mode heading hold. */
+    // TODO: Tune bumpRotationController for physical robot
+    public static final PIDController bumpRotationController = new PIDController(8, 0, 0);
+
+    /**
+     * Right-stick magnitude threshold above which the driver can override bump
+     * heading hold.
+     */
+    private static final double BUMP_ROTATION_OVERRIDE_THRESHOLD = 0.15;
+
     private double goalAngle;
     private double currentAngle;
     private double calculate;
@@ -126,6 +164,7 @@ public class MoveMode {
     public MoveMode() {
         elasticInit();
         rotationController.enableContinuousInput(-Math.PI, Math.PI);
+        bumpRotationController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     /**
@@ -165,6 +204,12 @@ public class MoveMode {
         return new DoubleSupplier() {
             @Override
             public double getAsDouble() {
+                // When bump speed mode is active, always use bump rotation hold regardless of
+                // the current rotation mode, but still allow the driver to override with the
+                // right stick.
+                if (currentSpeedMode == Speed.BUMP) {
+                    return MoveMode.this.bumpRotationMode(joystick, drivetrain, maxAngularRate);
+                }
                 return switch (currentRotationMode) {
                     case STANDARD -> standardMode(joystick, maxAngularRate);
                     case SNAKE -> snakeMode(joystick, drivetrain);
@@ -204,25 +249,19 @@ public class MoveMode {
         return new ModeCommand(Speed.FAST);
     }
 
-    public static boolean inAllianceZone(CommandSwerveDrivetrain drivetrain) {
+    public static BooleanSupplier inAllianceZone(CommandSwerveDrivetrain drivetrain) {
         double robotX = drivetrain.getState().Pose.getX();
         double allianceZoneBoundaryX = FieldConstants.BLUE_HUB.getX();
         if (AllianceSymmetry.isRed()) {
-            return robotX < AllianceSymmetry.flipX(allianceZoneBoundaryX, SymmetryStrategy.VERTICAL) ? false : true;
+            return () -> robotX < AllianceSymmetry.flipX(allianceZoneBoundaryX, SymmetryStrategy.VERTICAL) ? false
+                    : true;
         } else {
-            return robotX < allianceZoneBoundaryX ? true : false;
+            return () -> robotX < allianceZoneBoundaryX ? true : false;
         }
     }
 
     public ModeCommand setToBumpMode(CommandSwerveDrivetrain drivetrain) {
-        if (inAllianceZone(drivetrain)) {
-            // on the alliance side of bump
-            bumpTargetRotation = Rotation2d.kZero;
-        } else {
-            // on neutral zone side of bump
-            bumpTargetRotation = Rotation2d.k180deg;
-        }
-        return new ModeCommand(Speed.BUMP);
+        return new ModeCommand(Speed.BUMP, drivetrain);
     }
 
     /**
@@ -311,6 +350,34 @@ public class MoveMode {
         }
 
         return 0.0; // no movement if joystick is centered
+    }
+
+    /**
+     * Bump rotation mode: holds {@code bumpTargetRotation} using a PID controller
+     * so the robot always enters the bump backwards. If the driver pushes the right
+     * stick beyond {@link #BUMP_ROTATION_OVERRIDE_THRESHOLD}, joystick input takes
+     * full priority and the PID hold is suspended for that loop cycle.
+     *
+     * @param joystick       the connected Xbox Controller
+     * @param drivetrain     the Swerve Drivetrain
+     * @param maxAngularRate the maximum rotational rate (rad/s)
+     * @return rotation rate in rad/s
+     */
+    private double bumpRotationMode(final CommandXboxController joystick,
+            final CommandSwerveDrivetrain drivetrain,
+            final double maxAngularRate) {
+        double rightX = applyDeadband(joystick.getRightX());
+
+        // Allow driver to override the hold by pushing the right stick
+        if (Math.abs(rightX) > BUMP_ROTATION_OVERRIDE_THRESHOLD) {
+            return -rightX * maxAngularRate;
+        }
+
+        // Otherwise PID-hold bumpTargetRotation
+        double targetRad = bumpTargetRotation.getRadians();
+        double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
+        bumpRotationController.setSetpoint(targetRad);
+        return bumpRotationController.calculate(currentRad);
     }
 
     /**

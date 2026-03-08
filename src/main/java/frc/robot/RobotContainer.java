@@ -178,7 +178,10 @@ public class RobotContainer {
                                 Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
                 operatorJoystick.leftBumper().toggleOnTrue(intake.runIntakeCenter());
 
+                // Bump mode (for crossing the bump)
                 operatorJoystick.leftTrigger().onTrue(moveMode.setToBumpMode(drivetrain));
+
+                // Exit Bump Mode
                 operatorJoystick.rightTrigger().onTrue(moveMode.setToNormalMode());
 
                 //
@@ -229,7 +232,7 @@ public class RobotContainer {
 
                 // Auto Align
                 driverJoystick.x()
-                                .and(() -> MoveMode.inAllianceZone(drivetrain))
+                                .and(MoveMode.inAllianceZone(drivetrain))
                                 .whileTrue(drivetrain
                                                 .driveToPose(() -> Optional.of(FieldConstants.BLUE_HUB_SHOOT_CLOSE)));
 
