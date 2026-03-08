@@ -16,6 +16,7 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -121,6 +122,9 @@ public class FireControl extends SubsystemBase {
         currentTarget = getTargetRotation(robotSupplier.get(), target);
         distanceFromTarget = getDistance(target, robotSupplier.get());
         currentChassisSpeeds = speedSupplier.get();
+
+        SmartDashboard.putNumber("Fire Control/Target Angle", currentTarget.getDegrees());
+        SmartDashboard.putNumber("Fire Control/Distance From Target", distanceFromTarget);
     }
 
     private void readCsv(String filePath) {

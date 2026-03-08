@@ -201,6 +201,7 @@ public final class Swerve extends AdvancedSubsystem {
     Pose2d currentPose = odometry.update(getYaw(), getPositions());
     double correctTimeMS = (Timer.getFPGATimestamp() - startTime) * 1000;
     SmartDashboard.putNumber("Swerve/OdomRuntime", correctTimeMS);
+    SmartDashboard.putNumber("Server/Gyro Angle", getYaw().getDegrees());
     field2d.setRobotPose(currentPose);
     poseLookup.addPose(currentPose);
     SwerveModuleState[] moduleStates = new SwerveModuleState[] {

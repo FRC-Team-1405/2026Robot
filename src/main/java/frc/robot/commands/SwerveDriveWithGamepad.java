@@ -65,6 +65,8 @@ public class SwerveDriveWithGamepad extends Command {
       double currentAngleDeg = swerve.getPose().getRotation().getDegrees();
       double nearest45Deg = Math.round(currentAngleDeg / 45.0) * 45.0;
       double target45Deg = nearest45Deg;
+      SmartDashboard.putNumber("Joystick/nearest45", nearest45Deg);
+      SmartDashboard.putNumber("Joystick/CurrentAngle", currentAngleDeg);
 
       rot = pidController.calculate(currentAngleDeg, target45Deg); // TODO tune 45 angle lock PID
 
