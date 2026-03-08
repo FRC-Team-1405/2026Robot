@@ -30,6 +30,7 @@ import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.PointAtTarget;
 import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.Shooter.AutoFire;
+import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
@@ -209,7 +210,7 @@ public class RobotContainer {
 
                 // Auto Align
                 driverJoystick.x()
-                                .onTrue(drivetrain.driveToPose(() -> Optional.of(new Pose2d(2, 2, Rotation2d.kZero))));
+                                .onTrue(drivetrain.driveToPose(() -> Optional.of(FieldConstants.BLUE_HUB_SHOOT_CLOSE)));
 
                 // Point at hub
                 driverJoystick.y().toggleOnTrue(
