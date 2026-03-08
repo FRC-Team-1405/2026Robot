@@ -203,8 +203,8 @@ public class Constants {
             INTAKE_MOTOR_OUT = Preferences.getDouble("Intake/Out", 70.0);
             Preferences.initDouble("Intake/In", 3.0);
             INTAKE_MOTOR_IN = Preferences.getDouble("Intake/In", 3.0);
-            Preferences.initDouble("Intake/Center", 50.0);
-            INTAKE_MOTOR_CENTER = Preferences.getDouble("Intake/Center", 50.0);
+            Preferences.initDouble("Intake/Center", 57.0);
+            INTAKE_MOTOR_CENTER = Preferences.getDouble("Intake/Center", 57.0);
             Preferences.initDouble("Pickup/Out", -25.0);
             PICKUP_MOTOR_OUT = Preferences.getDouble("Pickup/Out", -25.0);
             Preferences.initDouble("Pickup/In", 50.0);

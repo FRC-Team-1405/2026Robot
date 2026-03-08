@@ -122,11 +122,7 @@ public class Intake extends SubsystemBase {
   }
 
   public Command runIntakeCenter() {
-    return Commands.sequence(
-        runOnce(() -> intakeCenter()),
-        Commands.waitUntil(() -> isIntakeAtTarget()))
-        .finallyDo(() -> stopIntake())
-        .withName("Run Intake Center");
+    return runOnce(() -> intakeCenter()).withName("Run Intake Center");
   }
 
   public Command runPickupOut(String name) {
