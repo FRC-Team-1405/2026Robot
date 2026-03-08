@@ -229,6 +229,7 @@ public class RobotContainer {
 
                 // Auto Align
                 driverJoystick.x()
+                                .and(() -> MoveMode.inAllianceZone(drivetrain))
                                 .onTrue(drivetrain.driveToPose(() -> Optional.of(FieldConstants.BLUE_HUB_SHOOT_CLOSE)));
 
                 // Point at hub
