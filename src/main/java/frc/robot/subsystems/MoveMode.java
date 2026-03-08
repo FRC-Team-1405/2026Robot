@@ -204,15 +204,18 @@ public class MoveMode {
         return new ModeCommand(Speed.FAST);
     }
 
-    public ModeCommand setToBumpMode(CommandSwerveDrivetrain drivetrain) {
-        double flippedRobotPosition = AllianceSymmetry.isRed()
-                ? AllianceSymmetry.flipX(drivetrain.getState().Pose.getX(), SymmetryStrategy.VERTICAL)
-                : drivetrain.getState().Pose.getX();
-        double flippedHubPosition = AllianceSymmetry.isRed()
-                ? AllianceSymmetry.flipX(FieldConstants.BLUE_HUB.getX(), SymmetryStrategy.VERTICAL)
-                : FieldConstants.BLUE_HUB.getX();
+    public static boolean inAllianceZone(CommandSwerveDrivetrain drivetrain) {
+        double robotX = drivetrain.getState().Pose.getX();
+        double allianceZoneBoundaryX = FieldConstants.BLUE_HUB.getX();
+        if (AllianceSymmetry.isRed()) {
+            return robotX < AllianceSymmetry.flipX(allianceZoneBoundaryX, SymmetryStrategy.VERTICAL) ? false : true;
+        } else {
+            return robotX < allianceZoneBoundaryX ? true : false;
+        }
+    }
 
-        if (flippedRobotPosition < flippedHubPosition) {
+    public ModeCommand setToBumpMode(CommandSwerveDrivetrain drivetrain) {
+        if (inAllianceZone(drivetrain)) {
             // on the alliance side of bump
             bumpTargetRotation = Rotation2d.kZero;
         } else {
