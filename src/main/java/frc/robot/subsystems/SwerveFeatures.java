@@ -6,15 +6,12 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.FinneyLogger;
 
 /**
@@ -170,14 +167,13 @@ public class SwerveFeatures {
         double distanceToTarget = Math.hypot(dx, dy);
 
         // Calculate standard angle (no compensation) for visualization
-        Rotation2d standardAngleVisualization = new Rotation2d(dx, dy); // visualizations use field coords not
-                                                                        // alliance-flipped/driver-perspective coords
+        Rotation2d standardAngleVisualization = new Rotation2d(dx, dy);
         Rotation2d standardAngle = standardAngleVisualization;
 
-        // Apply alliance perspective transformation
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            standardAngle = AllianceSymmetry.flip(standardAngle);
-        }
+        // NOTE: No alliance flip needed here. The caller is responsible for passing a
+        // targetPose already flipped to the correct alliance side. dx/dy are therefore
+        // already in the correct field-relative frame. Flipping again would invert the
+        // angle and point the robot backwards on red alliance.
 
         // Interpolate flight time from lookup table
         double timeToTarget = interpolateFlightTime(distanceToTarget, flightTimeLookup);
@@ -188,18 +184,11 @@ public class SwerveFeatures {
         double compensatedX = dx - (fieldRelativeSpeeds.vxMetersPerSecond * timeToTarget);
         double compensatedY = dy - (fieldRelativeSpeeds.vyMetersPerSecond * timeToTarget);
 
-        // Calculate the angle to the compensated position
-        Rotation2d fieldAngleVisualization = new Rotation2d(compensatedX, compensatedY); // visualizations use field
-                                                                                         // coords not
-                                                                                         // alliance-flipped/driver-perspective
-                                                                                         // coords
+        // Calculate the angle to the compensated position.
+        // Again, no alliance flip — same reasoning as above; the vector is already in
+        // the correct field frame because targetPose was pre-flipped by the caller.
+        Rotation2d fieldAngleVisualization = new Rotation2d(compensatedX, compensatedY);
         Rotation2d fieldAngle = fieldAngleVisualization;
-
-        // Apply alliance perspective transformation
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            fieldAngle = AllianceSymmetry.flip(fieldAngle);
-
-        }
 
         // Update visualization
         // Blue line: Standard angle (no compensation)

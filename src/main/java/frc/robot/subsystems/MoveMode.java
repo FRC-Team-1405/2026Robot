@@ -1,12 +1,13 @@
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-
-import com.ctre.phoenix6.signals.AppliedRotorPolarityValue;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.BooleanEntry;
+import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
@@ -80,15 +81,24 @@ public class MoveMode {
     public class ModeCommand extends InstantCommand {
         private final Speed speedToSet;
         private final Rotation rotationToSet;
+        private final CommandSwerveDrivetrain drivetrain;
 
         private ModeCommand(final Speed speedToSet) {
             this.speedToSet = speedToSet;
             this.rotationToSet = null;
+            this.drivetrain = null;
         }
 
         private ModeCommand(final Rotation rotationToSet) {
             this.speedToSet = null;
             this.rotationToSet = rotationToSet;
+            this.drivetrain = null;
+        }
+
+        private ModeCommand(final Speed speedToSet, final CommandSwerveDrivetrain drivetrain) {
+            this.speedToSet = speedToSet;
+            this.rotationToSet = null;
+            this.drivetrain = drivetrain;
         }
 
         @Override
@@ -98,6 +108,24 @@ public class MoveMode {
             } else if (rotationToSet != null) {
                 currentRotationMode = rotationToSet;
             }
+
+            if (Speed.BUMP.equals(currentSpeedMode) && drivetrain != null) {
+                if (inAllianceZone(drivetrain).getAsBoolean()) {
+                    // Alliance side: face 0 deg (blue) or 180 deg (red) — i.e. always face away
+                    // from
+                    // the bump toward the alliance wall so the robot crosses backwards.
+                    bumpTargetRotation = AllianceSymmetry.isRed()
+                            ? Rotation2d.kZero
+                            : Rotation2d.k180deg;
+                } else {
+                    // Neutral zone side: face 180 deg (blue) or 0 deg (red) — again, backwards into
+                    // bump.
+                    bumpTargetRotation = AllianceSymmetry.isRed()
+                            ? Rotation2d.k180deg
+                            : Rotation2d.kZero;
+                }
+            }
+
             elasticUpdate();
         }
     }
@@ -117,8 +145,36 @@ public class MoveMode {
     private static StringPublisher speedModePublisher; // For Eclipse
     private static StringPublisher rotationModePublisher; // For Eclipse
 
+    /**
+     * Feature switch: when {@code true} the Y-button point toggle activates
+     * velocity-compensated aiming ({@link Rotation#POINT_VELOCITY_COMPENSATED})
+     * instead of plain line-of-sight aiming ({@link Rotation#POINT}).
+     * <p>
+     * The value is exposed as a two-way NetworkTables entry under
+     * {@code MoveMode/Use Velocity Compensated Point} so it can be flipped
+     * live from an Elastic Dashboard boolean toggle widget without redeploying.
+     */
+    private static boolean useVelocityCompensatedPoint = false;
+
+    /**
+     * NT entry that mirrors {@link #useVelocityCompensatedPoint} (readable +
+     * writable).
+     */
+    private static BooleanEntry velocityCompPointEntry;
+
     // TODO: Tune rotationController for physical robot
     public static final PIDController rotationController = new PIDController(12, 0, 0);
+
+    /** Separate PID controller used exclusively for bump-mode heading hold. */
+    // TODO: Tune bumpRotationController for physical robot
+    public static final PIDController bumpRotationController = new PIDController(8, 0, 0);
+
+    /**
+     * Right-stick magnitude threshold above which the driver can override bump
+     * heading hold.
+     */
+    private static final double BUMP_ROTATION_OVERRIDE_THRESHOLD = 0.15;
+
     private double goalAngle;
     private double currentAngle;
     private double calculate;
@@ -126,6 +182,7 @@ public class MoveMode {
     public MoveMode() {
         elasticInit();
         rotationController.enableContinuousInput(-Math.PI, Math.PI);
+        bumpRotationController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     /**
@@ -165,6 +222,12 @@ public class MoveMode {
         return new DoubleSupplier() {
             @Override
             public double getAsDouble() {
+                // When bump speed mode is active, always use bump rotation hold regardless of
+                // the current rotation mode, but still allow the driver to override with the
+                // right stick.
+                if (currentSpeedMode == Speed.BUMP) {
+                    return MoveMode.this.bumpRotationMode(joystick, drivetrain, maxAngularRate);
+                }
                 return switch (currentRotationMode) {
                     case STANDARD -> standardMode(joystick, maxAngularRate);
                     case SNAKE -> snakeMode(joystick, drivetrain);
@@ -204,25 +267,19 @@ public class MoveMode {
         return new ModeCommand(Speed.FAST);
     }
 
-    public static boolean inAllianceZone(CommandSwerveDrivetrain drivetrain) {
+    public static BooleanSupplier inAllianceZone(CommandSwerveDrivetrain drivetrain) {
         double robotX = drivetrain.getState().Pose.getX();
         double allianceZoneBoundaryX = FieldConstants.BLUE_HUB.getX();
         if (AllianceSymmetry.isRed()) {
-            return robotX < AllianceSymmetry.flipX(allianceZoneBoundaryX, SymmetryStrategy.VERTICAL) ? false : true;
+            return () -> robotX < AllianceSymmetry.flipX(allianceZoneBoundaryX, SymmetryStrategy.VERTICAL) ? false
+                    : true;
         } else {
-            return robotX < allianceZoneBoundaryX ? true : false;
+            return () -> robotX < allianceZoneBoundaryX ? true : false;
         }
     }
 
     public ModeCommand setToBumpMode(CommandSwerveDrivetrain drivetrain) {
-        if (inAllianceZone(drivetrain)) {
-            // on the alliance side of bump
-            bumpTargetRotation = Rotation2d.kZero;
-        } else {
-            // on neutral zone side of bump
-            bumpTargetRotation = Rotation2d.k180deg;
-        }
-        return new ModeCommand(Speed.BUMP);
+        return new ModeCommand(Speed.BUMP, drivetrain);
     }
 
     /**
@@ -314,6 +371,34 @@ public class MoveMode {
     }
 
     /**
+     * Bump rotation mode: holds {@code bumpTargetRotation} using a PID controller
+     * so the robot always enters the bump backwards. If the driver pushes the right
+     * stick beyond {@link #BUMP_ROTATION_OVERRIDE_THRESHOLD}, joystick input takes
+     * full priority and the PID hold is suspended for that loop cycle.
+     *
+     * @param joystick       the connected Xbox Controller
+     * @param drivetrain     the Swerve Drivetrain
+     * @param maxAngularRate the maximum rotational rate (rad/s)
+     * @return rotation rate in rad/s
+     */
+    private double bumpRotationMode(final CommandXboxController joystick,
+            final CommandSwerveDrivetrain drivetrain,
+            final double maxAngularRate) {
+        double rightX = applyDeadband(joystick.getRightX());
+
+        // Allow driver to override the hold by pushing the right stick
+        if (Math.abs(rightX) > BUMP_ROTATION_OVERRIDE_THRESHOLD) {
+            return -rightX * maxAngularRate;
+        }
+
+        // Otherwise PID-hold bumpTargetRotation
+        double targetRad = bumpTargetRotation.getRadians();
+        double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
+        bumpRotationController.setSetpoint(targetRad);
+        return bumpRotationController.calculate(currentRad);
+    }
+
+    /**
      * Standard mode is a rotation mode where the robot's angle is determined from
      * the right stick.
      * The angle adds onto or subracts from the value that the right stick is
@@ -386,22 +471,65 @@ public class MoveMode {
     }
 
     /**
-     * Toggles between point mode and standard mode for robot rotation.
-     * 
-     * @return
+     * Cycles rotation between STANDARD and the point mode selected by
+     * {@link #useVelocityCompensatedPoint}:
+     * <ul>
+     * <li>If currently in STANDARD: activates POINT or
+     * POINT_VELOCITY_COMPENSATED depending on the feature switch.</li>
+     * <li>If currently in any point mode: returns to STANDARD.</li>
+     * </ul>
+     * The feature switch ({@code MoveMode/Use Velocity Compensated Point}) can be
+     * flipped live from Elastic Dashboard and takes effect on the next toggle
+     * press.
+     *
+     * @return a Command that advances the rotation mode
      */
     public Command togglePointMode() {
         return Commands.runOnce(() -> {
-            if (Rotation.POINT.equals(currentRotationMode)) {
-                setToStandardMode();
+            // Read the live NT value each time the button is pressed so a mid-run
+            // dashboard change takes effect immediately on the next press.
+            useVelocityCompensatedPoint = velocityCompPointEntry.get(useVelocityCompensatedPoint);
+
+            boolean inAnyPointMode = Rotation.POINT.equals(currentRotationMode)
+                    || Rotation.POINT_VELOCITY_COMPENSATED.equals(currentRotationMode);
+
+            if (inAnyPointMode) {
+                setToStandardMode().initialize();
+            } else if (useVelocityCompensatedPoint) {
+                new ModeCommand(Rotation.POINT_VELOCITY_COMPENSATED).initialize();
             } else {
-                setToPointMode();
+                setToPointMode().initialize();
             }
         });
     }
 
+    /**
+     * Point velocity-compensated mode: behaves like {@link #pointMode} but uses
+     * {@link CommandSwerveDrivetrain#getAngleToTargetWithVelocityCompensation} so
+     * the robot leads the target by the projectile flight time, compensating for
+     * the robot's own translational velocity.
+     *
+     * @param drivetrain the Swerve Drivetrain
+     * @return rotation rate in rad/s
+     */
     private double pointVelocityCompensatedMode(final CommandSwerveDrivetrain drivetrain) {
-        return 0.0;
+        Pose2d targetPose = FieldConstants.BLUE_HUB;
+
+        if (AllianceSymmetry.isRed()) {
+            targetPose = AllianceSymmetry.flip(targetPose);
+        }
+
+        Rotation2d compensatedAngle = drivetrain.getAngleToTargetWithVelocityCompensation(targetPose);
+        rotationController.setSetpoint(compensatedAngle.getRadians());
+
+        double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
+        double rateToRotate = rotationController.calculate(currentRad);
+
+        System.out.printf("[VelComp] PID error: %.3f, target: %.3f, current: %.3f, rate: %.3f\n",
+                rotationController.getError(),
+                rotationController.getSetpoint(), currentRad, rateToRotate);
+
+        return rateToRotate;
     }
 
     /**
@@ -444,6 +572,13 @@ public class MoveMode {
 
         final StringTopic rotationModeTopic = table.getStringTopic("Rotation Mode");
         rotationModePublisher = rotationModeTopic.publish();
+
+        // Two-way boolean entry so Elastic toggle widget can read and write the flag
+        final NetworkTable moveModeTable = NetworkTableInstance.getDefault().getTable("SmartDashboard")
+                .getSubTable("MoveMode");
+        final BooleanTopic velocityCompTopic = moveModeTable.getBooleanTopic("Use Velocity Compensated Point");
+        velocityCompPointEntry = velocityCompTopic.getEntry(useVelocityCompensatedPoint);
+        velocityCompPointEntry.set(useVelocityCompensatedPoint); // publish initial value
 
         elasticUpdate();
     }
