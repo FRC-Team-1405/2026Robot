@@ -172,8 +172,9 @@ public class RobotContainer {
                 operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
                 operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
                 operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
-                operatorJoystick.leftBumper().onTrue(
+                operatorJoystick.rightBumper().onTrue(
                                 Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
+                operatorJoystick.leftBumper().toggleOnTrue(intake.runIntakeCenter());
 
                 //
                 // Driver Controls
@@ -221,24 +222,14 @@ public class RobotContainer {
                                 drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
                 // Run Intake (Pickup)
-                driverJoystick.leftBumper().onFalse(
-                                Commands.parallel(
-                                                intake.runPickupStop(),
-                                                hopper.runStopHopper()));
-                driverJoystick.leftBumper().onTrue(
-                                Commands.parallel(
-                                                intake.runPickupIn(),
-                                                hopper.runForwardHopper()));
+                driverJoystick.leftBumper().onFalse(intake.runPickupStop());
+                driverJoystick.leftBumper().onTrue(intake.runPickupIn());
 
                 // Shoot
-                driverJoystick.rightBumper().onFalse(
-                                Commands.parallel(
-                                                hopper.runStopHopper(),
-                                                indexer.runStopIndexer()));
-
                 driverJoystick.rightBumper().onTrue(
                                 new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
                                                 .repeatedly());
+                driverJoystick.rightBumper().onFalse(indexer.runStopIndexer());
 
                 //
                 // Shooter Joystick (DEBUG) Controls
