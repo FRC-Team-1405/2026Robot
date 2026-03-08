@@ -3,12 +3,24 @@
 Competition robot code for the 2026 FRC season, built on the CTRE Phoenix 6 Swerve Drive framework.
 
 ## Table of Contents
+- [🎮 Controller Layouts](#-controller-layouts)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Key Components](#key-components)
 - [Adding Autonomous Commands](#adding-autonomous-commands)
 - [Guides & Documentation](#guides--documentation)
 - [Development Notes](#development-notes)
+
+## 🎮 Controller Layouts
+
+> 📋 **Full reference → [resources/ControllerLayouts.md](resources/ControllerLayouts.md)**
+
+| Controller | Port | Quick Image |
+|---|---|---|
+| **Driver** | 0 | [![Driver Controls](resources/driverControls.png)](resources/ControllerLayouts.md#-driver-controller-xbox--port-0) |
+| **Operator** | 1 | [![Operator Controls](resources/operatorControls.png)](resources/ControllerLayouts.md#-operator-controller-xbox--port-1) |
+
+---
 
 ## Project Structure
 
@@ -126,6 +138,10 @@ Located in `Guides/`:
 - [Subsystem Writing Guide](Guides/SubsystemWritingGuide.md) - How to create new subsystems
 - [WPICal Calibration](Guides/WPICal_Calibration.md) - Camera calibration procedures
 - [GitHub Workflow](Guides/Github/) - Git and version control practices
+
+### Controller Reference
+Located in `resources/`:
+- [🎮 Controller Layouts](resources/ControllerLayouts.md) - Driver & operator button maps with PadCrafter links
 
 ### Technical Documentation
 Located in `docs/`:
