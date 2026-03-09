@@ -266,18 +266,19 @@ public class RobotContainer {
                 //
                 // Shooter Joystick (DEBUG) Controls
                 //
-                // shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() ->
-                // ShooterPreferences.SHORT));
-                // shooterJoystick.b().onTrue(shooter.runSetRequestedSpeed(() ->
-                // ShooterPreferences.MEDIUM));
-                // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
-                // ShooterPreferences.LONG));
-                // shooterJoystick.rightBumper().onTrue(
-                // new AutoFire(shooter, indexer, hopper, () ->
-                // ShooterPreferences.INDEXER_VELOCITY)
-                // .repeatedly());
-                // shooterJoystick.rightBumper().onFalse(
-                // Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
+                // A: spin up to whatever value is set in the Shooter/TestTargetRPS dashboard slider
+                shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
+                // B: stop shooter
+                shooterJoystick.b().onTrue(shooter.stopShooter());
+                // Preset speeds
+                shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
+                shooterJoystick.x().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
+                shooterJoystick.leftBumper().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                // Fire + stop
+                shooterJoystick.rightBumper().onTrue(
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY));
+                shooterJoystick.rightBumper().onFalse(
+                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
         }
 
         public static double applyDeadband(double value) {

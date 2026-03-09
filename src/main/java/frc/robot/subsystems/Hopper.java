@@ -4,11 +4,15 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,6 +30,30 @@ public class Hopper extends SubsystemBase {
 
   public Hopper() {
     SimProfiles.initHopper(motor);
+    configureMotor();
+  }
+
+  private void configureMotor() {
+    TalonFXConfiguration configs = new TalonFXConfiguration();
+    configs.Slot0.kS = 0.1;
+    configs.Slot0.kV = 0.12;
+    configs.Slot0.kP = 0.3;
+    configs.Slot0.kI = 0.0;
+    configs.Slot0.kD = 0.0;
+
+    configs.Voltage.withPeakForwardVoltage(Volts.of(10))
+                   .withPeakReverseVoltage(Volts.of(-10));
+
+    configs.MotionMagic.MotionMagicAcceleration = 25;
+
+    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status = motor.getConfigurator().apply(configs);
+      if (status.isOK()) break;
+    }
+    if (!status.isOK()) {
+      System.out.println("Hopper config failed: " + status.toString());
+    }
   }
 
   @Override

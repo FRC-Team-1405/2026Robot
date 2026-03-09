@@ -36,20 +36,22 @@ public class Constants {
     public static class ShooterPhysicalProperties {
         // Flywheel physical properties
         public static final double FLYWHEEL_DIAMETER_INCHES = 2.25;
-        public static final double FLYWHEEL_WEIGHT_LBS = 5.2;
+        public static final double FLYWHEEL_WEIGHT_LBS = 6.0;
 
-        // Gear ratio: wheel spins 1.5x faster than motor output (3:2 ratio)
-        public static final double MOTOR_TO_WHEEL_GEAR_RATIO = 1.5;
+        // Gear ratio: wheel spins 1.8x faster than motor output (9:5 ratio, 36:20)
+        public static final double MOTOR_TO_WHEEL_GEAR_RATIO = 1.8;
 
         // Moment of inertia calculation for simulation
         // Approximating flywheel as solid cylinder: I = (1/2) * m * r^2
         // Using WPILib Units for conversion:
-        // mass = 5.2 lbs, radius = 1.125 inches
+        // mass = 6.0 lbs, radius = 1.125 inches
         // I = 0.5 * mass_kg * radius_m^2
         private static final double FLYWHEEL_MASS_KG = Pounds.of(FLYWHEEL_WEIGHT_LBS).in(Kilograms);
         private static final double FLYWHEEL_RADIUS_M = Inches.of(FLYWHEEL_DIAMETER_INCHES / 2.0).in(Meters);
         public static final double FLYWHEEL_MOMENT_OF_INERTIA = 0.5 * FLYWHEEL_MASS_KG * FLYWHEEL_RADIUS_M
                 * FLYWHEEL_RADIUS_M; // kg*m^2
+
+        public static final double FUEL_WEIGHT_LBS = 0.5; // Approximate weight of a fuel (ball)
     }
 
     public static class ShooterPreferences {
@@ -81,8 +83,8 @@ public class Constants {
             LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 50));
 
             // Indexer Velocities
-            Preferences.initDouble("IndexerVelocities/IndexerVelocity", 20);
-            INDEXER_VELOCITY = RotationsPerSecond.of(Preferences.getDouble("IndexerVelocities/IndexerVelocity", 20));
+            Preferences.initDouble("IndexerVelocities/IndexerVelocity", 35);
+            INDEXER_VELOCITY = RotationsPerSecond.of(Preferences.getDouble("IndexerVelocities/IndexerVelocity", 35));
 
             Preferences.initDouble("ShooterAccuracy/Tight", 3);
             TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 3);
@@ -182,8 +184,8 @@ public class Constants {
         public static final AngularVelocity HOPPER_REVERSE_SPEED;
 
         static {
-            Preferences.initDouble("Hopper/Forward", 1.0);
-            HOPPER_FORWARD_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Forward", 1.0));
+            Preferences.initDouble("Hopper/Forward", 5.0);
+            HOPPER_FORWARD_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Forward", 5.0));
             Preferences.initDouble("Hopper/Reverse", -1.0);
             HOPPER_REVERSE_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Reverse", -1.0));
 
