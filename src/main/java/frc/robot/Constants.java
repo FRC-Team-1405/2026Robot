@@ -198,8 +198,44 @@ public class Constants {
         public static final double INTAKE_MOTOR_CENTER;
         public static final double PICKUP_MOTOR_OUT;
         public static final double PICKUP_MOTOR_IN;
-        public static final double SETTLE_MAX;
+        public static final int SETTLE_COUNT;
         public static final double POSITION_TOLERANCE;
+
+        // PID gains for intake deploy motor (MotionMagic position control)
+        public static final double DEPLOY_KP = 4.8;
+        public static final double DEPLOY_KI = 0.0;
+        public static final double DEPLOY_KD = 0.1;
+        public static final double DEPLOY_KS = 0.25;
+        public static final double DEPLOY_KV = 0.12;
+        public static final double DEPLOY_KG = 0.0;
+
+        // MotionMagic profile for intake deploy (faster deployment)
+        public static final double DEPLOY_CRUISE_VELOCITY = 80.0;   // rotations per second
+        public static final double DEPLOY_ACCELERATION = 160.0;     // rotations per second^2
+        public static final double DEPLOY_JERK = 1600.0;            // rotations per second^3
+
+        // PID gains for pickup roller motor (velocity control)
+        public static final double PICKUP_KP = 0.11;
+        public static final double PICKUP_KI = 0.0;
+        public static final double PICKUP_KD = 0.0;
+        public static final double PICKUP_KS = 0.25;
+        public static final double PICKUP_KV = 0.12;
+
+        // Current limits to protect the chain and detect hard stops
+        public static final double DEPLOY_STATOR_LIMIT = 40.0;   // amps
+        public static final double DEPLOY_SUPPLY_LIMIT = 30.0;   // amps
+        public static final double PICKUP_STATOR_LIMIT = 60.0;   // amps
+        public static final double PICKUP_SUPPLY_LIMIT = 40.0;   // amps
+        public static final double STALL_CURRENT_THRESHOLD = 35.0; // amps — above this = likely stalled
+        public static final int STALL_CYCLES_THRESHOLD = 10;       // consecutive cycles before stall shutdown
+
+        // Soft limit margin beyond IN/OUT positions (rotations)
+        public static final double SOFT_LIMIT_MARGIN = 2.0;
+
+        // Voltage limits
+        public static final double PEAK_FORWARD_VOLTAGE = 10.0;
+        public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+
         static {
             Preferences.initDouble("Intake/Out", 70.0);
             INTAKE_MOTOR_OUT = Preferences.getDouble("Intake/Out", 70.0);
@@ -209,12 +245,12 @@ public class Constants {
             INTAKE_MOTOR_CENTER = Preferences.getDouble("Intake/Center", 57.0);
             Preferences.initDouble("Pickup/Out", -25.0);
             PICKUP_MOTOR_OUT = Preferences.getDouble("Pickup/Out", -25.0);
-            Preferences.initDouble("Pickup/In", 50.0);
-            PICKUP_MOTOR_IN = Preferences.getDouble("Pickup/In", 50.0);
-            Preferences.initDouble("Intake/Settle Max", 3.0);
-            SETTLE_MAX = Preferences.getDouble("Intake/SettleMax", 3.0);
-            Preferences.initDouble("Intake/PositionTolerance", 0.5);
-            POSITION_TOLERANCE = Preferences.getDouble("Intake/PositionTolerance", 0.5);
+            Preferences.initDouble("Pickup/In", 80.0);
+            PICKUP_MOTOR_IN = Preferences.getDouble("Pickup/In", 80.0);
+            Preferences.initDouble("Intake/SettleCount", 5);
+            SETTLE_COUNT = (int) Preferences.getDouble("Intake/SettleCount", 5);
+            Preferences.initDouble("Intake/PositionTolerance", 1.0);
+            POSITION_TOLERANCE = Preferences.getDouble("Intake/PositionTolerance", 1.0);
         }
     }
 }
