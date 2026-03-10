@@ -33,6 +33,19 @@ public class Constants {
 
     }
 
+    public static class ShooterPIDConfig {
+        public static final double KP = 0.3;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+        public static final double KV = 0.12;
+        public static final double KS = 0.15;
+        public static final double PEAK_FORWARD_VOLTAGE = 10.0;
+        public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+        public static final double MOTION_MAGIC_ACCELERATION = 60.0;
+        public static final int FILTER_WINDOW = 50;
+        public static final double TARGET_MATCH_TOLERANCE = 1.0;
+    }
+
     public static class ShooterPhysicalProperties {
         // Flywheel physical properties
         public static final double FLYWHEEL_DIAMETER_INCHES = 2.25;
@@ -93,6 +106,24 @@ public class Constants {
             Preferences.initInt("ShooterAccuracy/StableCount", 5);
             STABLE_COUNT = Preferences.getInt("ShooterAccuracy/StableCount", 5);
         }
+    }
+
+    public static class IndexerPreferences {
+
+        // PID gains for indexer roller motor (MotionMagic velocity control)
+        public static final double KS = 0.1;
+        public static final double KV = 0.12;
+        public static final double KP = 0.5;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+
+        // Voltage limits
+        public static final double PEAK_FORWARD_VOLTAGE = 10.0;
+        public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+
+        // MotionMagic profile for indexer roller
+        public static final double CRUISE_VELOCITY = 40.0; // rotations per second
+        public static final double ACCELERATION = 40.0;    // rotations per second^2
     }
 
     public static class ClimberPreferences {
@@ -183,6 +214,21 @@ public class Constants {
         public static final AngularVelocity HOPPER_FORWARD_SPEED;
         public static final AngularVelocity HOPPER_REVERSE_SPEED;
 
+        // PID gains for hopper roller motor (MotionMagic velocity control)
+        public static final double KS = 0.1;
+        public static final double KV = 0.12;
+        public static final double KP = 0.3;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+
+        // Voltage limits
+        public static final double PEAK_FORWARD_VOLTAGE = 10.0;
+        public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+
+        // MotionMagic profile for hopper roller
+        public static final double CRUISE_VELOCITY = 40.0; // rotations per second
+        public static final double ACCELERATION = 40.0;    // rotations per second^2
+
         static {
             Preferences.initDouble("Hopper/Forward", 5.0);
             HOPPER_FORWARD_SPEED = RotationsPerSecond.of(30);
@@ -220,6 +266,11 @@ public class Constants {
         public static final double PICKUP_KD = 0.0;
         public static final double PICKUP_KS = 0.25;
         public static final double PICKUP_KV = 0.12;
+
+        // MotionMagic profile for pickup roller (velocity mode)
+        public static final double PICKUP_CRUISE_VELOCITY = 10.0; // rotations per second
+        public static final double PICKUP_ACCELERATION = 50.0;    // rotations per second^2
+        public static final double PICKUP_JERK = 0.0;             // rotations per second^3
 
         // Current limits to protect the chain and detect hard stops
         public static final double DEPLOY_STATOR_LIMIT = 40.0; // amps

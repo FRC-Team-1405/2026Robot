@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -12,14 +13,18 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakePreferences;
+import frc.robot.constants.FeatureSwitches;
 import frc.robot.lib.FinneyLogger;
-import frc.robot.sim.SimProfiles;
+import frc.robot.sim.sjc.MotorSim_Mech_SJC;
+import frc.robot.sim.sjc.PhysicsSim_SJC;
 
 // todo add a button on elastic to zero the intake
 public class Intake extends SubsystemBase {
@@ -27,6 +32,9 @@ public class Intake extends SubsystemBase {
 
   private final TalonFX intakeMotor = new TalonFX(Constants.CANBus.INTAKE_MOTOR);
   private final TalonFX pickupMotor = new TalonFX(Constants.CANBus.PICKUP_MOTOR);
+
+  private final MotorSim_Mech_SJC intake_motorSimMech = new MotorSim_Mech_SJC("Intake/DeployMech");
+  private final MotorSim_Mech_SJC pickup_motorSimMech = new MotorSim_Mech_SJC("Intake/PickupMech");
 
   private final MotionMagicVoltage intakePositionRequest = new MotionMagicVoltage(0);
   private final MotionMagicVelocityVoltage pickupVelocityRequest = new MotionMagicVelocityVoltage(0);
@@ -39,17 +47,20 @@ public class Intake extends SubsystemBase {
   private boolean isPickupActive = false;
 
   public Intake() {
-    configureIntakeMotor();
-    configurePickupMotor();
+    setupMotors();
+    simulationInit();
 
-    // Sim profiles handle sim-specific physics; they early-return on real robot
-    SimProfiles.initIntake(intakeMotor);
-    SimProfiles.initPickup(pickupMotor);
+    SmartDashboard.putBoolean("Intake/Zero Intake Position", false);
   }
 
   // ── Motor Configuration ──────────────────────────────────────────────────
 
-  private void configureIntakeMotor() {
+  private void setupMotors() {
+    setupIntakeMotor();
+    setupPickupMotor();
+  }
+
+  private void setupIntakeMotor() {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.Slot0.kP = IntakePreferences.DEPLOY_KP;
@@ -84,13 +95,19 @@ public class Intake extends SubsystemBase {
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    intakeMotor.getConfigurator().apply(config);
+    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status = intakeMotor.getConfigurator().apply(config);
+      if (status.isOK())
+        break;
+    }
+    if (!status.isOK()) {
+      System.out.println("Could not configure intake motor. Error: " + status.toString());
+    }
     fLogger.log("Intake motor configured (deploy)");
-
-    SmartDashboard.putBoolean("Intake/ResetDeployEncoder", false);
   }
 
-  private void configurePickupMotor() {
+  private void setupPickupMotor() {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.Slot0.kP = IntakePreferences.PICKUP_KP;
@@ -99,9 +116,9 @@ public class Intake extends SubsystemBase {
     config.Slot0.kS = IntakePreferences.PICKUP_KS;
     config.Slot0.kV = IntakePreferences.PICKUP_KV;
 
-    config.MotionMagic.MotionMagicCruiseVelocity = 10;
-    config.MotionMagic.MotionMagicAcceleration = 50;
-    config.MotionMagic.MotionMagicJerk = 0;
+    config.MotionMagic.MotionMagicCruiseVelocity = IntakePreferences.PICKUP_CRUISE_VELOCITY;
+    config.MotionMagic.MotionMagicAcceleration = IntakePreferences.PICKUP_ACCELERATION;
+    config.MotionMagic.MotionMagicJerk = IntakePreferences.PICKUP_JERK;
 
     config.Voltage.PeakForwardVoltage = IntakePreferences.PEAK_FORWARD_VOLTAGE;
     config.Voltage.PeakReverseVoltage = IntakePreferences.PEAK_REVERSE_VOLTAGE;
@@ -113,7 +130,15 @@ public class Intake extends SubsystemBase {
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-    pickupMotor.getConfigurator().apply(config);
+    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status = pickupMotor.getConfigurator().apply(config);
+      if (status.isOK())
+        break;
+    }
+    if (!status.isOK()) {
+      System.out.println("Could not configure pickup motor. Error: " + status.toString());
+    }
     fLogger.log("Pickup motor configured (roller)");
   }
 
@@ -137,7 +162,8 @@ public class Intake extends SubsystemBase {
     boolean motorCommanded = Math.abs(intakeMotor.getClosedLoopReference().getValueAsDouble()
         - currentPosition) > IntakePreferences.POSITION_TOLERANCE;
 
-    if (motorCommanded && Math.abs(velocity) < 0.5 && statorCurrent > IntakePreferences.STALL_CURRENT_THRESHOLD) {
+    if (RobotBase.isReal() && motorCommanded && Math.abs(velocity) < 0.5
+        && statorCurrent > IntakePreferences.STALL_CURRENT_THRESHOLD) {
       stallCount++;
       if (stallCount >= IntakePreferences.STALL_CYCLES_THRESHOLD) {
         fLogger.log("STALL DETECTED — stopping intake deploy motor (%.1fA)", statorCurrent);
@@ -152,6 +178,31 @@ public class Intake extends SubsystemBase {
 
     checkForResetEncoder();
     publishTelemetry();
+
+    intake_motorSimMech.update(intakeMotor.getPosition(), intakeMotor.getVelocity());
+    pickup_motorSimMech.update(pickupMotor.getPosition(), pickupMotor.getVelocity());
+  }
+
+  // ── Simulation ───────────────────────────────────────────────────────────
+
+  public void simulationInit() {
+    // Configure simulated TalonFX profiles with reasonable estimates for an FRC
+    // intake
+    // Deploy arm (pivoting): modest rotor inertia, moderate mass at a lever arm,
+    // geared
+    PhysicsSim_SJC.getInstance().addTalonFX(intakeMotor,
+        /* rotorInertia= */0.002, /* loadMassKg= */0.8, /* armMeters= */0.18,
+        /* viscousCoeff= */0.02, /* numberOfMotors= */1, /* gearRatio= */20.0);
+
+    // Pickup roller: small inertia, light load, direct drive
+    PhysicsSim_SJC.getInstance().addTalonFX(pickupMotor,
+        /* rotorInertia= */0.0002, /* loadMassKg= */0.05, /* armMeters= */0.05,
+        /* viscousCoeff= */0.01, /* numberOfMotors= */1, /* gearRatio= */1.0);
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    PhysicsSim_SJC.getInstance().run();
   }
 
   // ── State Queries ────────────────────────────────────────────────────────
@@ -299,29 +350,31 @@ public class Intake extends SubsystemBase {
   }
 
   public void checkForResetEncoder() {
-    boolean value = SmartDashboard.getBoolean("Intake/ResetDeployEncoder", false);
+    boolean value = SmartDashboard.getBoolean("Intake/Zero Intake Position", false);
     if (value) {
       intakeMotor.setPosition(0);
-      SmartDashboard.putBoolean("Intake/ResetDeployEncoder", false);
+      SmartDashboard.putBoolean("Intake/Zero Intake Position", false);
     }
   }
 
   // ── Telemetry ────────────────────────────────────────────────────────────
 
   private void publishTelemetry() {
-    double position = intakeMotor.getPosition().getValueAsDouble();
-    SmartDashboard.putNumber("Intake/DeployPosition", position);
-    SmartDashboard.putNumber("Intake/DeployTarget", intakePositionTarget);
-    SmartDashboard.putNumber("Intake/DeployError", Math.abs(position - intakePositionTarget));
-    SmartDashboard.putNumber("Intake/DeployVelocity", intakeMotor.getVelocity().getValueAsDouble());
-    SmartDashboard.putNumber("Intake/DeployCurrent", intakeMotor.getStatorCurrent().getValueAsDouble());
-    SmartDashboard.putNumber("Intake/PickupCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
-    SmartDashboard.putNumber("Intake/PickupVelocity", pickupMotor.getVelocity().getValueAsDouble());
-    SmartDashboard.putBoolean("Intake/IsDeployed", isIntakeDeployed);
-    SmartDashboard.putBoolean("Intake/IsPickupActive", isPickupActive);
-    SmartDashboard.putBoolean("Intake/AtTarget", isAtTarget());
-    SmartDashboard.putNumber("Intake/SettleCount", settleCount);
-    SmartDashboard.putNumber("Intake/StallCount", stallCount);
+    if (FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING) {
+      double position = intakeMotor.getPosition().getValueAsDouble();
+      SmartDashboard.putNumber("Intake/DeployPosition", position);
+      SmartDashboard.putNumber("Intake/DeployTarget", intakePositionTarget);
+      SmartDashboard.putNumber("Intake/DeployError", Math.abs(position - intakePositionTarget));
+      SmartDashboard.putNumber("Intake/DeployVelocity", intakeMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/DeployCurrent", intakeMotor.getStatorCurrent().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/PickupCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/PickupVelocity", pickupMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putBoolean("Intake/IsDeployed", isIntakeDeployed);
+      SmartDashboard.putBoolean("Intake/IsPickupActive", isPickupActive);
+      SmartDashboard.putBoolean("Intake/AtTarget", isAtTarget());
+      SmartDashboard.putNumber("Intake/SettleCount", settleCount);
+      SmartDashboard.putNumber("Intake/StallCount", stallCount);
+    }
   }
 
   public void publishMotorCurrents() {

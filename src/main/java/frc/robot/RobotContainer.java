@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.PointAtTarget;
+import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
@@ -83,8 +84,8 @@ public class RobotContainer {
         List<StructPublisher<Pose2d>> cameraEstimatedPosesPublisher = Arrays.asList(cameraEstimatedPosePublisher1,
                         cameraEstimatedPosePublisher2);
 
-        private Shooter shooter = new Shooter();
-        private Indexer indexer = new Indexer();
+        public Shooter shooter = new Shooter();
+        public Indexer indexer = new Indexer();
         public final Climber climber = new Climber();
         public final AdjustableHood hood = new AdjustableHood();
         public final Hopper hopper = new Hopper();
@@ -159,6 +160,7 @@ public class RobotContainer {
                 //
                 // Operator Controls
                 //
+                RumbleJoystick.setRumbleOccasion(operatorJoystick);
                 cmd = intake.runIntakeOut();
                 SmartDashboard.putData(cmd);
                 operatorJoystick.povUp().onTrue(cmd);
@@ -187,6 +189,7 @@ public class RobotContainer {
                 //
                 // Driver Controls
                 //
+                RumbleJoystick.setRumbleOccasion(driverJoystick);
                 drivetrain.registerTelemetry(logger::telemeterize);
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
