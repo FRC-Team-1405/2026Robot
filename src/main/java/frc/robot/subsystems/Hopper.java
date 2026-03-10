@@ -11,10 +11,12 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -42,14 +44,18 @@ public class Hopper extends SubsystemBase {
     configs.Slot0.kD = 0.0;
 
     configs.Voltage.withPeakForwardVoltage(Volts.of(10))
-                   .withPeakReverseVoltage(Volts.of(-10));
+        .withPeakReverseVoltage(Volts.of(-10));
 
-    configs.MotionMagic.MotionMagicAcceleration = 25;
+    configs.MotionMagic.MotionMagicAcceleration = 40;
+    configs.MotionMagic.MotionMagicCruiseVelocity = 40;
+
+    configs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     StatusCode status = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
       status = motor.getConfigurator().apply(configs);
-      if (status.isOK()) break;
+      if (status.isOK())
+        break;
     }
     if (!status.isOK()) {
       System.out.println("Hopper config failed: " + status.toString());
@@ -59,6 +65,9 @@ public class Hopper extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Hopper/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
+    SmartDashboard.putNumber("Hopper/Velocity", motor.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("Hopper/PIDError", motor.getClosedLoopError().getValueAsDouble());
   }
 
   public void setSpeed(AngularVelocity velocity) {

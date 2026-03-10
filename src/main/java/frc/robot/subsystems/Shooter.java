@@ -13,6 +13,7 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -66,15 +67,16 @@ public class Shooter extends SubsystemBase {
 
   public void setShooterMotor() {
     TalonFXConfiguration configs = new TalonFXConfiguration();
-    configs.Slot0.kP = 0.3;   // Proportional: 1 RPS error → 0.3V correction
-    configs.Slot0.kI = 0.0;   // No integral needed with proper kP+kV
+    configs.Slot0.kP = 0.3; // Proportional: 1 RPS error → 0.3V correction
+    configs.Slot0.kI = 0.0; // No integral needed with proper kP+kV
     configs.Slot0.kD = 0.0;
-    configs.Slot0.kV = 0.12;  // Feedforward: correct for Kraken X60 (~8.33 RPS/V)
-    configs.Slot0.kS = 0.15;  // Static friction compensation
+    configs.Slot0.kV = 0.12; // Feedforward: correct for Kraken X60 (~8.33 RPS/V)
+    configs.Slot0.kS = 0.15; // Static friction compensation
 
     configs.Voltage.withPeakForwardVoltage(Volts.of(10)).withPeakReverseVoltage(Volts.of(-10));
 
     configs.MotionMagic.MotionMagicAcceleration = 60; // 60 RPS/s → ~0.83s ramp to 50 RPS
+    configs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     StatusCode status = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
@@ -123,7 +125,9 @@ public class Shooter extends SubsystemBase {
     return Commands.runOnce(() -> setShooterSpeed(requestedSpeed), this);
   };
 
-  /** Reads Shooter/TestTargetRPS from SmartDashboard and spins up to that speed. */
+  /**
+   * Reads Shooter/TestTargetRPS from SmartDashboard and spins up to that speed.
+   */
   public Command runShooterAtTestRPS() {
     return Commands.runOnce(
         () -> setShooterSpeed(
@@ -131,7 +135,7 @@ public class Shooter extends SubsystemBase {
         this);
   }
 
-  private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.SHORT;
+  private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.LONG;
 
   private void setRequestedSpeed(Supplier<AngularVelocity> speed) {
     requestedSpeed = speed;
@@ -161,6 +165,9 @@ public class Shooter extends SubsystemBase {
     double motor2TorqueCurrent = shooterMotor2.getTorqueCurrent().getValueAsDouble();
     double motor3TorqueCurrent = shooterMotor3.getTorqueCurrent().getValueAsDouble();
 
+    double cumulativeMotorStatorCurrent = shooterMotor1.getStatorCurrent().getValueAsDouble()
+        + shooterMotor2.getStatorCurrent().getValueAsDouble() + shooterMotor3.getStatorCurrent().getValueAsDouble();
+
     // --- Output & supply voltage ---
     double motor1OutputVoltage = shooterMotor1.getMotorVoltage().getValueAsDouble();
     double motor2OutputVoltage = shooterMotor2.getMotorVoltage().getValueAsDouble();
@@ -184,7 +191,8 @@ public class Shooter extends SubsystemBase {
     double stdDev = Math.sqrt(Math.max(0.0, meanSq - mean * mean));
 
     // --- Ball exit velocity estimation ---
-    // wheel RPS = motor RPS * gear ratio; exit vel = wheel RPS * wheel circumference
+    // wheel RPS = motor RPS * gear ratio; exit vel = wheel RPS * wheel
+    // circumference
     double exitVelocityFPS = motor1RPS
         * ShooterPhysicalProperties.MOTOR_TO_WHEEL_GEAR_RATIO
         * Math.PI * (ShooterPhysicalProperties.FLYWHEEL_DIAMETER_INCHES / 12.0);
@@ -257,6 +265,7 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/Motor1TorqueCurrent", motor1TorqueCurrent);
     SmartDashboard.putNumber("Shooter/Motor2TorqueCurrent", motor2TorqueCurrent);
     SmartDashboard.putNumber("Shooter/Motor3TorqueCurrent", motor3TorqueCurrent);
+    SmartDashboard.putNumber("Shooter/CumulativeStatorCurrent", cumulativeMotorStatorCurrent);
 
     // Temperature
     SmartDashboard.putNumber("Shooter/Motor1Temp", motor1Temp);

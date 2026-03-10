@@ -8,6 +8,7 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -69,14 +70,17 @@ public class Indexer extends SubsystemBase {
         configs.Slot0.kD = 0.0;
 
         configs.Voltage.withPeakForwardVoltage(Volts.of(10))
-                       .withPeakReverseVoltage(Volts.of(-10));
+                .withPeakReverseVoltage(Volts.of(-10));
 
+        configs.MotionMagic.MotionMagicCruiseVelocity = 40;
         configs.MotionMagic.MotionMagicAcceleration = 40;
+        configs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
         for (int i = 0; i < 5; ++i) {
             status = indexerMotor.getConfigurator().apply(configs);
-            if (status.isOK()) break;
+            if (status.isOK())
+                break;
         }
         if (!status.isOK()) {
             System.out.println("Indexer config failed: " + status.toString());
@@ -101,5 +105,8 @@ public class Indexer extends SubsystemBase {
 
     @Override
     public void periodic() {
+        SmartDashboard.putNumber("Indexer/StatorCurrent", indexerMotor.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Indexer/Velocity", indexerMotor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Indexer/PIDError", indexerMotor.getClosedLoopError().getValueAsDouble());
     }
 }

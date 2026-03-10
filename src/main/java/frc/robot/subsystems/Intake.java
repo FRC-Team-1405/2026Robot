@@ -9,6 +9,7 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,6 +21,7 @@ import frc.robot.Constants.IntakePreferences;
 import frc.robot.lib.FinneyLogger;
 import frc.robot.sim.SimProfiles;
 
+// todo add a button on elastic to zero the intake
 public class Intake extends SubsystemBase {
   private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
 
@@ -79,10 +81,13 @@ public class Intake extends SubsystemBase {
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = softReverse;
 
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     intakeMotor.getConfigurator().apply(config);
     fLogger.log("Intake motor configured (deploy)");
+
+    SmartDashboard.putBoolean("Intake/ResetDeployEncoder", false);
   }
 
   private void configurePickupMotor() {
@@ -93,6 +98,10 @@ public class Intake extends SubsystemBase {
     config.Slot0.kD = IntakePreferences.PICKUP_KD;
     config.Slot0.kS = IntakePreferences.PICKUP_KS;
     config.Slot0.kV = IntakePreferences.PICKUP_KV;
+
+    config.MotionMagic.MotionMagicCruiseVelocity = 10;
+    config.MotionMagic.MotionMagicAcceleration = 50;
+    config.MotionMagic.MotionMagicJerk = 0;
 
     config.Voltage.PeakForwardVoltage = IntakePreferences.PEAK_FORWARD_VOLTAGE;
     config.Voltage.PeakReverseVoltage = IntakePreferences.PEAK_REVERSE_VOLTAGE;
@@ -141,6 +150,7 @@ public class Intake extends SubsystemBase {
       stallCount = 0;
     }
 
+    checkForResetEncoder();
     publishTelemetry();
   }
 
@@ -194,19 +204,19 @@ public class Intake extends SubsystemBase {
   private void deployCenter() {
     isIntakeDeployed = true;
     setIntakePosition(IntakePreferences.INTAKE_MOTOR_CENTER);
-    fLogger.log("Intake → CENTER (%.1f)", IntakePreferences.INTAKE_MOTOR_CENTER);
+    fLogger.log("Intake CENTER (%.1f)", IntakePreferences.INTAKE_MOTOR_CENTER);
   }
 
   // ── Pickup Roller Speeds ─────────────────────────────────────────────────
 
   private void pickupRollIn() {
     setPickupVelocity(IntakePreferences.PICKUP_MOTOR_IN);
-    fLogger.log("Pickup → IN (%.1f rps)", IntakePreferences.PICKUP_MOTOR_IN);
+    fLogger.log("Pickup IN (%.1f rps)", IntakePreferences.PICKUP_MOTOR_IN);
   }
 
   private void pickupRollOut() {
     setPickupVelocity(IntakePreferences.PICKUP_MOTOR_OUT);
-    fLogger.log("Pickup → OUT (%.1f rps)", IntakePreferences.PICKUP_MOTOR_OUT);
+    fLogger.log("Pickup OUT (%.1f rps)", IntakePreferences.PICKUP_MOTOR_OUT);
   }
 
   // ── Public Commands ──────────────────────────────────────────────────────
@@ -288,6 +298,14 @@ public class Intake extends SubsystemBase {
         .withName("Retract Intake");
   }
 
+  public void checkForResetEncoder() {
+    boolean value = SmartDashboard.getBoolean("Intake/ResetDeployEncoder", false);
+    if (value) {
+      intakeMotor.setPosition(0);
+      SmartDashboard.putBoolean("Intake/ResetDeployEncoder", false);
+    }
+  }
+
   // ── Telemetry ────────────────────────────────────────────────────────────
 
   private void publishTelemetry() {
@@ -298,6 +316,7 @@ public class Intake extends SubsystemBase {
     SmartDashboard.putNumber("Intake/DeployVelocity", intakeMotor.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Intake/DeployCurrent", intakeMotor.getStatorCurrent().getValueAsDouble());
     SmartDashboard.putNumber("Intake/PickupCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
+    SmartDashboard.putNumber("Intake/PickupVelocity", pickupMotor.getVelocity().getValueAsDouble());
     SmartDashboard.putBoolean("Intake/IsDeployed", isIntakeDeployed);
     SmartDashboard.putBoolean("Intake/IsPickupActive", isPickupActive);
     SmartDashboard.putBoolean("Intake/AtTarget", isAtTarget());

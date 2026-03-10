@@ -254,8 +254,8 @@ public class RobotContainer {
                                 drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
                 // Run Intake (Pickup)
-                driverJoystick.leftBumper().onFalse(intake.runPickupStop());
-                driverJoystick.leftBumper().onTrue(intake.runPickupIn());
+                // driverJoystick.leftBumper().onFalse(intake.runPickupStop());
+                driverJoystick.leftBumper().whileTrue(intake.runPickupIn());
 
                 // Shoot
                 driverJoystick.rightBumper().onTrue(
@@ -266,7 +266,8 @@ public class RobotContainer {
                 //
                 // Shooter Joystick (DEBUG) Controls
                 //
-                // A: spin up to whatever value is set in the Shooter/TestTargetRPS dashboard slider
+                // A: spin up to whatever value is set in the Shooter/TestTargetRPS dashboard
+                // slider
                 shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
                 // B: stop shooter
                 shooterJoystick.b().onTrue(shooter.stopShooter());

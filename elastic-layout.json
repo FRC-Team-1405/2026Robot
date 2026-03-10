@@ -63,6 +63,19 @@
               "period": 0.06,
               "data_type": "boolean"
             }
+          },
+          {
+            "title": "ResetDeployEncoder",
+            "x": 256.0,
+            "y": 320.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/ResetDeployEncoder",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
           }
         ]
       }
