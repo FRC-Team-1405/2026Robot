@@ -26,9 +26,14 @@ public class CommandsForAutoPilot {
         // Jerk is how fast it starts and stops
 
         private static final APConstraints bumpConstraints = new APConstraints()
-                        .withAcceleration(2.0) // TUNE THIS TO YOUR ROBOT!
-                        .withVelocity(3.0)
+                        .withAcceleration(3.0) // TUNE THIS TO YOUR ROBOT!
+                        .withVelocity(4.0)
                         .withJerk(5.0);
+
+        private static final APConstraints testBumpConstraints = new APConstraints()
+                        .withAcceleration(6.0) // TUNE THIS TO YOUR ROBOT!
+                        .withVelocity(4.0)
+                        .withJerk(67.0);
 
         // Rotations
         // Positive rotations are CCW:
@@ -64,12 +69,12 @@ public class CommandsForAutoPilot {
         public static Supplier<Pose2d> rightBump_AllianceToFieldStart = () -> new Pose2d(3.45, 2.5,
                         Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> rightBump_AllianceToFieldEnd = () -> new Pose2d(5.55, 2.5,
-                        Rotation2d.fromDegrees(90));
+                        Rotation2d.fromDegrees(0));
 
         public static Supplier<Pose2d> rightBump_FieldToAllianceStart = () -> new Pose2d(5.55, 2.5,
-                        Rotation2d.fromDegrees(90));
+                        Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> rightBump_FieldToAllianceEnd = () -> new Pose2d(3.45, 2.5,
-                        Rotation2d.fromDegrees(90));
+                        Rotation2d.fromDegrees(0));
 
         // Shooter Poses
         public static Supplier<Pose2d> FrontHubShoot = () -> new Pose2d(3.555, 4, Rotation2d.fromDegrees(0));
@@ -220,11 +225,12 @@ public class CommandsForAutoPilot {
                                 // .withConstraints(bumpConstraints)
                                 .build();
 
+                // TODO: Change test bump constraints
                 Supplier<Command> MoveTo_rightBump_AllianceToFieldEnd = () -> new AutoPilotCommand.Builder(
                                 () -> rightBump_AllianceToFieldEnd.get(), drivetrain,
                                 "MoveTo_rightBump_AllianceToFieldEnd")
                                 .withFlipPoseForAlliance(true)
-                                .withConstraints(bumpConstraints)
+                                .withConstraints(testBumpConstraints)
                                 .build();
 
                 Supplier<Command> MoveTo_leftBump_FieldToAllianceStart = () -> new AutoPilotCommand.Builder(
@@ -240,19 +246,19 @@ public class CommandsForAutoPilot {
                                 .withFlipPoseForAlliance(true)
                                 .withConstraints(bumpConstraints)
                                 .build();
-
+                // TODO: Change test bump constraints
                 Supplier<Command> MoveTo_rightBump_FieldToAllianceStart = () -> new AutoPilotCommand.Builder(
                                 () -> rightBump_FieldToAllianceStart.get(), drivetrain,
                                 "MoveTo_rightBump_FieldToAllianceStart")
                                 .withFlipPoseForAlliance(true)
-                                // .withConstraints(bumpConstraints)
+                                .withConstraints(testBumpConstraints)
                                 .build();
-
+                // TODO: Change test bump constraints
                 Supplier<Command> MoveTo_rightBump_FieldToAllianceEnd = () -> new AutoPilotCommand.Builder(
                                 () -> rightBump_FieldToAllianceEnd.get(), drivetrain,
                                 "MoveTo_rightBump_FieldToAllianceEnd")
                                 .withFlipPoseForAlliance(true)
-                                .withConstraints(bumpConstraints)
+                                .withConstraints(testBumpConstraints)
                                 .build();
 
                 /* Full Autos */ // TODO: DON'T FORGET THE COMMAS
@@ -289,7 +295,7 @@ public class CommandsForAutoPilot {
                                 MoveTo_rightOfDepotFaceIn.get());
                 // Bumps
                 Command AP_rightBumpToField = new SequentialCommandGroup(
-                                MoveTo_rightBump_AllianceToFieldStart.get(),
+                                // MoveTo_rightBump_AllianceToFieldStart.get(),
                                 MoveTo_rightBump_AllianceToFieldEnd.get());
 
                 Command AP_leftBumpToField = new SequentialCommandGroup(
@@ -297,7 +303,7 @@ public class CommandsForAutoPilot {
                                 MoveTo_leftBump_AllianceToFieldEnd.get());
 
                 Command AP_rightBumpToAlliance = new SequentialCommandGroup(
-                                MoveTo_rightBump_FieldToAllianceStart.get(),
+                                // MoveTo_rightBump_FieldToAllianceStart.get(),
                                 MoveTo_rightBump_FieldToAllianceEnd.get());
 
                 Command AP_leftBumpToAlliance = new SequentialCommandGroup(
