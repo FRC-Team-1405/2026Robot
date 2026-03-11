@@ -276,30 +276,30 @@ public final class Constants {
       public static final int ROTATION_MOTOR_ID = 10;
       @CanId(CanId.Type.ENCODER)
       public static final int ROTATION_ENCODER_ID = 10;
-      public static Translation2d moduleOffset = new Translation2d(-Units.inchesToMeters(12),
-          Units.inchesToMeters(10.5));
+      public static Translation2d moduleOffset = new Translation2d(Units.inchesToMeters(11.75),
+          -Units.inchesToMeters(10.25));
     }
 
     public static final class FrontLeftModule { //front left
-      @CanId(CanId.Type.MOTOR)
-      public static final int DRIVE_MOTOR_ID = 17;
-      @CanId(CanId.Type.MOTOR)
-      public static final int ROTATION_MOTOR_ID = 13;
-      @CanId(CanId.Type.ENCODER)
-      public static final int ROTATION_ENCODER_ID = 13;
-      public static Translation2d moduleOffset = new Translation2d(Units.inchesToMeters(12),
-          Units.inchesToMeters(10.5));
-    }
-
-    public static final class BackRightModule { //back right
       @CanId(CanId.Type.MOTOR)
       public static final int DRIVE_MOTOR_ID = 15;
       @CanId(CanId.Type.MOTOR)
       public static final int ROTATION_MOTOR_ID = 11;
       @CanId(CanId.Type.ENCODER)
       public static final int ROTATION_ENCODER_ID = 11;
-      public static Translation2d moduleOffset = new Translation2d(-Units.inchesToMeters(12),
-          -Units.inchesToMeters(10.5));
+      public static Translation2d moduleOffset = new Translation2d(Units.inchesToMeters(11.75),
+          Units.inchesToMeters(10.25));
+    }
+
+    public static final class BackRightModule { //back right
+      @CanId(CanId.Type.MOTOR)
+      public static final int DRIVE_MOTOR_ID = 17;
+      @CanId(CanId.Type.MOTOR)
+      public static final int ROTATION_MOTOR_ID = 13;
+      @CanId(CanId.Type.ENCODER)
+      public static final int ROTATION_ENCODER_ID = 13;
+      public static Translation2d moduleOffset = new Translation2d(-Units.inchesToMeters(11.75),
+          -Units.inchesToMeters(10.25));
     }
 
     public static final class BackLeftModule { //back left
@@ -309,8 +309,8 @@ public final class Constants {
       public static final int ROTATION_MOTOR_ID = 12;
       @CanId(CanId.Type.ENCODER)
       public static final int ROTATION_ENCODER_ID = 12;
-      public static Translation2d moduleOffset = new Translation2d(Units.inchesToMeters(12),
-          -Units.inchesToMeters(10.5));
+      public static Translation2d moduleOffset = new Translation2d(-Units.inchesToMeters(11.75),
+          Units.inchesToMeters(10.25));
     }
   }
 
