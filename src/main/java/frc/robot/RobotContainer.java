@@ -6,6 +6,7 @@ package frc.robot;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -15,12 +16,23 @@ import frc.lib.input.controllers.XboxControllerWrapper;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.CalibrateTurret;
 import frc.robot.commands.DefaultTurretCommand;
+import frc.robot.commands.FixedShooter;
+import frc.robot.commands.ShootWithIndexer;
 import frc.robot.commands.SwerveDriveWithGamepad;
 import frc.robot.commands.ZeroTurret;
-import frc.robot.commands.testRPM;
 import frc.robot.subsystems.*;
 
 public class RobotContainer {
+  // Define set points for shooting if autos fail
+  public static final double rightClimbRPM = Constants.SetPoints.climbRightTargetRPM;
+  public static final double leftClimbRPM = Constants.SetPoints.climbLeftTargetRPM;
+  public static final double rightTrenchRPM = Constants.SetPoints.trenchRightTargetRPM;
+  public static final double leftTrenchRPM = Constants.SetPoints.trenchLeftTargetRPM;
+  public static final Rotation2d rightClimbAngle = Constants.SetPoints.climbRightTurretAngle;
+  public static final Rotation2d leftClimbAngle = Constants.SetPoints.climbLeftTurretAngle;
+  public static final Rotation2d rightTrenchAngle = Constants.SetPoints.trenchRightTurretAngle;
+  public static final Rotation2d leftTrenchAngle = Constants.SetPoints.trenchLeftTurretAngle;
+
   // Controllers
   public static final XboxControllerWrapper driver = new XboxControllerWrapper(0, 0.1);
   public static final XboxControllerWrapper coDriver = new XboxControllerWrapper(1, 0.1);
@@ -76,6 +88,8 @@ public class RobotContainer {
 
     swerve.setDefaultCommand(new SwerveDriveWithGamepad(swerve));
 
+    indexer.setDefaultCommand(new ShootWithIndexer(shooter, indexer));
+
     SmartDashboard.putData("Reset position", Commands.runOnce(() -> {
       swerve.resetOdometry(Pose2d.kZero);
     }, swerve));
@@ -86,16 +100,29 @@ public class RobotContainer {
     coDriver.START();
     SmartDashboard.putData(new ZeroTurret(turret));
     SmartDashboard.putData(new CalibrateTurret(turret));
+
     driver.LT().whileTrue(Commands.sequence(intake.putDownIntake(), intake.intakeFuel()));
     driver.LB().whileTrue(intake.extakeFuel());
     driver.RT().whileTrue(shootTestFuelCommand());
     driver.Y().onTrue(intake.putUpIntake());
+
+    // Clear intake/indexer
+    coDriver.LT().whileTrue(Commands.startEnd(() -> indexer.indexerBackward(), () -> indexer.stopIndexer(), indexer));
+    coDriver.RT().whileTrue(Commands.startEnd(() -> intake.intakeBackward(), () -> intake.stopIntake(), intake));
+
+    // Set positions to shoot from if autos fail
+    coDriver.A().onTrue(new FixedShooter(shooter, turret, rightClimbRPM, rightClimbAngle));
+    coDriver.B().onTrue(new FixedShooter(shooter, turret, rightTrenchRPM, rightTrenchAngle));
+    coDriver.X().onTrue(new FixedShooter(shooter, turret, leftTrenchRPM, leftTrenchAngle));
+    coDriver.Y().onTrue(new FixedShooter(shooter, turret, leftClimbRPM, leftClimbAngle));
   }
 
   public Command shootTestFuelCommand() {
-    return Commands.sequence(
-        shooter.shootCommand(2500, 2500),
-        Commands.waitUntil(() -> shooter.shooterAtSpeed(2500, 2500)),
-        Commands.run(() -> indexer.indexerForward(), indexer)).finallyDo(() -> {shooter.stopShooterMotors(); indexer.stopIndexer();});
+    return Commands.run(
+      () -> {
+        double targetRPM = fireControl.getShooterRpm();
+        shooter.setShooterRPM(targetRPM, targetRPM);
+      }, shooter
+    );
   }
 }

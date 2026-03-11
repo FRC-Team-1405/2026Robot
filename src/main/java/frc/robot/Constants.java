@@ -374,4 +374,18 @@ public final class Constants {
     public static final int SHOOTER_CURRENT_FREE_LIMIT = 50;
     public static final double SHOOTER_VOLTAGE_LIMIT = 10.0;
   }
+
+  public static final class SetPoints {
+    public static final Rotation2d trenchRightTurretAngle = Rotation2d.fromDegrees(65);
+    public static final double trenchRightTargetRPM = 2830;
+
+    public static final Rotation2d trenchLeftTurretAngle = Rotation2d.fromDegrees(-65);
+    public static final double trenchLeftTargetRPM = 2830;
+
+    public static final Rotation2d climbRightTurretAngle = Rotation2d.fromDegrees(-170);
+    public static final double climbRightTargetRPM = 2910;
+
+    public static final Rotation2d climbLeftTurretAngle = Rotation2d.fromDegrees(170);
+    public static final double climbLeftTargetRPM = 2910;
+  }
 }
