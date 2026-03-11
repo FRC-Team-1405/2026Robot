@@ -35,9 +35,11 @@ public class Turret extends SubsystemBase {
     private RelativeEncoder turretEncoder;
     private SparkClosedLoopController turretMotorController;
     private SparkMaxConfig turretMotorConfig;
+    private boolean calibrated;
 
     public Turret(String turretName, final int TURRET_MOTOR_ID, final int TURRET_CALI_SWITCH_ID, Transform3d roboToTur) {
         super(turretName);
+        calibrated = false;
         robotToTurret = roboToTur;
         turretMotor = new SparkMax(TURRET_MOTOR_ID, MotorType.kBrushless);
         // calibrationSwitch = new DigitalInput(TURRET_CALI_SWITCH_ID);
@@ -75,11 +77,16 @@ public class Turret extends SubsystemBase {
 
     public void calibrateClock() {
         for (TurretSwitch p : switchList) {
-            if (p.isSwitchOn()) {
+            if (!p.isSwitchOn()) {
                 turretEncoder.setPosition(p.getClock());
+                calibrated = true;
                 break;
             }
         }
+    }
+
+    public boolean isCalibrated() {
+        return calibrated;
     }
 
     public void turnCounterClockwise() {
@@ -129,6 +136,7 @@ public class Turret extends SubsystemBase {
         SmartDashboard.putNumber(getName() + "/Encoder Position", turretEncoder.getPosition());
         SmartDashboard.putNumber(getName() + "/Target Encoder Position", getNumRotations());
         SmartDashboard.putBoolean(getName() + "/Switch", isOnLimitSwitch());
+        SmartDashboard.putBoolean(getName() + "/isCalibrated", calibrated);
         // pointToTarget(controllerOfFire.getCurrentTarget()); TODO
     }
 
