@@ -82,10 +82,11 @@ public class Intake extends SubsystemBase {
     intakeMotorConfig
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(Constants.Intake.CURRENT_LIMIT)
+        .inverted(true)
         .voltageCompensation(Constants.Intake.VOLTAGE_LIMIT);
-    intakeMotorConfig.closedLoop.pid(Constants.Intake.INAKE_P, Constants.Intake.INAKE_I, Constants.Intake.INAKE_D);
-    intakeMotorConfig.closedLoop.feedForward.sva(Constants.Intake.INAKE_kS, Constants.Intake.INAKE_kV,
-        Constants.Intake.INAKE_kA);
+    intakeMotorConfig.closedLoop.pid(Constants.Intake.INTAKE_P, Constants.Intake.INTAKE_I, Constants.Intake.INTAKE_D);
+    intakeMotorConfig.closedLoop.feedForward.sva(Constants.Intake.INTAKE_kS, Constants.Intake.INTAKE_kV,
+        Constants.Intake.INTAKE_kA);
     intakeMotor.configure(intakeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     liftMotorConfig = new SparkMaxConfig();
@@ -93,7 +94,7 @@ public class Intake extends SubsystemBase {
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(Constants.Intake.CURRENT_LIMIT)
         .voltageCompensation(Constants.Intake.VOLTAGE_LIMIT)
-        .inverted(true)
+        .inverted(false)
         .apply(liftLimitSwitchConfig);
     liftMotor.configure(liftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -160,6 +161,10 @@ public class Intake extends SubsystemBase {
     intakeMotor.set(intakeSpeed * -1);
   }
 
+  public void stopLift() {
+    liftMotor.stopMotor();
+  }
+
   public void stopIntake() {
     intakeMotor.stopMotor();
   }
@@ -174,7 +179,10 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    SmartDashboard.putBoolean("Intake/isDown", isIntakeDown());
+    SmartDashboard.putBoolean("Intake/isUp", isIntakeUp());
+
+    SmartDashboard.putNumber("Intake/liftApplied", liftMotor.getAppliedOutput());
   }
 
   public Command intakeFuel() {
@@ -186,10 +194,10 @@ public class Intake extends SubsystemBase {
   }
 
   public Command putDownIntake() {
-    return Commands.runOnce(() -> lowerIntake(), this);
+    return Commands.sequence(Commands.startEnd(() -> lowerIntake(), () -> stopLift(), this).until(() -> isIntakeDown()));
   }
 
   public Command putUpIntake() {
-    return Commands.runOnce(() -> raiseIntake(), this);
+    return Commands.sequence(Commands.startEnd(() -> raiseIntake(), () -> stopLift(), this).until(() -> isIntakeUp()));
   }
 }

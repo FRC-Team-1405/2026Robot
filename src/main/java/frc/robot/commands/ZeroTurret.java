@@ -5,8 +5,10 @@
 package frc.robot.commands;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Turret;
 
@@ -61,19 +63,25 @@ public class ZeroTurret extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    SmartDashboard.putNumber(getName() + "/clockCount", clockCount);
+    SmartDashboard.putNumber(getName() + "/clockSum", clockSum);
+    SmartDashboard.putBoolean(getName() + "/clockwise", clockwise);
+    SmartDashboard.putBoolean(getName() + "/switchedOn", switchedOn);
+    SmartDashboard.putBoolean(getName() + "/measureSwitch", measureSwitch);
+    
     if(clockwise) {
       theTurret.turnClockwise();
-      if(currentSwitch.isSwitchOn()) {
+      if(switchedOn  && currentSwitch.isSwitchOn()) {
+        counterCount++;
+        counterSum += theTurret.getCurrentRot();
+        switchedOn = false;
+        zeroTimer.reset();
+      } else if(!currentSwitch.isSwitchOn()) {
         clockCount++;
         clockSum += theTurret.getCurrentRot();
         zeroTimer.reset();     
         switchedOn = true;
         measureSwitch = true; 
-      } else if(switchedOn) {
-        counterCount++;
-        counterSum += theTurret.getCurrentRot();
-        switchedOn = false;
-        zeroTimer.reset();
       } else if(zeroTimer.hasElapsed(0.2) && measureSwitch) {
         clockwise = false;
         measureSwitch = false;
@@ -81,17 +89,17 @@ public class ZeroTurret extends Command {
       }
     } else {
       theTurret.turnCounterClockwise();
-    if(currentSwitch.isSwitchOn()) {
+      if(switchedOn && currentSwitch.isSwitchOn()) {
+        clockCount++;
+        clockSum += theTurret.getCurrentRot();
+        switchedOn = false;
+        zeroTimer.reset();
+      } else if(!currentSwitch.isSwitchOn()) {
         counterCount++;
         counterSum += theTurret.getCurrentRot();
         zeroTimer.reset();     
         switchedOn = true;
         measureSwitch = true; 
-      } else if(switchedOn) {
-        clockCount++;
-        clockSum += theTurret.getCurrentRot();
-        switchedOn = false;
-        zeroTimer.reset();
       } else if(zeroTimer.hasElapsed(0.2) && measureSwitch) {
         clockwise = true;
         measureSwitch = false;
@@ -118,10 +126,15 @@ public class ZeroTurret extends Command {
   private void resetSwitch() {
     if (currentSwitch != null)
       currentSwitch.zero(clockSum / clockCount, counterSum / counterCount);
-    currentSwitch = switches.next();
+    try {
+      currentSwitch = switches.next();
+    } catch (NoSuchElementException nee) {
+      currentSwitch = null;
+    }
     clockSum = 0;
     clockCount = 0;
     counterSum = 0;
     counterCount = 0;
+    zeroTimer.start();
   }
 }

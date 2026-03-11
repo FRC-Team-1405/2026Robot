@@ -33,7 +33,8 @@ public class Turret extends SubsystemBase {
     private SparkClosedLoopController turretMotorController;
     private SparkMaxConfig turretMotorConfig;
 
-    public Turret(final int TURRET_MOTOR_ID, final int TURRET_CALI_SWITCH_ID, Transform3d roboToTur) {
+    public Turret(String turretName, final int TURRET_MOTOR_ID, final int TURRET_CALI_SWITCH_ID, Transform3d roboToTur) {
+        super(turretName);
         robotToTurret = roboToTur;
         turretMotor = new SparkMax(TURRET_MOTOR_ID, MotorType.kBrushless);
         // calibrationSwitch = new DigitalInput(TURRET_CALI_SWITCH_ID);
@@ -56,7 +57,7 @@ public class Turret extends SubsystemBase {
     public boolean isOnLimitSwitch() {
         boolean isTrue = false;
         for (TurretSwitch p : switchList) {
-            isTrue = p.isSwitchOn();
+            isTrue = !p.isSwitchOn();
             if (isTrue)
                 break;
         }
@@ -107,7 +108,8 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Turret Angle", turretEncoder.getPosition());
+        SmartDashboard.putNumber(getName() + "/Turret Angle", turretEncoder.getPosition());
+        SmartDashboard.putBoolean(getName() + "/Switch", isOnLimitSwitch());
         // pointToTarget(controllerOfFire.getCurrentTarget()); TODO
     }
 
