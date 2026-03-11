@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.Preferences;
 
 import java.util.ArrayList;
 import com.revrobotics.PersistMode;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -25,6 +27,7 @@ public class Turret extends SubsystemBase {
     private FireControl controllerOfFire;
     private Transform3d robotToTurret;
     private double numRotations;
+    private Rotation2d targetAngle = Rotation2d.fromDegrees(0);
 
     private ArrayList<TurretSwitch> switchList = new ArrayList<TurretSwitch>(1);
 
@@ -43,7 +46,9 @@ public class Turret extends SubsystemBase {
         turretMotorConfig = new SparkMaxConfig();
         turretMotorConfig
                 .idleMode(IdleMode.kBrake).voltageCompensation(Constants.Turret.VOLTAGE)
-                .smartCurrentLimit(Constants.Turret.CURRENT);
+                .smartCurrentLimit(Constants.Turret.CURRENT)
+                .inverted(true);
+
         turretMotorConfig.closedLoop.pid(Constants.Turret.TURRET_P, Constants.Turret.TURRET_I,
                 Constants.Turret.TURRET_D); // TODO find neede PIDs
         turretMotorConfig.closedLoop.feedForward.sva(Constants.Turret.TURRET_kS, Constants.Turret.TURRET_kV,
@@ -65,7 +70,7 @@ public class Turret extends SubsystemBase {
     }
 
     public void turnClockwise() {
-        turretMotor.set(Constants.CALISPEED);
+        turretMotor.set(-(Constants.CALISPEED));
     }
 
     public void calibrateClock() {
@@ -78,7 +83,7 @@ public class Turret extends SubsystemBase {
     }
 
     public void turnCounterClockwise() {
-        turretMotor.set(-(Constants.CALISPEED));
+        turretMotor.set((Constants.CALISPEED));
     }
 
     public void stopTurret() {
@@ -101,14 +106,28 @@ public class Turret extends SubsystemBase {
         return numRotations;
     }
 
+    public Rotation2d getAngle() {
+        Rotation2d currentAngle = Rotation2d.fromRotations(turretEncoder.getPosition() / Constants.Turret.TURRET_GEAR_RATIO_IO);
+        Rotation2d finalAngle = Rotation2d.fromRadians(MathUtil.angleModulus(currentAngle.getRadians()));
+        return finalAngle;
+        
+        
+    }
+
     public void pointToTarget(Rotation2d targetAngle) {
-        numRotations = turretEncoder.getPosition() - targetAngle.getRotations() * Constants.Turret.TURRET_GEAR_RATIO_IO;
+        this.targetAngle = targetAngle;
+        Rotation2d angleToMove = targetAngle.minus(getAngle());
+        numRotations = angleToMove.getRotations() * Constants.Turret.TURRET_GEAR_RATIO_IO;
+        numRotations += turretEncoder.getPosition();
         turretMotorController.setSetpoint(numRotations, ControlType.kPosition);
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber(getName() + "/Turret Angle", turretEncoder.getPosition());
+        SmartDashboard.putNumber(getName() + "/Turret Angle",getAngle().getDegrees());
+        SmartDashboard.putNumber(getName() + "/Target Turret Angle", targetAngle.getDegrees());
+        SmartDashboard.putNumber(getName() + "/Encoder Position", turretEncoder.getPosition());
+        SmartDashboard.putNumber(getName() + "/Target Encoder Position", getNumRotations());
         SmartDashboard.putBoolean(getName() + "/Switch", isOnLimitSwitch());
         // pointToTarget(controllerOfFire.getCurrentTarget()); TODO
     }

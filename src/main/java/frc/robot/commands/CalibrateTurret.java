@@ -8,6 +8,7 @@ public class CalibrateTurret extends Command {
 
     public CalibrateTurret(Turret calibrateTurret) {
         theTurret = calibrateTurret;
+        addRequirements(theTurret);
     }
 
     @Override

@@ -5,6 +5,7 @@ package frc.robot;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -14,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.input.controllers.XboxControllerWrapper;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.CalibrateTurret;
+import frc.robot.commands.DefaultTurretCommand;
 import frc.robot.commands.FixedShooter;
 import frc.robot.commands.ShootWithIndexer;
 import frc.robot.commands.SwerveDriveWithGamepad;
@@ -57,8 +59,15 @@ public class RobotContainer {
       Constants.Shooter.TOP_RIGHT_SHOOTER_ID,
       Constants.Shooter.BOTTOM_RIGHT_SHOOTER_ID,
       Constants.Shooter.BITTY_SHOOTER_ID);
-  public static final FireControl fireControl = new FireControl(() -> swerve.getPose(),
-      () -> DriverStation.getAlliance().orElse(Alliance.Blue), () -> new ChassisSpeeds());
+  public static final FireControl fireControl = new FireControl(
+                                                      () -> {
+                                                              return swerve.getPose().transformBy(new Transform2d(
+                                                                Constants.Turret.ROBOT_TO_SHOOTER.getTranslation().toTranslation2d(),
+                                                                Constants.Turret.ROBOT_TO_SHOOTER.getRotation().toRotation2d()
+                                                              ));
+                                                            }, 
+                                                      () -> DriverStation.getAlliance().orElse(Alliance.Blue), 
+                                                      () -> new ChassisSpeeds());
   // Vision clients
   // public static final JetsonClient jetson = new JetsonClient();
 
@@ -69,7 +78,11 @@ public class RobotContainer {
   public RobotContainer() {
     configureButtonBindings();
 
-    vision.addCamera("name", Constants.Vision.robotToCam1);
+
+   vision.addCamera("heart", Constants.Vision.robotToHeart);
+   vision.addCamera("club", Constants.Vision.robotToClub);
+   vision.addCamera("diamond", Constants.Vision.robotToDiamond);
+   vision.addCamera("Arducam_OV9281_USB_Camera", Constants.Vision.robotToArudcam);
 
     SmartDashboard.putData(swerve.zeroModulesCommand());
 
@@ -80,6 +93,7 @@ public class RobotContainer {
     SmartDashboard.putData("Reset position", Commands.runOnce(() -> {
       swerve.resetOdometry(Pose2d.kZero);
     }, swerve));
+    turret.setDefaultCommand(Commands.sequence(new CalibrateTurret(turret), new DefaultTurretCommand(turret, fireControl)));
   }
 
   private void configureButtonBindings() {

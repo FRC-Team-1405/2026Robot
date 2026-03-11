@@ -18,7 +18,9 @@ import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -80,9 +82,9 @@ public final class Constants {
       apriltagLayout.getTagPose(23).get().getMeasureY().minus(Y_CLEAR_OFFSET), new Rotation2d(0.0));
 
   public static final Rectangle2d BLUE_ALLIANCE_ZONE = new Rectangle2d(new Translation2d(0.0, 0.0),
-      new Translation2d(Units.inchesToMeters(156.61), Units.inchesToMeters(317.69)));
+      new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(317.69)));
   public static final Rectangle2d RED_ALLIANCE_ZONE = new Rectangle2d(
-      new Translation2d(Units.inchesToMeters(494.61), 0.0),
+      new Translation2d(Units.inchesToMeters(469.11), 0.0),
       new Translation2d(Units.inchesToMeters(651.22), Units.inchesToMeters(317.69)));
 
   
@@ -125,7 +127,7 @@ public final class Constants {
   public static final class Joystick {
 
     // TODO PID Constants for bump angle constraint
-    public static final double kP = 2;
+    public static final double kP = 0.04;
     public static final double kI = 0;
     public static final double kD = 0;
 
@@ -146,19 +148,56 @@ public final class Constants {
     public static final double TURRET_kA = 0.00010721;
     public static final double TURRET_kS = 0.017925;
     
-    public static final double TURRET_P = 0.00024301;
+    public static final double TURRET_P = 0.24301;
     public static final double TURRET_I = 0.0;
     public static final double TURRET_D = 0.0;
+
+    public static final Transform3d ROBOT_TO_SHOOTER = new Transform3d(
+                                                          new Translation3d(Units.inchesToMeters(-7.486), 0.0, Units.inchesToMeters(17.938)),
+                                                          new Rotation3d(0.0, 0.0, 0.0)
+                                                          );
   }
 
   public static final class Vision {
-    public static final Transform3d robotToCam1 = new Transform3d(); // TODO find values for robotToCam (add more if
-                                                                     // needed)
-    public static final Transform3d robotToCam2 = new Transform3d();
+    public static final Transform3d robotToHeart = new Transform3d(
+                                                        new Translation3d( Units.inchesToMeters(-18.344), //-13.492 X
+                                                                           Units.inchesToMeters(15.621), //9.921, 11.574 Y
+                                                                           Units.inchesToMeters(21.5)),
+                                                        new Rotation3d(0.0, 
+                                                                        Units.degreesToRadians(12.0), 
+                                                                        Units.degreesToRadians(110.5))                                                     
+                                                        );
 
-    public static final Matrix<N3, N1> singleTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0); // TODO emperically tune
+    public static final Transform3d robotToDiamond = new Transform3d(
+                                                        new Translation3d( Units.inchesToMeters(2.60), //-7.486
+                                                                           Units.inchesToMeters(15.7), 
+                                                                           Units.inchesToMeters(21.5)),
+                                                        new Rotation3d(0.0, 
+                                                                        Units.degreesToRadians(12), 
+                                                                        Units.degreesToRadians(66.80))                                                     
+                                                        );
+
+    public static final Transform3d robotToClub = new Transform3d( 
+                                                        new Translation3d( Units.inchesToMeters(2.60), //5.486, 7.486
+                                                                           Units.inchesToMeters(-15.7), //-9.921 //-21/545
+                                                                           Units.inchesToMeters(21.5)),
+                                                        new Rotation3d(0.0, //0.0 
+                                                                        Units.degreesToRadians(12.0), //10.0
+                                                                        Units.degreesToRadians(-70.25))   //-67.269                                                  
+                                                        );
+
+    public static final Transform3d robotToArudcam = new Transform3d(
+                                                        new Translation3d( Units.inchesToMeters(-17.743), 
+                                                                           Units.inchesToMeters(-15.714), 
+                                                                           Units.inchesToMeters(21.5)),
+                                                        new Rotation3d(0.0, 
+                                                                        Units.degreesToRadians(12.0), 
+                                                                        Units.degreesToRadians(-113.75))                                                     
+                                                        );
+
+    public static final Matrix<N3, N1> singleTagStdDevs = VecBuilder.fill(0.5, 0.5, 999999.0); // TODO emperically tune
                                                                                           // Single Tag StdDevs
-    public static final Matrix<N3, N1> multiTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0); // TODO emperically tune Multi
+    public static final Matrix<N3, N1> multiTagStdDevs = VecBuilder.fill(0.00073, 0.00183, Units.degreesToRadians(0.142)); // TODO emperically tune Multi
                                                                                          // Tag StdDevs
   }
 
@@ -216,9 +255,9 @@ public final class Constants {
     public static final double TELEOP_ANGLE_HOLD_FACTOR = 3.0;
 
     public static final class Odometry {
-      public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.05); // TODO change state StdDev for
+      public static final Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.02, 0.02, 0.01); // TODO change state StdDev for
                                                                                          // Odom
-      public static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.9, 0.9, 0.9); // TODO change vision StdDev
+      public static final Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0.5, 0.5, 999999.0); // TODO change vision StdDev
                                                                                          // for Odom
     }
 
@@ -227,48 +266,51 @@ public final class Constants {
       public static final PIDConstants ROTATION_CONSTANTS = new PIDConstants(8.0, 0.0, 0.8);
     }
 
-    public static final class FrontLeftModule { // TODO need to change where the "front" CAN-IDs are
+    //24 in x 
+   //21 in y 
+
+    public static final class FrontRightModule { //front right 
       @CanId(CanId.Type.MOTOR)
-      public static final int DRIVE_MOTOR_ID = 14;
+      public static final int DRIVE_MOTOR_ID = 14; 
       @CanId(CanId.Type.MOTOR)
       public static final int ROTATION_MOTOR_ID = 10;
       @CanId(CanId.Type.ENCODER)
       public static final int ROTATION_ENCODER_ID = 10;
-      public static Translation2d moduleOffset = new Translation2d(Units.inchesToMeters(12.375),
-          Units.inchesToMeters(10.125));
+      public static Translation2d moduleOffset = new Translation2d(-Units.inchesToMeters(12),
+          Units.inchesToMeters(10.5));
     }
 
-    public static final class FrontRightModule {
+    public static final class FrontLeftModule { //front left
       @CanId(CanId.Type.MOTOR)
       public static final int DRIVE_MOTOR_ID = 17;
       @CanId(CanId.Type.MOTOR)
       public static final int ROTATION_MOTOR_ID = 13;
       @CanId(CanId.Type.ENCODER)
       public static final int ROTATION_ENCODER_ID = 13;
-      public static Translation2d moduleOffset = new Translation2d(Units.inchesToMeters(12.375),
-          -Units.inchesToMeters(10.125));
+      public static Translation2d moduleOffset = new Translation2d(Units.inchesToMeters(12),
+          Units.inchesToMeters(10.5));
     }
 
-    public static final class BackLeftModule {
+    public static final class BackRightModule { //back right
       @CanId(CanId.Type.MOTOR)
       public static final int DRIVE_MOTOR_ID = 15;
       @CanId(CanId.Type.MOTOR)
       public static final int ROTATION_MOTOR_ID = 11;
       @CanId(CanId.Type.ENCODER)
       public static final int ROTATION_ENCODER_ID = 11;
-      public static Translation2d moduleOffset = new Translation2d(-Units.inchesToMeters(12.375),
-          Units.inchesToMeters(10.125));
+      public static Translation2d moduleOffset = new Translation2d(-Units.inchesToMeters(12),
+          -Units.inchesToMeters(10.5));
     }
 
-    public static final class BackRightModule {
+    public static final class BackLeftModule { //back left
       @CanId(CanId.Type.MOTOR)
       public static final int DRIVE_MOTOR_ID = 16;
       @CanId(CanId.Type.MOTOR)
       public static final int ROTATION_MOTOR_ID = 12;
       @CanId(CanId.Type.ENCODER)
       public static final int ROTATION_ENCODER_ID = 12;
-      public static Translation2d moduleOffset = new Translation2d(-Units.inchesToMeters(12.375),
-          -Units.inchesToMeters(10.125));
+      public static Translation2d moduleOffset = new Translation2d(Units.inchesToMeters(12),
+          -Units.inchesToMeters(10.5));
     }
   }
 
