@@ -13,17 +13,21 @@ public class CalibrateTurret extends Command {
 
     @Override
     public void initialize() {
-        theTurret.turnClockwise();
+        if (!theTurret.isCalibrated()) {
+            theTurret.turnClockwise();
+        }
     }
    
     @Override
     public boolean isFinished() {
-        return (theTurret.isOnLimitSwitch());
+        return (theTurret.isOnLimitSwitch() || theTurret.isCalibrated());
     }
 
     @Override
     public void end(boolean interrupted) {
         theTurret.stopTurret();
+        if (theTurret.isOnLimitSwitch()) {
         theTurret.calibrateClock();
+        }
     }
 }

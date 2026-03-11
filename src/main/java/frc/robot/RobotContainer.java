@@ -5,22 +5,28 @@ package frc.robot;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.input.controllers.XboxControllerWrapper;
-import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.CalibrateTurret;
-import frc.robot.commands.DefaultTurretCommand;
 import frc.robot.commands.FixedShooter;
 import frc.robot.commands.ShootWithIndexer;
 import frc.robot.commands.SwerveDriveWithGamepad;
 import frc.robot.commands.ZeroTurret;
-import frc.robot.subsystems.*;
+import frc.robot.subsystems.FireControl;
+import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.Vision;
 
 public class RobotContainer {
   // Define set points for shooting if autos fail
@@ -93,7 +99,7 @@ public class RobotContainer {
     SmartDashboard.putData("Reset position", Commands.runOnce(() -> {
       swerve.resetOdometry(Pose2d.kZero);
     }, swerve));
-    turret.setDefaultCommand(Commands.sequence(new CalibrateTurret(turret), new DefaultTurretCommand(turret, fireControl)));
+    //turret.setDefaultCommand(Commands.sequence(new CalibrateTurret(turret), new DefaultTurretCommand(turret, fireControl)));
   }
 
   private void configureButtonBindings() {
@@ -104,17 +110,21 @@ public class RobotContainer {
     driver.LT().whileTrue(Commands.sequence(intake.putDownIntake(), intake.intakeFuel()));
     driver.LB().whileTrue(intake.extakeFuel());
     driver.RT().whileTrue(shootTestFuelCommand());
-    driver.Y().onTrue(intake.putUpIntake());
+    driver.Y().whileTrue(intake.putUpIntake());
 
     // Clear intake/indexer
     coDriver.LT().whileTrue(Commands.startEnd(() -> indexer.indexerBackward(), () -> indexer.stopIndexer(), indexer));
     coDriver.RT().whileTrue(Commands.startEnd(() -> intake.intakeBackward(), () -> intake.stopIntake(), intake));
 
     // Set positions to shoot from if autos fail
-    coDriver.A().onTrue(new FixedShooter(shooter, turret, rightClimbRPM, rightClimbAngle));
-    coDriver.B().onTrue(new FixedShooter(shooter, turret, rightTrenchRPM, rightTrenchAngle));
-    coDriver.X().onTrue(new FixedShooter(shooter, turret, leftTrenchRPM, leftTrenchAngle));
-    coDriver.Y().onTrue(new FixedShooter(shooter, turret, leftClimbRPM, leftClimbAngle));
+    coDriver.A().whileTrue(CreateFixedShooterCommand(rightClimbAngle, rightClimbRPM));
+    coDriver.B().whileTrue(CreateFixedShooterCommand(rightTrenchAngle, rightTrenchRPM));
+    coDriver.X().whileTrue(CreateFixedShooterCommand(leftTrenchAngle, leftTrenchRPM));
+    coDriver.Y().whileTrue(CreateFixedShooterCommand(leftClimbAngle, leftClimbRPM));
+  }
+
+  private Command CreateFixedShooterCommand(Rotation2d angle, double rpm) {
+    return Commands.sequence(new CalibrateTurret(turret), new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
   }
 
   public Command shootTestFuelCommand() {
