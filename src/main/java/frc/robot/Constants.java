@@ -33,23 +33,38 @@ public class Constants {
 
     }
 
+    public static class ShooterPIDConfig {
+        public static final double KP = 0.3;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+        public static final double KV = 0.12;
+        public static final double KS = 0.15;
+        public static final double PEAK_FORWARD_VOLTAGE = 10.0;
+        public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+        public static final double MOTION_MAGIC_ACCELERATION = 60.0;
+        public static final int FILTER_WINDOW = 50;
+        public static final double TARGET_MATCH_TOLERANCE = 1.0;
+    }
+
     public static class ShooterPhysicalProperties {
         // Flywheel physical properties
         public static final double FLYWHEEL_DIAMETER_INCHES = 2.25;
-        public static final double FLYWHEEL_WEIGHT_LBS = 5.2;
+        public static final double FLYWHEEL_WEIGHT_LBS = 6.0;
 
-        // Gear ratio: wheel spins 1.5x faster than motor output (3:2 ratio)
-        public static final double MOTOR_TO_WHEEL_GEAR_RATIO = 1.5;
+        // Gear ratio: wheel spins 1.8x faster than motor output (9:5 ratio, 36:20)
+        public static final double MOTOR_TO_WHEEL_GEAR_RATIO = 1.8;
 
         // Moment of inertia calculation for simulation
         // Approximating flywheel as solid cylinder: I = (1/2) * m * r^2
         // Using WPILib Units for conversion:
-        // mass = 5.2 lbs, radius = 1.125 inches
+        // mass = 6.0 lbs, radius = 1.125 inches
         // I = 0.5 * mass_kg * radius_m^2
         private static final double FLYWHEEL_MASS_KG = Pounds.of(FLYWHEEL_WEIGHT_LBS).in(Kilograms);
         private static final double FLYWHEEL_RADIUS_M = Inches.of(FLYWHEEL_DIAMETER_INCHES / 2.0).in(Meters);
         public static final double FLYWHEEL_MOMENT_OF_INERTIA = 0.5 * FLYWHEEL_MASS_KG * FLYWHEEL_RADIUS_M
                 * FLYWHEEL_RADIUS_M; // kg*m^2
+
+        public static final double FUEL_WEIGHT_LBS = 0.5; // Approximate weight of a fuel (ball)
     }
 
     public static class ShooterPreferences {
@@ -81,8 +96,8 @@ public class Constants {
             LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 50));
 
             // Indexer Velocities
-            Preferences.initDouble("IndexerVelocities/IndexerVelocity", 20);
-            INDEXER_VELOCITY = RotationsPerSecond.of(Preferences.getDouble("IndexerVelocities/IndexerVelocity", 20));
+            Preferences.initDouble("IndexerVelocities/IndexerVelocity", 35);
+            INDEXER_VELOCITY = RotationsPerSecond.of(30);
 
             Preferences.initDouble("ShooterAccuracy/Tight", 3);
             TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 3);
@@ -91,6 +106,24 @@ public class Constants {
             Preferences.initInt("ShooterAccuracy/StableCount", 5);
             STABLE_COUNT = Preferences.getInt("ShooterAccuracy/StableCount", 5);
         }
+    }
+
+    public static class IndexerPreferences {
+
+        // PID gains for indexer roller motor (MotionMagic velocity control)
+        public static final double KS = 0.1;
+        public static final double KV = 0.12;
+        public static final double KP = 0.5;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+
+        // Voltage limits
+        public static final double PEAK_FORWARD_VOLTAGE = 10.0;
+        public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+
+        // MotionMagic profile for indexer roller
+        public static final double CRUISE_VELOCITY = 40.0; // rotations per second
+        public static final double ACCELERATION = 40.0;    // rotations per second^2
     }
 
     public static class ClimberPreferences {
@@ -181,9 +214,24 @@ public class Constants {
         public static final AngularVelocity HOPPER_FORWARD_SPEED;
         public static final AngularVelocity HOPPER_REVERSE_SPEED;
 
+        // PID gains for hopper roller motor (MotionMagic velocity control)
+        public static final double KS = 0.1;
+        public static final double KV = 0.12;
+        public static final double KP = 0.3;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+
+        // Voltage limits
+        public static final double PEAK_FORWARD_VOLTAGE = 10.0;
+        public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+
+        // MotionMagic profile for hopper roller
+        public static final double CRUISE_VELOCITY = 40.0; // rotations per second
+        public static final double ACCELERATION = 40.0;    // rotations per second^2
+
         static {
-            Preferences.initDouble("Hopper/Forward", 1.0);
-            HOPPER_FORWARD_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Forward", 1.0));
+            Preferences.initDouble("Hopper/Forward", 5.0);
+            HOPPER_FORWARD_SPEED = RotationsPerSecond.of(30);
             Preferences.initDouble("Hopper/Reverse", -1.0);
             HOPPER_REVERSE_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Reverse", -1.0));
 
@@ -196,23 +244,64 @@ public class Constants {
         public static final double INTAKE_MOTOR_CENTER;
         public static final double PICKUP_MOTOR_OUT;
         public static final double PICKUP_MOTOR_IN;
-        public static final double SETTLE_MAX;
+        public static final int SETTLE_COUNT;
         public static final double POSITION_TOLERANCE;
+
+        // PID gains for intake deploy motor (MotionMagic position control)
+        public static final double DEPLOY_KP = 4.8;
+        public static final double DEPLOY_KI = 0.0;
+        public static final double DEPLOY_KD = 0.1;
+        public static final double DEPLOY_KS = 0.25;
+        public static final double DEPLOY_KV = 0.12;
+        public static final double DEPLOY_KG = 0.0;
+
+        // MotionMagic profile for intake deploy (faster deployment)
+        public static final double DEPLOY_CRUISE_VELOCITY = 40.0; // rotations per second
+        public static final double DEPLOY_ACCELERATION = 20.0; // rotations per second^2
+        public static final double DEPLOY_JERK = 100.0; // rotations per second^3
+
+        // PID gains for pickup roller motor (velocity control)
+        public static final double PICKUP_KP = 0.5;
+        public static final double PICKUP_KI = 0.0;
+        public static final double PICKUP_KD = 0.0;
+        public static final double PICKUP_KS = 0.25;
+        public static final double PICKUP_KV = 0.12;
+
+        // MotionMagic profile for pickup roller (velocity mode)
+        public static final double PICKUP_CRUISE_VELOCITY = 10.0; // rotations per second
+        public static final double PICKUP_ACCELERATION = 50.0;    // rotations per second^2
+        public static final double PICKUP_JERK = 0.0;             // rotations per second^3
+
+        // Current limits to protect the chain and detect hard stops
+        public static final double DEPLOY_STATOR_LIMIT = 40.0; // amps
+        public static final double DEPLOY_SUPPLY_LIMIT = 30.0; // amps
+        public static final double PICKUP_STATOR_LIMIT = 60.0; // amps
+        public static final double PICKUP_SUPPLY_LIMIT = 40.0; // amps
+        public static final double STALL_CURRENT_THRESHOLD = 30.0; // amps — above this = likely stalled
+        public static final int STALL_CYCLES_THRESHOLD = 10; // consecutive cycles before stall shutdown
+
+        // Soft limit margin beyond IN/OUT positions (rotations)
+        public static final double SOFT_LIMIT_MARGIN = 2.0;
+
+        // Voltage limits
+        public static final double PEAK_FORWARD_VOLTAGE = 10.0;
+        public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+
         static {
-            Preferences.initDouble("Intake/Out", 70.0);
-            INTAKE_MOTOR_OUT = Preferences.getDouble("Intake/Out", 70.0);
+            Preferences.initDouble("Intake/Out", 50.0);
+            INTAKE_MOTOR_OUT = 60;
             Preferences.initDouble("Intake/In", 3.0);
-            INTAKE_MOTOR_IN = Preferences.getDouble("Intake/In", 3.0);
+            INTAKE_MOTOR_IN = 3;
             Preferences.initDouble("Intake/Center", 57.0);
-            INTAKE_MOTOR_CENTER = Preferences.getDouble("Intake/Center", 57.0);
+            INTAKE_MOTOR_CENTER = 30;
             Preferences.initDouble("Pickup/Out", -25.0);
             PICKUP_MOTOR_OUT = Preferences.getDouble("Pickup/Out", -25.0);
-            Preferences.initDouble("Pickup/In", 50.0);
-            PICKUP_MOTOR_IN = Preferences.getDouble("Pickup/In", 50.0);
-            Preferences.initDouble("Intake/Settle Max", 3.0);
-            SETTLE_MAX = Preferences.getDouble("Intake/SettleMax", 3.0);
-            Preferences.initDouble("Intake/PositionTolerance", 0.5);
-            POSITION_TOLERANCE = Preferences.getDouble("Intake/PositionTolerance", 0.5);
+            Preferences.initDouble("Pickup/In", 80.0);
+            PICKUP_MOTOR_IN = Preferences.getDouble("Pickup/In", 80.0);
+            Preferences.initDouble("Intake/SettleCount", 5);
+            SETTLE_COUNT = (int) Preferences.getDouble("Intake/SettleCount", 5);
+            Preferences.initDouble("Intake/PositionTolerance", 1.0);
+            POSITION_TOLERANCE = Preferences.getDouble("Intake/PositionTolerance", 1.0);
         }
     }
 }

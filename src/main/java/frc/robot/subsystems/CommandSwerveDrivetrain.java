@@ -435,16 +435,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    private Command p2pCommand = null;
+
     public Command driveToPose(Supplier<Optional<Pose2d>> targetPoseSupplier) {
         Supplier<Pose2d> poseSupplier = () -> (targetPoseSupplier.get().get());
-        new PidToPoseCommand.Builder(this, poseSupplier, "DriveToPose");
 
-        return Commands.sequence(
-                Commands.runOnce(() -> {
-                    System.out.println("DriveToPose Called with targetPose: " +
-                            targetPoseSupplier.get());
-                }),
-                new PidToPoseCommand.Builder(this, poseSupplier, "DriveToPose").withTolerance(2)
-                        .withFieldSymmetry(true).build());
+        if (p2pCommand == null) {
+            p2pCommand = Commands.sequence(
+                    Commands.runOnce(() -> {
+                        System.out.println("DriveToPose Called with targetPose: " +
+                                targetPoseSupplier.get());
+                    }),
+                    new PidToPoseCommand.Builder(this, poseSupplier, "DriveToPose").withTolerance(2)
+                            .withFieldSymmetry(true).build());
+        }
+
+        return p2pCommand;
+
     }
 }

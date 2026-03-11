@@ -1,143 +1,150 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
-import java.util.prefs.Preferences;
-import java.lang.Math;
-import java.lang.annotation.Target;
-import java.security.spec.DSAPrivateKeySpec;
 
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ShooterPhysicalProperties;
+import frc.robot.Constants.ShooterPIDConfig;
 import frc.robot.Constants.ShooterPreferences;
-import frc.robot.sim.SimProfiles;
+import frc.robot.constants.FeatureSwitches;
+import frc.robot.lib.FinneyLogger;
+import frc.robot.lib.MotorSim.MotorSim_Mech;
 
 public class Shooter extends SubsystemBase {
+  private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName(),
+      FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING);
+
   private final TalonFX shooterMotor1 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_1);
   private final TalonFX shooterMotor2 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_2);
   private final TalonFX shooterMotor3 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_3);
 
-  private final MotionMagicVelocityVoltage m_VelocityVoltage = new MotionMagicVelocityVoltage(0).withSlot(0);
-  private final NeutralOut m_Brake = new NeutralOut();
+  private final MotionMagicVelocityVoltage velocityVoltage = new MotionMagicVelocityVoltage(0).withSlot(0);
+  private final NeutralOut brake = new NeutralOut();
 
-  private LinearFilter filter = LinearFilter.movingAverage(50);
+  private final MotorSim_Mech shooterMotorSimMech = new MotorSim_Mech("Shooter/Mech2d");
+
+  private final Alert configAlert = new Alert("Shooter motor configuration failed", AlertType.kError);
+
+  private LinearFilter filter = LinearFilter.movingAverage(ShooterPIDConfig.FILTER_WINDOW);
+
+  // Rolling std dev via E[x^2] - E[x]^2
+  private LinearFilter velocityMeanFilter = LinearFilter.movingAverage(ShooterPIDConfig.FILTER_WINDOW);
+  private LinearFilter velocityMeanSqFilter = LinearFilter.movingAverage(ShooterPIDConfig.FILTER_WINDOW);
+
+  private double highError = 0.0;
+  private double lowError = 0.0;
 
   private int settleCount = 0;
+  private int shotCount = 0;
 
   private double shooterTarget = 0.0;
+  private double shooterStartTimestamp = 0.0;
+  private double timeToLockSeconds = 0.0;
 
   private boolean locked = false;
+  private boolean wasLocked = false;
+
+  private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.LONG;
 
   public boolean isReadyToFire() {
     return locked;
   }
 
-  public void setShooterMotor() {
-    TalonFXConfiguration configs = new TalonFXConfiguration();
-    configs.Slot0.kP = 0.0; // 0.00
-    configs.Slot0.kI = 0.0015; // 0.006
-    configs.Slot0.kD = 0.0; // 0.00
-    configs.Slot0.kV = 0.12; // 0.149 0.1232
-    configs.Slot0.kS = 0.0; // 0.00
+  private void setupMotors() {
+    TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-    configs.Voltage.withPeakForwardVoltage(Volts.of(8)).withPeakReverseVoltage(Volts.of(-8));
+    cfg.Slot0.kP = ShooterPIDConfig.KP;
+    cfg.Slot0.kI = ShooterPIDConfig.KI;
+    cfg.Slot0.kD = ShooterPIDConfig.KD;
+    cfg.Slot0.kV = ShooterPIDConfig.KV;
+    cfg.Slot0.kS = ShooterPIDConfig.KS;
 
-    configs.MotionMagic.MotionMagicAcceleration = 30; // whatever RobotContainer.
-                                                      // shooterJoystick.a()...ShooterPreference is equal to
-    // configs.MotionMagic.MotionMagicJerk = 0/*1000*/;
+    cfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
+        .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
+
+    cfg.MotionMagic.MotionMagicAcceleration = ShooterPIDConfig.MOTION_MAGIC_ACCELERATION;
+    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     StatusCode status = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
-      status = shooterMotor1.getConfigurator().apply(configs);
+      status = shooterMotor1.getConfigurator().apply(cfg);
       if (status.isOK())
         break;
     }
     if (!status.isOK()) {
-      System.out.println("Could not apply configs, error code: " + status.toString());
-
-      shooterMotor1.setControl(m_Brake);
+      System.out.println("Could not configure shooter motor. Error: " + status.toString());
+      configAlert.set(true);
+      shooterMotor1.setControl(brake);
     }
-
-  }
-
-  private void setShooterSpeed(Supplier<AngularVelocity> speed) {
-    double value = speed.get().in(RotationsPerSecond);
-    shooterMotor1.setControl(m_VelocityVoltage.withVelocity(speed.get()));
-    shooterTarget = speed.get().in(RotationsPerSecond);
-
-  }
-
-  private void shooterStop() {
-    shooterTarget = 0.0;
-    shooterMotor1.setControl(m_Brake);
   }
 
   /** Creates a new Shooter. */
   public Shooter() {
-    SimProfiles.initShooter(shooterMotor1);
-    SimProfiles.initShooter(shooterMotor2);
-    SimProfiles.initShooter(shooterMotor3);
-    SimProfiles.initShooter(shooterMotor3);
+    setupMotors();
+    simulationInit();
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
-    shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
-    stopShooter();
-    // setShooterMotor();
+    SmartDashboard.putNumber("Shooter/TestTargetRPS", 10.0);
+    shooterStop();
+  }
+
+  private void setShooterSpeed(Supplier<AngularVelocity> speed) {
+    AngularVelocity target = speed.get();
+    shooterMotor1.setControl(velocityVoltage.withVelocity(target));
+    shooterTarget = target.in(RotationsPerSecond);
+    shooterStartTimestamp = Timer.getFPGATimestamp();
+    timeToLockSeconds = 0.0;
+    fLogger.log("setShooterSpeed called: target=%.2f RPS", shooterTarget);
+  }
+
+  private void shooterStop() {
+    shooterTarget = 0.0;
+    shooterMotor1.setControl(brake);
+    fLogger.log("shooterStop called");
+  }
+
+  private void setRequestedSpeed(Supplier<AngularVelocity> speed) {
+    requestedSpeed = speed;
+    setShooterSpeed(requestedSpeed);
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
     return Commands.runOnce(() -> setShooterSpeed(speed), this);
-  };
+  }
 
   public Command runShooter() {
     return Commands.runOnce(() -> setShooterSpeed(requestedSpeed), this);
-  };
+  }
 
-  private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.SHORT;
-
-  private void setRequestedSpeed(Supplier<AngularVelocity> speed) {
-    if (speed.get() == Constants.ShooterPreferences.LONG) {
-      SmartDashboard.putBoolean("Shooter/Long Speed", true);
-      SmartDashboard.putBoolean("Shooter/Medium Speed", false);
-      SmartDashboard.putBoolean("Shooter/Short Speed", false);
-    } else if (speed.get() == Constants.ShooterPreferences.MEDIUM) {
-      SmartDashboard.putBoolean("Shooter/Long Speed", false);
-      SmartDashboard.putBoolean("Shooter/Medium Speed", true);
-      SmartDashboard.putBoolean("Shooter/Short Speed", false);
-    } else if (speed.get() == Constants.ShooterPreferences.SHORT) {
-      SmartDashboard.putBoolean("Shooter/Long Speed", false);
-      SmartDashboard.putBoolean("Shooter/Medium Speed", false);
-      SmartDashboard.putBoolean("Shooter/Short Speed", true);
-    } else {
-      SmartDashboard.putBoolean("Shooter/Long Speed", false);
-      SmartDashboard.putBoolean("Shooter/Medium Speed", false);
-      SmartDashboard.putBoolean("Shooter/Short Speed", false);
-    }
-    requestedSpeed = speed;
-    setShooterSpeed(requestedSpeed);
+  /**
+   * Reads Shooter/TestTargetRPS from SmartDashboard and spins up to that speed.
+   */
+  public Command runShooterAtTestRPS() {
+    return Commands.runOnce(
+        () -> setShooterSpeed(
+            () -> RotationsPerSecond.of(SmartDashboard.getNumber("Shooter/TestTargetRPS", 10.0))),
+        this);
   }
 
   public Command runSetRequestedSpeed(Supplier<AngularVelocity> speed) {
@@ -150,18 +157,57 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double shooterMotor1CurrentDraw = shooterMotor1.getSupplyCurrent().getValueAsDouble();
-    double shooterMotor2CurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
-    double shooterMotor3CurrentDraw = shooterMotor2.getSupplyCurrent().getValueAsDouble();
-    double differentialCurrentDraw = Math.abs(shooterMotor1CurrentDraw - shooterMotor2CurrentDraw);
+    // --- Velocities (cache to avoid redundant CAN calls) ---
+    double motor1RPS = shooterMotor1.getVelocity().getValueAsDouble();
+    double motor2RPS = shooterMotor2.getVelocity().getValueAsDouble();
+    double motor3RPS = shooterMotor3.getVelocity().getValueAsDouble();
 
+    // --- Current draw ---
+    double motor1SupplyCurrent = shooterMotor1.getSupplyCurrent().getValueAsDouble();
+    double motor2SupplyCurrent = shooterMotor2.getSupplyCurrent().getValueAsDouble();
+    double motor3SupplyCurrent = shooterMotor3.getSupplyCurrent().getValueAsDouble();
+    double motor1TorqueCurrent = shooterMotor1.getTorqueCurrent().getValueAsDouble();
+    double motor2TorqueCurrent = shooterMotor2.getTorqueCurrent().getValueAsDouble();
+    double motor3TorqueCurrent = shooterMotor3.getTorqueCurrent().getValueAsDouble();
+
+    double cumulativeMotorStatorCurrent = shooterMotor1.getStatorCurrent().getValueAsDouble()
+        + shooterMotor2.getStatorCurrent().getValueAsDouble() + shooterMotor3.getStatorCurrent().getValueAsDouble();
+
+    // --- Output & supply voltage ---
+    double motor1OutputVoltage = shooterMotor1.getMotorVoltage().getValueAsDouble();
+    double motor2OutputVoltage = shooterMotor2.getMotorVoltage().getValueAsDouble();
+    double motor3OutputVoltage = shooterMotor3.getMotorVoltage().getValueAsDouble();
+    double supplyVoltage = shooterMotor1.getSupplyVoltage().getValueAsDouble();
+
+    // --- Temperatures ---
+    double motor1Temp = shooterMotor1.getDeviceTemp().getValueAsDouble();
+    double motor2Temp = shooterMotor2.getDeviceTemp().getValueAsDouble();
+    double motor3Temp = shooterMotor3.getDeviceTemp().getValueAsDouble();
+
+    // --- Closed loop diagnostics ---
     double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
     double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
     double target = shooterMotor1.getClosedLoopReference().getValueAsDouble();
-    double highError = 0.0;
-    double lowError = 0.0;
-    double range = locked ? ShooterPreferences.WIDE : ShooterPreferences.TIGHT; // TODO improve name on "locked"
+    double range = locked ? ShooterPreferences.WIDE : ShooterPreferences.TIGHT;
 
+    // --- Rolling std dev: sqrt(E[x^2] - E[x]^2) ---
+    double mean = velocityMeanFilter.calculate(motor1RPS);
+    double meanSq = velocityMeanSqFilter.calculate(motor1RPS * motor1RPS);
+    double stdDev = Math.sqrt(Math.max(0.0, meanSq - mean * mean));
+
+    // --- Ball exit velocity estimation ---
+    // wheel RPS = motor RPS * gear ratio; exit vel = wheel RPS * wheel
+    // circumference
+    double exitVelocityFPS = motor1RPS
+        * ShooterPhysicalProperties.MOTOR_TO_WHEEL_GEAR_RATIO
+        * Math.PI * (ShooterPhysicalProperties.FLYWHEEL_DIAMETER_INCHES / 12.0);
+
+    // --- Follower sync check ---
+    double motor2RPSDelta = motor1RPS - motor2RPS;
+    double motor3RPSDelta = motor1RPS - motor3RPS;
+    double differentialCurrentDraw = Math.abs(motor1SupplyCurrent - motor2SupplyCurrent);
+
+    // --- High/low error envelope ---
     if (error >= highError) {
       highError = error;
     } else {
@@ -174,7 +220,8 @@ public class Shooter extends SubsystemBase {
       lowError += 1;
     }
 
-    if (MathUtil.isNear(shooterTarget, target, 1.0) && Math.abs(error) < range) {
+    // --- Settle / lock logic ---
+    if (MathUtil.isNear(shooterTarget, target, ShooterPIDConfig.TARGET_MATCH_TOLERANCE) && Math.abs(error) < range) {
       if (settleCount < ShooterPreferences.STABLE_COUNT) {
         settleCount += 1;
       }
@@ -184,20 +231,105 @@ public class Shooter extends SubsystemBase {
 
     locked = settleCount >= ShooterPreferences.STABLE_COUNT && shooterTarget > 0.0;
 
-    SmartDashboard.putNumber("Shooter/ShooterMotor1RPS", shooterMotor1.getVelocity().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter/ShooterMotor2RPS", shooterMotor2.getVelocity().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter/ShooterMotor3RPS", shooterMotor3.getVelocity().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter/ShooterMotor1CurrentDraw", shooterMotor1CurrentDraw);
-    SmartDashboard.putNumber("Shooter/ShooterMotor2CurrentDraw", shooterMotor2CurrentDraw);
-    SmartDashboard.putNumber("Shooter/ShooterMotor3CurrentDraw", shooterMotor3CurrentDraw);
-    SmartDashboard.putNumber("Shooter/DifferentialCurrentDraw", differentialCurrentDraw);
-    SmartDashboard.putNumber("Shooter/Error", error);
-    SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
-    SmartDashboard.putNumber("Shooter/AverageError", averageError);
-    SmartDashboard.putNumber("Shooter/HighError", highError);
-    SmartDashboard.putNumber("Shooter/LowError", lowError);
-    SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
-    SmartDashboard.putBoolean("Shooter/Locked", locked);
+    // --- Time to lock ---
+    if (locked && !wasLocked) {
+      timeToLockSeconds = Timer.getFPGATimestamp() - shooterStartTimestamp;
+      fLogger.log("Shooter locked: timeToLock=%.2fs, target=%.2f RPS", timeToLockSeconds, shooterTarget);
+    }
+
+    // --- Shot counter: locked -> unlocked while target is still set ---
+    if (!locked && wasLocked && shooterTarget > 0.0) {
+      shotCount++;
+      fLogger.log("Shot detected: count=%d", shotCount);
+    }
+
+    wasLocked = locked;
+
+    // --- Mechanism2d update ---
+    shooterMotorSimMech.update(shooterMotor1.getPosition(), shooterMotor1.getVelocity());
+
+    // --- SmartDashboard ---
+    if (FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING) {
+      // Velocity
+      SmartDashboard.putNumber("Shooter/Motor1RPS", motor1RPS);
+      SmartDashboard.putNumber("Shooter/Motor2RPS", motor2RPS);
+      SmartDashboard.putNumber("Shooter/Motor3RPS", motor3RPS);
+      SmartDashboard.putNumber("Shooter/TargetRPS", shooterTarget);
+      SmartDashboard.putNumber("Shooter/Motor1StdDev", stdDev);
+      SmartDashboard.putNumber("Shooter/BallExitVelocityFPS", exitVelocityFPS);
+
+      // Follower sync
+      SmartDashboard.putNumber("Shooter/Motor2RPSDelta", motor2RPSDelta);
+      SmartDashboard.putNumber("Shooter/Motor3RPSDelta", motor3RPSDelta);
+
+      // Supply & output voltage
+      SmartDashboard.putNumber("Shooter/SupplyVoltage", supplyVoltage);
+      SmartDashboard.putNumber("Shooter/Motor1OutputVoltage", motor1OutputVoltage);
+      SmartDashboard.putNumber("Shooter/Motor2OutputVoltage", motor2OutputVoltage);
+      SmartDashboard.putNumber("Shooter/Motor3OutputVoltage", motor3OutputVoltage);
+
+      // Current
+      SmartDashboard.putNumber("Shooter/Motor1SupplyCurrent", motor1SupplyCurrent);
+      SmartDashboard.putNumber("Shooter/Motor2SupplyCurrent", motor2SupplyCurrent);
+      SmartDashboard.putNumber("Shooter/Motor3SupplyCurrent", motor3SupplyCurrent);
+      SmartDashboard.putNumber("Shooter/DifferentialCurrent", differentialCurrentDraw);
+      SmartDashboard.putNumber("Shooter/Motor1TorqueCurrent", motor1TorqueCurrent);
+      SmartDashboard.putNumber("Shooter/Motor2TorqueCurrent", motor2TorqueCurrent);
+      SmartDashboard.putNumber("Shooter/Motor3TorqueCurrent", motor3TorqueCurrent);
+      SmartDashboard.putNumber("Shooter/CumulativeStatorCurrent", cumulativeMotorStatorCurrent);
+
+      // Temperature
+      SmartDashboard.putNumber("Shooter/Motor1Temp", motor1Temp);
+      SmartDashboard.putNumber("Shooter/Motor2Temp", motor2Temp);
+      SmartDashboard.putNumber("Shooter/Motor3Temp", motor3Temp);
+
+      // PID diagnostics
+      SmartDashboard.putNumber("Shooter/Error", error);
+      SmartDashboard.putNumber("Shooter/AverageError", averageError);
+      SmartDashboard.putNumber("Shooter/HighError", highError);
+      SmartDashboard.putNumber("Shooter/LowError", lowError);
+      SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
+
+      // Lock & shot
+      SmartDashboard.putBoolean("Shooter/Locked", locked);
+      SmartDashboard.putNumber("Shooter/TimeToLockSeconds", timeToLockSeconds);
+      SmartDashboard.putNumber("Shooter/ShotCount", shotCount);
+
+      // Speed preset indicators
+      SmartDashboard.putBoolean("Shooter/Long Speed", requestedSpeed.get() == Constants.ShooterPreferences.LONG);
+      SmartDashboard.putBoolean("Shooter/Medium Speed", requestedSpeed.get() == Constants.ShooterPreferences.MEDIUM);
+      SmartDashboard.putBoolean("Shooter/Short Speed", requestedSpeed.get() == Constants.ShooterPreferences.SHORT);
+    }
   }
 
+  public void simulationInit() {
+    // Use physical properties from Constants to create a more realistic sim
+    // profile.
+    // The moment of inertia in Constants is for the flywheel (wheel side). Reflect
+    // it to the motor/rotor side: I_rotor = I_wheel / (gearRatio^2)
+    final double gearRatio = Constants.ShooterPhysicalProperties.MOTOR_TO_WHEEL_GEAR_RATIO;
+    final double flywheelInertia = Constants.ShooterPhysicalProperties.FLYWHEEL_MOMENT_OF_INERTIA;
+    final double rotorInertia = flywheelInertia / (gearRatio * gearRatio);
+
+    // Convert the (approximate) projectile mass (lbs) to kg for gravity load
+    final double loadMassKg = Pounds.of(Constants.ShooterPhysicalProperties.FUEL_WEIGHT_LBS).in(Kilograms);
+
+    // Use flywheel radius as the arm for gravity torque (meters)
+    final double armMeters = Inches.of(Constants.ShooterPhysicalProperties.FLYWHEEL_DIAMETER_INCHES / 2.0)
+        .in(Meters);
+
+    // Small viscous friction estimate (N*m per rad/s). Tweak if needed.
+    final double viscousCoeff = 0.01;
+
+    // There are three motors on the shooter (one leader + two followers)
+    final int numMotors = 3;
+
+    frc.robot.sim.sjc.PhysicsSim_SJC.getInstance().addTalonFX(shooterMotor1, rotorInertia, loadMassKg,
+        armMeters, viscousCoeff, numMotors, gearRatio);
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    frc.robot.sim.sjc.PhysicsSim_SJC.getInstance().run();
+  }
 }

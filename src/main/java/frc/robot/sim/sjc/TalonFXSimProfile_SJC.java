@@ -117,11 +117,18 @@ class TalonFXSimProfile_SJC extends SimProfile {
         _motorSim.update(getPeriod());
 
         /// SET SIM PHYSICS INPUTS
-        final double position_rot = _motorSim.getAngularPositionRotations();
-        final double velocity_rps = Units.radiansToRotations(_motorSim.getAngularVelocityRadPerSec());
+        // DCMotorSim returns the mechanism (output) shaft values. The TalonFX rotor
+        // position/velocity are reported at the motor (rotor) side; convert by the
+        // gear ratio (motor_rotations = mechanism_rotations * gearRatio).
+        // TODO: verify this change is accurate
+        final double mechanismPositionRot = _motorSim.getAngularPositionRotations();
+        final double mechanismVelocityRps = Units.radiansToRotations(_motorSim.getAngularVelocityRadPerSec());
 
-        _talonFXSim.setRawRotorPosition(position_rot);
-        _talonFXSim.setRotorVelocity(velocity_rps);
+        final double motorPositionRot = mechanismPositionRot * _gearRatio;
+        final double motorVelocityRps = mechanismVelocityRps * _gearRatio;
+
+        _talonFXSim.setRawRotorPosition(motorPositionRot);
+        _talonFXSim.setRotorVelocity(motorVelocityRps);
 
         // System.out.print("Motor Voltage: " + String.format("%.2f", motorVoltage) + "
         // V, Effective Voltage: " + String.format("%.2f", effectiveVoltage) + " V, Load

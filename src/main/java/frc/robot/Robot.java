@@ -29,6 +29,13 @@ public class Robot extends TimedRobot {
         GamePeriod.elasticInit();
     }
 
+    private void resetSubsystems() {
+        // Reset subsystems — schedule stop commands so their initialize() logic runs
+        CommandScheduler.getInstance().schedule(m_robotContainer.shooter.stopShooter());
+        CommandScheduler.getInstance().schedule(m_robotContainer.indexer.runStopIndexer());
+        CommandScheduler.getInstance().schedule(m_robotContainer.hopper.runStopHopper());
+    }
+
     @Override
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
@@ -39,7 +46,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
-
+        // Resetting subsystems here doesn't work
     }
 
     @Override
@@ -54,6 +61,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        resetSubsystems();
+
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
@@ -75,14 +84,15 @@ public class Robot extends TimedRobot {
     public void teleopInit() {
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
-
-            GamePeriod.elasticTeleopInit();
         }
+
+        GamePeriod.elasticTeleopInit();
+        resetSubsystems();
     }
 
     @Override
     public void teleopPeriodic() {
-        GamePeriod.elasticTeleopPeriodic();
+        GamePeriod.elasticPeriodic();
         m_robotContainer.drivetrain.publishMotorCurrent();
         m_robotContainer.intake.publishMotorCurrents();
     }

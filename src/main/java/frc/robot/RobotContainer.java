@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.PointAtTarget;
+import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
@@ -83,8 +84,8 @@ public class RobotContainer {
         List<StructPublisher<Pose2d>> cameraEstimatedPosesPublisher = Arrays.asList(cameraEstimatedPosePublisher1,
                         cameraEstimatedPosePublisher2);
 
-        private Shooter shooter = new Shooter();
-        private Indexer indexer = new Indexer();
+        public Shooter shooter = new Shooter();
+        public Indexer indexer = new Indexer();
         public final Climber climber = new Climber();
         public final AdjustableHood hood = new AdjustableHood();
         public final Hopper hopper = new Hopper();
@@ -159,6 +160,7 @@ public class RobotContainer {
                 //
                 // Operator Controls
                 //
+                RumbleJoystick.setPeriodChangeWarningOccasion(operatorJoystick);
                 cmd = intake.runIntakeOut();
                 SmartDashboard.putData(cmd);
                 operatorJoystick.povUp().onTrue(cmd);
@@ -187,6 +189,7 @@ public class RobotContainer {
                 //
                 // Driver Controls
                 //
+                RumbleJoystick.setPeriodChangeOccasion(driverJoystick);
                 drivetrain.registerTelemetry(logger::telemeterize);
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
@@ -232,9 +235,10 @@ public class RobotContainer {
 
                 // Auto Align
                 driverJoystick.x()
-                                .and(MoveMode.inAllianceZone(drivetrain))
-                                .whileTrue(drivetrain
-                                                .driveToPose(() -> Optional.of(FieldConstants.BLUE_HUB_SHOOT_CLOSE)));
+                                .whileTrue(
+                                                Commands.either(drivetrain.driveToPose(() -> Optional.of(
+                                                                FieldConstants.BLUE_HUB_SHOOT_CLOSE)), Commands.none(),
+                                                                MoveMode.inAllianceZone(drivetrain)));
 
                 // Point at hub toggle (STANDARD ↔ POINT or POINT_VELOCITY_COMPENSATED).
                 // Which point mode is active is controlled by the
@@ -254,8 +258,8 @@ public class RobotContainer {
                                 drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
                 // Run Intake (Pickup)
-                driverJoystick.leftBumper().onFalse(intake.runPickupStop());
-                driverJoystick.leftBumper().onTrue(intake.runPickupIn());
+                // driverJoystick.leftBumper().onFalse(intake.runPickupStop());
+                driverJoystick.leftBumper().whileTrue(intake.runPickupIn());
 
                 // Shoot
                 driverJoystick.rightBumper().onTrue(
@@ -266,18 +270,20 @@ public class RobotContainer {
                 //
                 // Shooter Joystick (DEBUG) Controls
                 //
-                // shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() ->
-                // ShooterPreferences.SHORT));
-                // shooterJoystick.b().onTrue(shooter.runSetRequestedSpeed(() ->
-                // ShooterPreferences.MEDIUM));
-                // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
-                // ShooterPreferences.LONG));
-                // shooterJoystick.rightBumper().onTrue(
-                // new AutoFire(shooter, indexer, hopper, () ->
-                // ShooterPreferences.INDEXER_VELOCITY)
-                // .repeatedly());
-                // shooterJoystick.rightBumper().onFalse(
-                // Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
+                // A: spin up to whatever value is set in the Shooter/TestTargetRPS dashboard
+                // slider
+                shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
+                // B: stop shooter
+                shooterJoystick.b().onTrue(shooter.stopShooter());
+                // Preset speeds
+                shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
+                shooterJoystick.x().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
+                shooterJoystick.leftBumper().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                // Fire + stop
+                shooterJoystick.rightBumper().onTrue(
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY));
+                shooterJoystick.rightBumper().onFalse(
+                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
         }
 
         public static double applyDeadband(double value) {

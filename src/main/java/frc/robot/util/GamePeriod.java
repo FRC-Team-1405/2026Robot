@@ -12,7 +12,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringTopic;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.RobotBase;
 
 /**
  * A utility class about which period of the game we're in.
@@ -77,7 +77,8 @@ public final class GamePeriod {
     /**
      * Listener singleton.
      */
-    private static Listener listener;
+    private static Listener periodChangeListener;
+    private static Listener periodChangeWarningListener;
 
     // Publishers for Elastic dashboard
     private static DoublePublisher matchTimePublisher;
@@ -87,15 +88,20 @@ public final class GamePeriod {
     private static StringPublisher gameDataPublisher;
     private static DoublePublisher periodTimePublisher;
 
-    private static String gameData = "_";
+    private static String gameData = null;
 
     /**
      * Remembers previous period for hasPeriodChanged()
      */
     private static Period previousPeriod = Period.NOT_IN_MATCH;
+    private static double previousPeriodTimeRemaining = -1.0;
 
-    public static void setListener(Listener l) {
-        listener = l;
+    public static void setPeriodChangeListener(Listener l) {
+        periodChangeListener = l;
+    }
+
+    public static void setPeriodChangeWarningListener(Listener l) {
+        periodChangeWarningListener = l;
     }
 
     /**
@@ -148,10 +154,15 @@ public final class GamePeriod {
             return Optional.empty();
         }
 
-        final String gameData = DriverStation.getGameSpecificMessage();
-        if (gameData.length() == 0) {
+        final String rawGameData = DriverStation.getGameSpecificMessage();
+        if (rawGameData.length() == 0) {
             // Code for no data received yet
             return Optional.empty();
+        }
+
+        if (gameData == null) {
+            gameData = rawGameData;
+
         }
 
         final Period period = getPeriod();
@@ -161,7 +172,7 @@ public final class GamePeriod {
         }
 
         final boolean isBlue = alliance.get() == DriverStation.Alliance.Blue;
-        final char inactiveAllianceChar = gameData.charAt(0);
+        final char inactiveAllianceChar = rawGameData.charAt(0);
         final boolean isActive = (isBlue && inactiveAllianceChar == 'R' || !isBlue && inactiveAllianceChar == 'B')
                 ? (period == Period.SHIFT_1 || period == Period.SHIFT_3)
                 : (period == Period.SHIFT_2 || period == Period.SHIFT_4);
@@ -214,10 +225,28 @@ public final class GamePeriod {
 
         if (currentPeriod != previousPeriod) {
             previousPeriod = currentPeriod;
-            if (listener != null) {
-                listener.run();
+            if (periodChangeListener != null) {
+                periodChangeListener.run();
             }
         }
+    }
+
+    public static void hasPeriodChangeWarningOccurred() {
+        final double currentPeriodTimeRemaining = periodTimeRemaining();
+
+        // instantiate previousPeriodTimeRemaining
+        if (previousPeriodTimeRemaining == -1.0) {
+            previousPeriodTimeRemaining = currentPeriodTimeRemaining;
+        }
+
+        if (currentPeriodTimeRemaining < 10.0 && previousPeriodTimeRemaining >= 10.0) {
+            // warn the driver that a period change is imminent (10 second warning)
+            if (periodChangeWarningListener != null) {
+                periodChangeWarningListener.run();
+            }
+        }
+
+        previousPeriodTimeRemaining = currentPeriodTimeRemaining;
     }
 
     /**
@@ -225,7 +254,7 @@ public final class GamePeriod {
      */
     public static void elasticInit() {
         // Set up NetworkTable's publishers
-        NetworkTable table = NetworkTableInstance.getDefault().getTable("DataTable");
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("GamePeriod");
 
         DoubleTopic matchTimeTopic = table.getDoubleTopic("MatchTime");
         matchTimePublisher = matchTimeTopic.publish();
@@ -251,10 +280,8 @@ public final class GamePeriod {
      * Robot.java.
      */
     public static void elasticPeriodic() {
-        // Show everything to the SmartDashboard
         double matchTimeRemaining = DriverStation.getMatchTime();
         matchTimePublisher.set(matchTimeRemaining);
-        SmartDashboard.putNumber("GamePeriod/Match Time", matchTimeRemaining);
 
         Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
         String allianceString;
@@ -268,25 +295,22 @@ public final class GamePeriod {
             allianceString = "Error";
         }
         alliancePublisher.set(allianceString);
-        SmartDashboard.putString("GamePeriod/Our Alliance", allianceString);
 
         GamePeriod.Period period = GamePeriod.getPeriod();
         String periodString = period.toString();
         periodPublisher.set(periodString);
-        SmartDashboard.putString("GamePeriod/Period", periodString);
+        hasPeriodChanged();
+        hasPeriodChangeWarningOccurred();
 
         Optional<Boolean> isActive = GamePeriod.isHubActive();
         boolean isActiveValue = isActive.orElse(false);
         isActivePublisher.set(isActiveValue);
-        SmartDashboard.putBoolean("GamePeriod/Is Hub Active", isActiveValue);
 
         // Game Data declared seperately
         gameDataPublisher.set(gameData);
-        SmartDashboard.putString("GamePeriod/Game Data", gameData);
 
         double periodTimeRemaining = periodTimeRemaining();
         periodTimePublisher.set(periodTimeRemaining);
-        SmartDashboard.putNumber("GamePeriod/Period Time Left", periodTimeRemaining);
     }
 
     /**
@@ -294,21 +318,12 @@ public final class GamePeriod {
      * purposes for Elastic in Robot.java.
      */
     public static void elasticTeleopInit() {
-        if (DriverStation.isDSAttached()) { // not in simulation
+        if (RobotBase.isReal() && DriverStation.isDSAttached()) { // not in simulation
             gameData = DriverStation.getGameSpecificMessage();
         } else {
             gameData = ((Math.random() < 0.5) ? "R" : "B");
             DriverStationDataJNI.setGameSpecificMessage(gameData);
         }
-    }
-
-    /**
-     * Updates data only found when teleop mode is entered for simulation purposes
-     * for Elastic in Robot.java.
-     */
-    public static void elasticTeleopPeriodic() {
-        gameDataPublisher.set(gameData);
-        SmartDashboard.putString("GamePeriod/Game Data", gameData);
     }
 
     /**

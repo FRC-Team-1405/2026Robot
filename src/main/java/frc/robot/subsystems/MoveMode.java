@@ -268,14 +268,17 @@ public class MoveMode {
     }
 
     public static BooleanSupplier inAllianceZone(CommandSwerveDrivetrain drivetrain) {
-        double robotX = drivetrain.getState().Pose.getX();
-        double allianceZoneBoundaryX = FieldConstants.BLUE_HUB.getX();
-        if (AllianceSymmetry.isRed()) {
-            return () -> robotX < AllianceSymmetry.flipX(allianceZoneBoundaryX, SymmetryStrategy.VERTICAL) ? false
-                    : true;
-        } else {
-            return () -> robotX < allianceZoneBoundaryX ? true : false;
-        }
+        return () -> {
+            double robotX = drivetrain.getState().Pose.getX();
+            double allianceZoneBoundaryX = FieldConstants.BLUE_HUB.getX();
+            if (AllianceSymmetry.isRed()) {
+                return robotX < AllianceSymmetry.flipX(allianceZoneBoundaryX,
+                        SymmetryStrategy.VERTICAL) ? false
+                                : true;
+            } else {
+                return robotX < allianceZoneBoundaryX ? true : false;
+            }
+        };
     }
 
     public ModeCommand setToBumpMode(CommandSwerveDrivetrain drivetrain) {

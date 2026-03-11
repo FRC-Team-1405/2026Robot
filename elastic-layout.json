@@ -9,8 +9,8 @@
         "containers": [
           {
             "title": "Rotation Mode",
-            "x": 0.0,
-            "y": 128.0,
+            "x": 128.0,
+            "y": 0.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
@@ -38,7 +38,7 @@
           {
             "title": "Robot Velocity",
             "x": 0.0,
-            "y": 320.0,
+            "y": 512.0,
             "width": 256.0,
             "height": 256.0,
             "type": "Graph",
@@ -53,13 +53,185 @@
           },
           {
             "title": "Use Velocity Compensated Point",
-            "x": 128.0,
-            "y": 128.0,
+            "x": 384.0,
+            "y": 0.0,
             "width": 320.0,
             "height": 128.0,
             "type": "Toggle Button",
             "properties": {
               "topic": "/SmartDashboard/MoveMode/Use Velocity Compensated Point",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "Intake Position",
+            "x": 0.0,
+            "y": 384.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Number Bar",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/DeployPosition",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 60.0,
+              "divisions": 5,
+              "inverted": false,
+              "orientation": "horizontal"
+            }
+          },
+          {
+            "title": "Shooter RPS",
+            "x": 256.0,
+            "y": 512.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Motor1RPS",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 5.0,
+              "color": 4278238420,
+              "line_width": 2.0
+            }
+          },
+          {
+            "title": "Pickup Speed",
+            "x": 512.0,
+            "y": 512.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/PickupVelocity",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 5.0,
+              "color": 4278238420,
+              "line_width": 2.0
+            }
+          },
+          {
+            "title": "Hopper Speed",
+            "x": 768.0,
+            "y": 512.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/SmartDashboard/Hopper/Velocity",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 5.0,
+              "color": 4278238420,
+              "line_width": 2.0
+            }
+          },
+          {
+            "title": "Indexer Speed",
+            "x": 1024.0,
+            "y": 512.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/SmartDashboard/Indexer/Velocity",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 5.0,
+              "color": 4278238420,
+              "line_width": 2.0
+            }
+          },
+          {
+            "title": "Alliance",
+            "x": 704.0,
+            "y": 192.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/GamePeriod/Alliance",
+              "period": 0.06,
+              "data_type": "string"
+            }
+          },
+          {
+            "title": "GameData",
+            "x": 832.0,
+            "y": 192.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/GamePeriod/GameData",
+              "period": 0.06,
+              "data_type": "string"
+            }
+          },
+          {
+            "title": "Period",
+            "x": 384.0,
+            "y": 192.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/GamePeriod/Period",
+              "period": 0.06,
+              "data_type": "string"
+            }
+          },
+          {
+            "title": "IsHubActive",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 256.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/GamePeriod/IsHubActive",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "PeriodTimeRemaining",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Radial Gauge",
+            "properties": {
+              "topic": "/GamePeriod/PeriodTimeRemaining",
+              "period": 0.06,
+              "data_type": "double",
+              "start_angle": -140.0,
+              "end_angle": 140.0,
+              "min_value": 0.0,
+              "max_value": 30.0,
+              "number_of_labels": 0,
+              "wrap_value": false,
+              "show_pointer": true,
+              "show_ticks": false
+            }
+          },
+          {
+            "title": "Zero Intake Position",
+            "x": 192.0,
+            "y": 384.0,
+            "width": 320.0,
+            "height": 128.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/SmartDashboard/Intake/Zero Intake Position",
               "period": 0.06,
               "data_type": "boolean"
             }
