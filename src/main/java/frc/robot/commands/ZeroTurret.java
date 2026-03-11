@@ -32,7 +32,7 @@ public class ZeroTurret extends Command {
 
   private int cycles;
 
-  private static final int TOTAL_CYCLES = 2;
+  private static final int TOTAL_CYCLES = 8;
 
   /** Creates a new ZeroTurret. */
   public ZeroTurret(Turret turretToZero) {

@@ -67,10 +67,10 @@ public class RobotContainer {
     configureButtonBindings();
 
 
-//    vision.addCamera("heart", Constants.Vision.robotToHeart);
-    vision.addCamera("club", Constants.Vision.robotToClub);
-//    vision.addCamera("diamond", Constants.Vision.robotToDiamond);
-//    vision.addCamera("Arducam_OV9281_USB_Camera", Constants.Vision.robotToArudcam);
+   vision.addCamera("heart", Constants.Vision.robotToHeart);
+   vision.addCamera("club", Constants.Vision.robotToClub);
+   vision.addCamera("diamond", Constants.Vision.robotToDiamond);
+   vision.addCamera("Arducam_OV9281_USB_Camera", Constants.Vision.robotToArudcam);
 
     SmartDashboard.putData(swerve.zeroModulesCommand());
 

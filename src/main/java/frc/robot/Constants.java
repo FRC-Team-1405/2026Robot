@@ -82,9 +82,9 @@ public final class Constants {
       apriltagLayout.getTagPose(23).get().getMeasureY().minus(Y_CLEAR_OFFSET), new Rotation2d(0.0));
 
   public static final Rectangle2d BLUE_ALLIANCE_ZONE = new Rectangle2d(new Translation2d(0.0, 0.0),
-      new Translation2d(Units.inchesToMeters(156.61), Units.inchesToMeters(317.69)));
+      new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(317.69)));
   public static final Rectangle2d RED_ALLIANCE_ZONE = new Rectangle2d(
-      new Translation2d(Units.inchesToMeters(494.61), 0.0),
+      new Translation2d(Units.inchesToMeters(469.11), 0.0),
       new Translation2d(Units.inchesToMeters(651.22), Units.inchesToMeters(317.69)));
 
   

@@ -118,13 +118,24 @@ public class FireControl extends SubsystemBase {
     @Override
     // Checks every cycle for the correct target loctation, distance, and robot sped
     public void periodic() {
-        target = getClosestTarget(robotSupplier.get());
-        currentTarget = getTargetRotation(robotSupplier.get(), target);
-        distanceFromTarget = getDistance(target, robotSupplier.get());
+        Pose2d turretPose2d = robotSupplier.get();
+        target = getClosestTarget(turretPose2d);
+        currentTarget = getTargetRotation(turretPose2d, target);
+        distanceFromTarget = getDistance(target, turretPose2d);
         currentChassisSpeeds = speedSupplier.get();
 
         SmartDashboard.putNumber("Fire Control/Target Angle", currentTarget.getDegrees());
         SmartDashboard.putNumber("Fire Control/Distance From Target", distanceFromTarget);
+        SmartDashboard.putNumberArray(
+            "Fire Control/Target",
+            new double[] {
+                target.getX(), target.getY(), target.getRotation().getDegrees()
+            });
+        SmartDashboard.putNumberArray(
+            "Fire Control/Turret Pose",
+            new double[] {
+                turretPose2d.getX(), turretPose2d.getY(), turretPose2d.getRotation().getDegrees()
+            });
     }
 
     private void readCsv(String filePath) {
