@@ -208,7 +208,7 @@ public final class Constants {
 
   public static final class Swerve {
     @CanId(CanId.Type.PIGEON)
-    public static final int IMU_ID = 1;
+    public static final int IMU_ID = 3;
     public static final double TELEOP_MAX_VELOCITY = 4.6;
     public static final double TELEOP_MAX_ACCELERATION = 5.5; // todo
     public static final double TELEOP_MAX_ANGULAR_VELOCITY = Units.degreesToRadians(180);
