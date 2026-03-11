@@ -51,7 +51,10 @@ public class SwerveDriveWithGamepad extends Command {
 
     x = Math.copySign(x * x, x);
     double y = -RobotContainer.driver.getLeftX() * maxSpeedForChild;
+
     y = Math.copySign(y * y, y);
+    SmartDashboard.putNumber("Swerve/X", x);
+    SmartDashboard.putNumber("Swerve/Y", y);
     Optional<Alliance> currentAlliance = DriverStation.getAlliance();
 
     if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {

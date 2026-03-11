@@ -90,12 +90,27 @@ public class RobotContainer {
     driver.LB().whileTrue(intake.extakeFuel());
     driver.RT().whileTrue(shootTestFuelCommand());
     driver.Y().onTrue(intake.putUpIntake());
+     coDriver.DUp().whileTrue(intakePushFuel());
+     coDriver.DDown().whileTrue(manualIntakeDownCommand());
   }
 
+ 
   public Command shootTestFuelCommand() {
     return Commands.sequence(
         shooter.shootCommand(2500, 2500),
         Commands.waitUntil(() -> shooter.shooterAtSpeed(2500, 2500)),
         Commands.run(() -> indexer.indexerForward(), indexer)).finallyDo(() -> {shooter.stopShooterMotors(); indexer.stopIndexer();});
   }
+  public Command intakePushFuel() {
+  return intake.run(() -> {
+    intake.raiseIntakeToJostle();
+    intake.intakeToJostle();
+  }).finallyDo((()->{intake.stopIntake(); intake.stopLift();}));
+}
+public Command manualIntakeDownCommand() {
+  return intake.run(()-> {
+   intake.lowerIntakeManually();
+}).finallyDo(()->{ intake.stopLift();});
+
+}
 }
