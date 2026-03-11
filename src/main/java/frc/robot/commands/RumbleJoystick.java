@@ -64,11 +64,13 @@ public class RumbleJoystick extends SequentialCommandGroup {
    * 
    * @param joystick the joystick that will rumble
    */
-  public static void setRumbleOccasion(CommandXboxController joystick) {
+  public static void setPeriodChangeOccasion(CommandXboxController joystick) {
     GamePeriod.setPeriodChangeListener(() -> {
       new RumbleJoystick(joystick, RumbleType.kBothRumble, 0.8, 0.5);
     });
+  }
 
+  public static void setPeriodChangeWarningOccasion(CommandXboxController joystick) {
     GamePeriod.setPeriodChangeWarningListener(() -> {
       new RumbleJoystick(joystick, RumbleType.kBothRumble, 0.5, 0.5);
     });

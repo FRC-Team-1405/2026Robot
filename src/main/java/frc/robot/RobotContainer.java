@@ -160,7 +160,7 @@ public class RobotContainer {
                 //
                 // Operator Controls
                 //
-                RumbleJoystick.setRumbleOccasion(operatorJoystick);
+                RumbleJoystick.setPeriodChangeWarningOccasion(operatorJoystick);
                 cmd = intake.runIntakeOut();
                 SmartDashboard.putData(cmd);
                 operatorJoystick.povUp().onTrue(cmd);
@@ -189,7 +189,7 @@ public class RobotContainer {
                 //
                 // Driver Controls
                 //
-                RumbleJoystick.setRumbleOccasion(driverJoystick);
+                RumbleJoystick.setPeriodChangeOccasion(driverJoystick);
                 drivetrain.registerTelemetry(logger::telemeterize);
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
@@ -235,9 +235,10 @@ public class RobotContainer {
 
                 // Auto Align
                 driverJoystick.x()
-                                .and(MoveMode.inAllianceZone(drivetrain))
-                                .whileTrue(drivetrain
-                                                .driveToPose(() -> Optional.of(FieldConstants.BLUE_HUB_SHOOT_CLOSE)));
+                                .whileTrue(
+                                                Commands.either(drivetrain.driveToPose(() -> Optional.of(
+                                                                FieldConstants.BLUE_HUB_SHOOT_CLOSE)), Commands.none(),
+                                                                MoveMode.inAllianceZone(drivetrain)));
 
                 // Point at hub toggle (STANDARD ↔ POINT or POINT_VELOCITY_COMPENSATED).
                 // Which point mode is active is controlled by the
