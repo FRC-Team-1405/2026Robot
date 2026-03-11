@@ -204,13 +204,13 @@ public class Shooter extends SubsystemBase {
   // trust
   // Check if both top motors are at speed
   // Check if both TOP shooter motors are at speed
-  public boolean topMotorsAtSpeed(double topTargetRPM) {
+  public boolean topMotorsAtSpeed() {
     return Math.abs(shooterLeftTopEncoder.getVelocity() - topTargetRPM) < Constants.Shooter.shooterMotorTolerance;
   }
 
   // Check if both BOTTOM shooter motors are at speed
-  public boolean bottomMotorsAtSpeed(double bottomRPM) {
-    return Math.abs(shooterLeftBottomEncoder.getVelocity() - bottomRPM) < Constants.Shooter.shooterMotorTolerance;
+  public boolean bottomMotorsAtSpeed() {
+    return Math.abs(shooterLeftBottomEncoder.getVelocity() - bottomTargetRPM) < Constants.Shooter.shooterMotorTolerance;
   }
 
   // setting the shooter rpm based off of the table
@@ -246,10 +246,19 @@ public class Shooter extends SubsystemBase {
   public void stopShooterMotors() {
     shooterLeftTopMotor.stopMotor();
     shooterLeftBottomMotor.stopMotor();
+    topTargetRPM = bottomTargetRPM = 0;
 
     if (shooterBittyBottomMotor != null) {
       shooterBittyBottomMotor.stopMotor();
     }
+  }
+
+  private boolean hasTarget(){
+    return (topTargetRPM > 0) && (bottomTargetRPM > 0);
+  }
+
+  public boolean runIndexer(){
+    return hasTarget() && (topMotorsAtSpeed() && bottomMotorsAtSpeed());
   }
 
   // Starting shooter commands!!
@@ -257,8 +266,7 @@ public class Shooter extends SubsystemBase {
   public Command stopMotors() {
     return Commands.sequence(
         Commands.runOnce(() -> {
-          stopTopShooterMotors();
-          stopBottomShooterMotors();
+          stopShooterMotors();
         }));
   }
   // public Command runMotors() {
@@ -291,8 +299,8 @@ public class Shooter extends SubsystemBase {
         this);
   }
 
-  public boolean shooterAtSpeed(double topRPM, double bottomRPM) {
-    return bottomMotorsAtSpeed(bottomRPM) && topMotorsAtSpeed(topRPM);
+  public boolean shooterAtSpeed() {
+    return bottomMotorsAtSpeed() && topMotorsAtSpeed();
   }
 
   public Command manualShooterTest() {
