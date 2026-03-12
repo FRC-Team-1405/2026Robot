@@ -1,10 +1,10 @@
 {
   "hubs": [
     {
-      "x": -7,
-      "y": -7,
-      "width": 1550,
-      "height": 926,
+      "x": -8,
+      "y": -8,
+      "width": 1540,
+      "height": 916,
       "state": {
         "sidebar": {
           "width": 296,
@@ -229,18 +229,6 @@
       }
     }
   ],
-  "satellites": [
-    {
-      "x": 794,
-      "y": 0,
-      "width": 748,
-      "height": 918,
-      "state": {
-        "type": 9,
-        "visualizer": null
-      },
-      "uuid": "t2gfr48cgc3ofurlih1q8drkt103a9lc"
-    }
-  ],
+  "satellites": [],
   "version": "26.0.0"
 }
