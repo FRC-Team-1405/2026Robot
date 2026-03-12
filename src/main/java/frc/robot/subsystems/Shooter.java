@@ -133,6 +133,13 @@ public class Shooter extends SubsystemBase {
     return Commands.runOnce(() -> setShooterSpeed(speed), this);
   }
 
+  public Command runShooterAuto() {
+    return Commands.startEnd(
+        () -> setShooterSpeed(requestedSpeed),
+        () -> stopShooter(),
+        this);
+  }
+
   public Command runShooter() {
     return Commands.runOnce(() -> setShooterSpeed(requestedSpeed), this);
   }

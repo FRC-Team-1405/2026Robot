@@ -96,7 +96,7 @@ public class RobotContainer {
         public RobotContainer() {
                 configureBindings();
 
-                AutoCommands.registerCommands(drivetrain, climber);
+                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
         }
 

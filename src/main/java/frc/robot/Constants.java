@@ -123,7 +123,7 @@ public class Constants {
 
         // MotionMagic profile for indexer roller
         public static final double CRUISE_VELOCITY = 40.0; // rotations per second
-        public static final double ACCELERATION = 40.0;    // rotations per second^2
+        public static final double ACCELERATION = 40.0; // rotations per second^2
     }
 
     public static class ClimberPreferences {
@@ -227,7 +227,7 @@ public class Constants {
 
         // MotionMagic profile for hopper roller
         public static final double CRUISE_VELOCITY = 40.0; // rotations per second
-        public static final double ACCELERATION = 40.0;    // rotations per second^2
+        public static final double ACCELERATION = 40.0; // rotations per second^2
 
         static {
             Preferences.initDouble("Hopper/Forward", 5.0);
@@ -269,8 +269,8 @@ public class Constants {
 
         // MotionMagic profile for pickup roller (velocity mode)
         public static final double PICKUP_CRUISE_VELOCITY = 10.0; // rotations per second
-        public static final double PICKUP_ACCELERATION = 50.0;    // rotations per second^2
-        public static final double PICKUP_JERK = 0.0;             // rotations per second^3
+        public static final double PICKUP_ACCELERATION = 50.0; // rotations per second^2
+        public static final double PICKUP_JERK = 0.0; // rotations per second^3
 
         // Current limits to protect the chain and detect hard stops
         public static final double DEPLOY_STATOR_LIMIT = 40.0; // amps
@@ -288,8 +288,8 @@ public class Constants {
         public static final double PEAK_REVERSE_VOLTAGE = -10.0;
 
         static {
-            Preferences.initDouble("Intake/Out", 50.0);
-            INTAKE_MOTOR_OUT = 60;
+            Preferences.initDouble("Intake/Out", 70.0);
+            INTAKE_MOTOR_OUT = 70;
             Preferences.initDouble("Intake/In", 3.0);
             INTAKE_MOTOR_IN = 3;
             Preferences.initDouble("Intake/Center", 57.0);

@@ -15,18 +15,25 @@ import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
 import frc.robot.commands.PidToPose.PidToPoseCommands;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Hopper;
+import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 
 public class AutoCommands {
     private static final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
     private static final String AUTO_SMARTDASHBOARD_FOLDER = "Auto";
 
-    public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber) {
+    public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber, Intake intake,
+            Hopper hopper,
+            Indexer indexer,
+            Shooter shooter) {
         SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
         SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
 
         PidToPoseCommands.registerCommands(drivetrain);
-        CommandsForAutoPilot.registerCommands(drivetrain, climber);
+        CommandsForAutoPilot.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter);
         // this HAS to go after AutoPilotCommands
         AutoCommands.configureAutos(autoChooser, drivetrain);
 

@@ -435,6 +435,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    public void publishDrivePidErrors() {
+        SwerveModule<TalonFX, TalonFX, CANcoder>[] modules = this.getModules();
+
+        for (int j = 0; j < modules.length; j++) {
+            TalonFX driveMotor = modules[j].getDriveMotor();
+
+            SmartDashboard.putNumber(
+                    "SwerveDrive/DriveMotor_ClosedLoopError_" + j,
+                    driveMotor.getClosedLoopError().getValueAsDouble());
+
+            SmartDashboard.putNumber(
+                    "SwerveDrive/DriveMotor_ClosedLoopReference_" + j,
+                    driveMotor.getClosedLoopReference().getValueAsDouble());
+
+            SmartDashboard.putNumber(
+                    "SwerveDrive/DriveMotor_ClosedLoopOutput_" + j,
+                    driveMotor.getClosedLoopOutput().getValueAsDouble());
+
+        }
+    }
+
     private Command p2pCommand = null;
 
     public Command driveToPose(Supplier<Optional<Pose2d>> targetPoseSupplier) {
@@ -446,8 +467,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         System.out.println("DriveToPose Called with targetPose: " +
                                 targetPoseSupplier.get());
                     }),
-                    new PidToPoseCommand.Builder(this, poseSupplier, "DriveToPose").withTolerance(2)
-                            .withFieldSymmetry(true).build());
+                    new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose").withTolerance(2)
+                            .withFlipPoseForAlliance(true).build());
         }
 
         return p2pCommand;

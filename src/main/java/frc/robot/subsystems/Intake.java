@@ -305,8 +305,14 @@ public class Intake extends SubsystemBase {
   }
 
   /** Run the pickup rollers inward (intaking game pieces). */
+  // public Command runPickupIn() {
+  // return startEnd(() -> pickupRollIn(), () -> stopPickupMotor())
+  // .withName("Run Pickup In");
+  // }
+
   public Command runPickupIn() {
-    return startEnd(() -> pickupRollIn(), () -> stopPickupMotor())
+    return run(() -> pickupRollIn())
+        .finallyDo(() -> stopPickupMotor())
         .withName("Run Pickup In");
   }
 

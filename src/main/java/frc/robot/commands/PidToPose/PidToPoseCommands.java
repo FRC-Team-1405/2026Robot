@@ -44,8 +44,8 @@ public class PidToPoseCommands {
     /* Commands */
     // Uses command suppliers instead of commands so that we can reuse the same
     // command in an autonomous
-    Supplier<Command> MoveTo_pos1 = () -> new PidToPoseCommand.Builder(drivetrain,
-        () -> pos1.get(), "MoveTo_pos1")
+    Supplier<Command> MoveTo_pos1 = () -> new PidToPoseCommand.Builder(
+        () -> pos1.get(), drivetrain, "MoveTo_pos1")
         .withTolerance(SCORE_TOLERANCE)
         .build();
 

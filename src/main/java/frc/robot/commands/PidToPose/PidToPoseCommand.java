@@ -82,6 +82,10 @@ public class PidToPoseCommand extends FinneyCommand {
         private final CommandSwerveDrivetrain drive;
         private final Supplier<Pose2d> targetPose;
         private final double toleranceInches;
+
+        // a wait timer to run the auto for at least that many seconds. used for
+        // rotating in place currently very hacky
+        private double waitSeconds = 0;
         private final boolean applyFieldSymmetryToPose;
         private final double initialStateVelocity;
         private Translation2d initialVelocityVector;
@@ -137,10 +141,11 @@ public class PidToPoseCommand extends FinneyCommand {
                 this.endStateVelocity = builder.endStateVelocity;
                 this.commandName = builder.commandName;
                 this.drivingContraints = builder.drivingContraints;
+                this.waitSeconds = builder.waitSeconds;
 
-                xController = new ProfiledPIDController(2.2, 0, 0, drivingContraints);
-                yController = new ProfiledPIDController(2.2, 0, 0, drivingContraints);
-                thetaController = new ProfiledPIDController(2, 0, 0, DEFAULT_CONSTRAINTS);
+                xController = new ProfiledPIDController(2.5, 0, 0, drivingContraints);
+                yController = new ProfiledPIDController(2.5, 0, 0, drivingContraints);
+                thetaController = new ProfiledPIDController(5, 0, 0, DEFAULT_CONSTRAINTS);
                 thetaController.enableContinuousInput(-Math.PI, Math.PI); // Enable angle wrapping
 
                 initialMechanism = new Mechanism2d(2, 2); // 2x2 unit canvas
@@ -185,16 +190,17 @@ public class PidToPoseCommand extends FinneyCommand {
                 private boolean applyFieldSymmetryToPose = false;
                 private double initialStateVelocity = 0;
                 private double endStateVelocity = 0;
-                private double toleranceInches = 2.0;
+                private double toleranceInches = 6.0;
+                private double waitSeconds = 0;
                 private TrapezoidProfile.Constraints drivingContraints = DEFAULT_CONSTRAINTS;
 
-                public Builder(CommandSwerveDrivetrain drive, Supplier<Pose2d> targetPose, String commandName) {
+                public Builder(Supplier<Pose2d> targetPose, CommandSwerveDrivetrain drive, String commandName) {
                         this.drive = drive;
                         this.targetPose = targetPose;
                         this.commandName = commandName;
                 }
 
-                public Builder withFieldSymmetry(boolean applyFieldSymmetryToPose) {
+                public Builder withFlipPoseForAlliance(boolean applyFieldSymmetryToPose) {
                         this.applyFieldSymmetryToPose = applyFieldSymmetryToPose;
                         return this;
                 }
@@ -219,6 +225,11 @@ public class PidToPoseCommand extends FinneyCommand {
                         return this;
                 }
 
+                public Builder withWaitSeconds(double waitSeconds) {
+                        this.waitSeconds = waitSeconds;
+                        return this;
+                }
+
                 public PidToPoseCommand build() {
                         return new PidToPoseCommand(this);
                 }
@@ -227,7 +238,7 @@ public class PidToPoseCommand extends FinneyCommand {
         @Override
         public void initialize() {
                 super.initialize();
-                Pose2d symmetricPose = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                Pose2d symmetricPose = AllianceSymmetry.isBlue()
                                 ? targetPose.get()
                                 : AllianceSymmetry.flip(targetPose.get());
                 poseToMoveTo = applyFieldSymmetryToPose ? symmetricPose : targetPose.get();
@@ -245,27 +256,33 @@ public class PidToPoseCommand extends FinneyCommand {
                 Translation2d direction = delta.div(delta.getNorm()); // get a unit vector
                 initialVelocityVector = direction.times(initialStateVelocity);
 
-                // MECHANISM
+                // // MECHANISM
 
-                double deltaLength = delta.getNorm();
-                double deltaAngle = delta.getAngle().getDegrees(); // blue
+                // double deltaLength = delta.getNorm();
+                // double deltaAngle = delta.getAngle().getDegrees(); // blue
 
-                double directionLength = 1.0; // unit vector
-                double directionAngle = direction.getAngle().getDegrees(); // green
+                // double directionLength = 1.0; // unit vector
+                // double directionAngle = direction.getAngle().getDegrees(); // green
 
-                double velocityLength = initialVelocityVector.getNorm();
-                double velocityAngle = initialVelocityVector.getAngle().getDegrees(); // red
+                // double velocityLength = initialVelocityVector.getNorm();
+                // double velocityAngle;
+                // if (initialVelocityVector.getNorm() < 1e-6) {
+                // velocityAngle = 0.0; // protect against error: x and y components of
+                // Rotation2d are zero
+                // } else {
+                // velocityAngle = initialVelocityVector.getAngle().getDegrees(); // red
+                // }
 
-                initialDeltaLigament.setLength(deltaLength);
-                initialDeltaLigament.setAngle(deltaAngle);
+                // initialDeltaLigament.setLength(deltaLength);
+                // initialDeltaLigament.setAngle(deltaAngle);
 
-                initialDirectionLigament.setLength(directionLength);
-                initialDirectionLigament.setAngle(directionAngle);
+                // initialDirectionLigament.setLength(directionLength);
+                // initialDirectionLigament.setAngle(directionAngle);
 
-                initialVelocityLigament.setLength(velocityLength);
-                initialVelocityLigament.setAngle(velocityAngle);
+                // initialVelocityLigament.setLength(velocityLength);
+                // initialVelocityLigament.setAngle(velocityAngle);
 
-                // MECHANISM
+                // // MECHANISM
 
                 xController.reset(new TrapezoidProfile.State(currentPose.getX(), initialVelocityVector.getX()));
                 yController.reset(new TrapezoidProfile.State(currentPose.getY(), initialVelocityVector.getY()));
@@ -302,27 +319,33 @@ public class PidToPoseCommand extends FinneyCommand {
                 Translation2d direction = delta.div(delta.getNorm()); // get a unit vector
                 Translation2d endVelocityVector = direction.times(endStateVelocity);
 
-                // MECHANISM
+                // // MECHANISM
 
-                double deltaLength = delta.getNorm();
-                double deltaAngle = delta.getAngle().getDegrees(); // blue
+                // double deltaLength = delta.getNorm();
+                // double deltaAngle = delta.getAngle().getDegrees(); // blue
 
-                double directionLength = 1.0; // unit vector
-                double directionAngle = direction.getAngle().getDegrees(); // green
+                // double directionLength = 1.0; // unit vector
+                // double directionAngle = direction.getAngle().getDegrees(); // green
 
-                double velocityLength = endVelocityVector.getNorm();
-                double velocityAngle = endVelocityVector.getAngle().getDegrees(); // red
+                // double velocityLength = endVelocityVector.getNorm();
+                // double velocityAngle;
+                // if (initialVelocityVector.getNorm() < 1e-6) {
+                // velocityAngle = 0.0; // protect against error: x and y components of
+                // Rotation2d are zero
+                // } else {
+                // velocityAngle = initialVelocityVector.getAngle().getDegrees(); // red
+                // }
 
-                loopDeltaLigament.setLength(deltaLength);
-                loopDeltaLigament.setAngle(deltaAngle);
+                // loopDeltaLigament.setLength(deltaLength);
+                // loopDeltaLigament.setAngle(deltaAngle);
 
-                loopDirectionLigament.setLength(directionLength);
-                loopDirectionLigament.setAngle(directionAngle);
+                // loopDirectionLigament.setLength(directionLength);
+                // loopDirectionLigament.setAngle(directionAngle);
 
-                loopVelocityLigament.setLength(velocityLength);
-                loopVelocityLigament.setAngle(velocityAngle);
+                // loopVelocityLigament.setLength(velocityLength);
+                // loopVelocityLigament.setAngle(velocityAngle);
 
-                // MECHANISM
+                // // MECHANISM
 
                 double xOutput = xController.calculate(currentPose.getX(),
                                 new TrapezoidProfile.State(poseToMoveTo.getX(), endVelocityVector.getX()));
