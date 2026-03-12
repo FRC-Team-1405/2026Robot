@@ -120,6 +120,7 @@ public class RobotContainer {
     SmartDashboard.putData("Autos", autoChooser());
 
     driver.LT().whileTrue(Commands.sequence(intake.putDownIntake(), intake.intakeFuel()));
+    driver.DUp().whileTrue(CreateFixedShooterCommand(Rotation2d.fromDegrees(0), 900));
     // driver.LB().whileTrue(intake.extakeFuel());
     driver.RT().whileTrue(shootTestFuelCommand());
     driver.Y().onTrue(intake.putUpIntake());
@@ -128,7 +129,8 @@ public class RobotContainer {
 
     // Clear intake/indexer
     coDriver.LT().whileTrue(Commands.startEnd(() -> indexer.indexerBackward(), () -> indexer.stopIndexer(), indexer));
-    coDriver.RT().whileTrue(Commands.startEnd(() -> intake.intakeBackward(), () -> intake.stopIntake(), intake));
+    coDriver.RB().whileTrue(Commands.startEnd(() -> intake.intakeBackward(), () -> intake.stopIntake(), intake));
+    coDriver.RT().whileTrue(Commands.sequence(intake.putDownIntake(), intake.intakeFuel()));
 
     // Set positions to shoot from if autos fail
     coDriver.A().whileTrue(CreateFixedShooterCommand(rightClimbAngle, rightClimbRPM));

@@ -209,7 +209,7 @@ public final class Constants {
     public static final double INTAKE_LIFT_SPEED = 0.25;
     public static final int CURRENT_LIMIT = 50;
     public static final int VOLTAGE_LIMIT = 10;
-    public static final double INTAKE_SPEED = 0.5;
+    public static final double INTAKE_SPEED = 0.75;
     public static final double LIFT_JKMETERS_SQUARED = 0.00006;
     public static final double LIFT_MOTOR_GEARING = 1.0 / 100.0;
     public static final double INTAKE_REACH_METERS = 0.30;
@@ -369,7 +369,7 @@ public final class Constants {
     public static final double BITTY_BOTTOM_I = 0.000001;
     public static final double BITTY_BOTTOM_D = 0.0005;
     
-    public static final double shooterMotorTolerance = 50.0;
+    public static final double shooterMotorTolerance = 100.0;
     public static final int SHOOTER_CURRENT_STALL_LIMIT = 100;
     public static final int SHOOTER_CURRENT_FREE_LIMIT = 50;
     public static final double SHOOTER_VOLTAGE_LIMIT = 10.0;
