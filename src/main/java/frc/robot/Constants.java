@@ -231,7 +231,7 @@ public final class Constants {
     public static final int INDEXER_MOTOR_ID = 40;
     public static final int CURRENT_LIMIT = 50;
     public static final double VOLTAGE_LIMIT = 10;
-    public static final double SPEED = 0.5;
+    public static final double SPEED = 0.75;
     public static final double WHEEL_MOMENT_OF_INERTIA = 3.8;
     public static final double INDEXER_GEAR_RATIO = 1.0 / 10.0;
 
@@ -376,10 +376,10 @@ public final class Constants {
   }
 
   public static final class SetPoints {
-    public static final Rotation2d trenchRightTurretAngle = Rotation2d.fromDegrees(-120);
+    public static final Rotation2d trenchRightTurretAngle = Rotation2d.fromDegrees(-115);
     public static final double trenchRightTargetRPM = 2830;
 
-    public static final Rotation2d trenchLeftTurretAngle = Rotation2d.fromDegrees(75);
+    public static final Rotation2d trenchLeftTurretAngle = Rotation2d.fromDegrees(115);
     public static final double trenchLeftTargetRPM = 2830;
 
     public static final Rotation2d climbRightTurretAngle = Rotation2d.fromDegrees(-179);

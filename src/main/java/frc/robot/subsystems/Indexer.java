@@ -68,7 +68,7 @@ public class Indexer extends SubsystemBase {
   }
 
   public void indexerForward() {
-    indexerMotor.set(Constants.Indexer.SPEED);
+    indexerMotor.set(Constants.Indexer.SPEED); //TODO change to PID
   }
 
   public void indexerBackward() {

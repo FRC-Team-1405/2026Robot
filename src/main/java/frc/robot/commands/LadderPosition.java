@@ -31,7 +31,7 @@ public class LadderPosition extends Command {
     if (side == "right") {
       if (!isRedAlliance) {
         swerve.resetOdometry(
-            new Pose2d(Units.inchesToMeters(158.32-(26/2)), Units.inchesToMeters(158.32+(158.32/2)), Rotation2d.fromDegrees(90))); //TODO check location and specificly angle
+            new Pose2d(Units.inchesToMeters(156.61-(26/2)), Units.inchesToMeters(158.32+(73/2)), Rotation2d.fromDegrees(90))); //TODO check location and specificly angle
         // blue side right
       } else {
         swerve.resetOdometry(
