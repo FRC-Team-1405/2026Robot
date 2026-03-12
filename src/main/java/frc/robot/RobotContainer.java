@@ -3,8 +3,6 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Rotation;
-
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,10 +19,11 @@ import frc.lib.input.controllers.XboxControllerWrapper;
 import frc.robot.commands.CalibrateTurret;
 import frc.robot.commands.DefaultTurretCommand;
 import frc.robot.commands.FixedShooter;
+import frc.robot.commands.LadderPosition;
+import frc.robot.commands.ResetOdometry;
 import frc.robot.commands.ShootWithIndexer;
 import frc.robot.commands.SwerveDriveWithGamepad;
 import frc.robot.commands.ZeroTurret;
-import frc.robot.commands.ResetOdometry;
 import frc.robot.subsystems.FireControl;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
@@ -99,7 +98,8 @@ public class RobotContainer {
     // vision.addCamera("heart", Constants.Vision.robotToHeart);
     vision.addCamera("club", Constants.Vision.robotToClub);
     vision.addCamera("diamond", Constants.Vision.robotToDiamond);
-    // vision.addCamera("Arducam_OV9281_USB_Camera", Constants.Vision.robotToArudcam);
+    // vision.addCamera("Arducam_OV9281_USB_Camera",
+    // Constants.Vision.robotToArudcam);
 
     SmartDashboard.putData(swerve.zeroModulesCommand());
     swerve.setDefaultCommand(new SwerveDriveWithGamepad(swerve));
@@ -109,8 +109,8 @@ public class RobotContainer {
     SmartDashboard.putData("Reset position", Commands.runOnce(() -> {
       swerve.resetOdometry(Pose2d.kZero);
     }, swerve));
-    turret.setDefaultCommand(Commands.sequence(new CalibrateTurret(turret), new
-    DefaultTurretCommand(turret, fireControl)));
+    turret.setDefaultCommand(
+        Commands.sequence(new CalibrateTurret(turret), new DefaultTurretCommand(turret, fireControl)));
   }
 
   private void configureButtonBindings() {
@@ -123,8 +123,8 @@ public class RobotContainer {
     // driver.LB().whileTrue(intake.extakeFuel());
     driver.RT().whileTrue(shootTestFuelCommand());
     driver.Y().onTrue(intake.putUpIntake());
-     coDriver.DUp().whileTrue(intakePushFuel());
-     coDriver.DDown().whileTrue(manualIntakeDownCommand());
+    coDriver.DUp().whileTrue(intakePushFuel());
+    coDriver.DDown().whileTrue(manualIntakeDownCommand());
 
     // Clear intake/indexer
     coDriver.LT().whileTrue(Commands.startEnd(() -> indexer.indexerBackward(), () -> indexer.stopIndexer(), indexer));
@@ -136,13 +136,12 @@ public class RobotContainer {
     coDriver.X().whileTrue(CreateFixedShooterCommand(leftTrenchAngle, leftTrenchRPM));
     coDriver.Y().whileTrue(CreateFixedShooterCommand(leftClimbAngle, leftClimbRPM));
   }
-  
+
   private Command CreateFixedShooterCommand(Rotation2d angle, double rpm) {
     return Commands.sequence(new CalibrateTurret(turret),
         new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
   }
 
- 
   public Command shootTestFuelCommand() {
     return Commands.run(
         () -> {
@@ -151,7 +150,42 @@ public class RobotContainer {
         }, shooter).finallyDo(() -> shooter.stopShooterMotors());
   }
 
+  public Command intakePushFuel() {
+    return intake.run(() -> {
+      intake.raiseIntakeToJostle();
+      intake.intakeToJostle();
+    }).finallyDo((() -> {
+      intake.stopIntake();
+      intake.stopLift();
+    }));
+  }
 
+  public Command manualIntakeDownCommand() {
+    return intake.run(() -> {
+      intake.lowerIntakeManually();
+    }).finallyDo(() -> {
+      intake.stopLift();
+    });
+
+  }
+
+  public Command leftBumpAutoCommand() {
+    double rpm = 2300;
+    Rotation2d angle = Rotation2d.fromDegrees(180);
+
+    return Commands.sequence(new LadderPosition("left", swerve), new ResetOdometry("left", swerve),
+        new CalibrateTurret(turret),
+        new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
+  }
+
+  public Command rightBumpAutoCommand() {
+    double rpm = 2300;
+    Rotation2d angle = Rotation2d.fromDegrees(0);
+
+    return Commands.sequence(new LadderPosition("right", swerve), new ResetOdometry("right", swerve),
+        new CalibrateTurret(turret),
+        new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
+  }
 
   public Command rightTrenchAutoCommand() {
     double rpm = rightTrenchRPM;
@@ -168,32 +202,5 @@ public class RobotContainer {
     return Commands.sequence(new ResetOdometry("left", swerve), new CalibrateTurret(turret),
         new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
   }
-  public Command intakePushFuel() {
-  return intake.run(() -> {
-    intake.raiseIntakeToJostle();
-    intake.intakeToJostle();
-  }).finallyDo((()->{intake.stopIntake(); intake.stopLift();}));
-}
-public Command manualIntakeDownCommand() {
-  return intake.run(()-> {
-   intake.lowerIntakeManually();
-}).finallyDo(()->{ intake.stopLift();});
 
-}
-
-    public Command leftBumpAutoCommand() {
-    double rpm = 2300;
-    Rotation2d angle = Rotation2d.fromDegrees(180);
-
-    return Commands.sequence(new ResetOdometry("left", swerve), new CalibrateTurret(turret),
-        new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
-  }
-
-    public Command rightBumpAutoCommand() {
-    double rpm = 2300;
-    Rotation2d angle = Rotation2d.fromDegrees(0);
-
-    return Commands.sequence(new ResetOdometry("right", swerve), new CalibrateTurret(turret),
-        new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
-  }
 }

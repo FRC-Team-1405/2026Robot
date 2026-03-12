@@ -35,7 +35,7 @@ public class LadderPosition extends Command {
         // blue side right
       } else {
         swerve.resetOdometry(
-            new Pose2d(Units.inchesToMeters(489.3), Units.inchesToMeters(),
+            new Pose2d(Units.inchesToMeters(489.3), Units.inchesToMeters(317.69-(29/2)),
                 Rotation2d.fromDegrees(270)));
         // red side right
       }
