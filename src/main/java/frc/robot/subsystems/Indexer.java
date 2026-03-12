@@ -89,6 +89,7 @@ public class Indexer extends SubsystemBase {
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Indexer/output", indexerMotor.getAppliedOutput());
 
   }
 }

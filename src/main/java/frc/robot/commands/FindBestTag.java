@@ -5,20 +5,14 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import java.util.Arrays;
 import java.util.function.Supplier;
-import edu.wpi.first.apriltag.*;
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 
 
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class FindBestTag extends Command {
   private Supplier<Pose2d> robotPoseSupplier;
-  private AprilTag targetTag;
 
   /** Creates a new FindBestTag. */
   public FindBestTag(Supplier<Pose2d> poseSupplier) {

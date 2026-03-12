@@ -167,15 +167,6 @@ public class FireControl extends SubsystemBase {
     }
 
     /**
-     * @return The offset needed to aim while moving
-     */
-    private double getOffset() {
-        double offset;
-        offset = 0.0;
-        return offset;
-    }
-
-    /**
      * @return The current target on field
      */
     public Rotation2d getCurrentTarget() {
