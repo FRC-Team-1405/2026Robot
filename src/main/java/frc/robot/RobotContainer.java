@@ -118,7 +118,9 @@ public class RobotContainer {
     driver.LT().whileTrue(Commands.sequence(intake.putDownIntake(), intake.intakeFuel()));
     // driver.LB().whileTrue(intake.extakeFuel());
     driver.RT().whileTrue(shootTestFuelCommand());
-    driver.Y().whileTrue(intake.putUpIntake());
+    driver.Y().onTrue(intake.putUpIntake());
+     coDriver.DUp().whileTrue(intakePushFuel());
+     coDriver.DDown().whileTrue(manualIntakeDownCommand());
 
     // Clear intake/indexer
     coDriver.LT().whileTrue(Commands.startEnd(() -> indexer.indexerBackward(), () -> indexer.stopIndexer(), indexer));
@@ -136,6 +138,7 @@ public class RobotContainer {
         new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
   }
 
+ 
   public Command shootTestFuelCommand() {
     return Commands.run(
         () -> {
@@ -161,4 +164,16 @@ public class RobotContainer {
     return Commands.sequence(new ResetOdometry("left", swerve), new CalibrateTurret(turret),
         new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
   }
+  public Command intakePushFuel() {
+  return intake.run(() -> {
+    intake.raiseIntakeToJostle();
+    intake.intakeToJostle();
+  }).finallyDo((()->{intake.stopIntake(); intake.stopLift();}));
+}
+public Command manualIntakeDownCommand() {
+  return intake.run(()-> {
+   intake.lowerIntakeManually();
+}).finallyDo(()->{ intake.stopLift();});
+
+}
 }
