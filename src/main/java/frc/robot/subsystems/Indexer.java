@@ -74,12 +74,12 @@ public class Indexer extends SubsystemBase {
 
   public void indexerForward() {
     // indexerMotor.set(Constants.Indexer.SPEED); // TODO change to PID
-    indexerMotorController.setSetpoint(3000, ControlType.kVelocity);
+    indexerMotorController.setSetpoint(4000, ControlType.kVelocity);
   }
 
   public void indexerBackward() {
     // indexerMotor.set(Constants.Indexer.SPEED * -1);
-    indexerMotorController.setSetpoint(-3000, ControlType.kVelocity);
+    indexerMotorController.setSetpoint(-4000, ControlType.kVelocity);
   }
 
   public void stopIndexer() {
