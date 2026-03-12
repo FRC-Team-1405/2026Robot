@@ -3,6 +3,8 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Rotation;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -82,6 +84,8 @@ public class RobotContainer {
     chooser = new SendableChooser<>();
     chooser.addOption("rightTrench", rightTrenchAutoCommand());
     chooser.addOption("leftTrench", leftTrenchAutoCommand());
+    chooser.addOption("rightBump", rightBumpAutoCommand());
+    chooser.addOption("leftBump", leftBumpAutoCommand());
     return chooser;
   }
 
@@ -159,6 +163,22 @@ public class RobotContainer {
     Rotation2d angle = leftTrenchAngle;
 
     return Commands.sequence(new ResetOdometry("left", swerve), new CalibrateTurret(turret),
+        new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
+  }
+
+    public Command leftBumpAutoCommand() {
+    double rpm = 2300;
+    Rotation2d angle = Rotation2d.fromDegrees(180);
+
+    return Commands.sequence(new ResetOdometry("left", swerve), new CalibrateTurret(turret),
+        new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
+  }
+
+    public Command rightBumpAutoCommand() {
+    double rpm = 2300;
+    Rotation2d angle = Rotation2d.fromDegrees(0);
+
+    return Commands.sequence(new ResetOdometry("right", swerve), new CalibrateTurret(turret),
         new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
   }
 }
