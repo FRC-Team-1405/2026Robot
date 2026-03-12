@@ -31,23 +31,23 @@ public class LadderPosition extends Command {
     if (side == "right") {
       if (!isRedAlliance) {
         swerve.resetOdometry(
-            new Pose2d(Units.inchesToMeters(156.61-(26/2)), Units.inchesToMeters(158.32+(73/2)), Rotation2d.fromDegrees(90))); //TODO check location and specificly angle
+            new Pose2d(Units.inchesToMeters(156.61-(26/2)), Units.inchesToMeters(158.32+(73/2)), Rotation2d.fromDegrees(270))); //TODO check location and specificly angle
         // blue side right
       } else {
         swerve.resetOdometry(
-            new Pose2d(Units.inchesToMeters(489.3), Units.inchesToMeters(317.69-(29/2)),
-                Rotation2d.fromDegrees(270)));
+            new Pose2d(Units.inchesToMeters(489.3+(26/2)), Units.inchesToMeters(158.32-(73/2)),
+                Rotation2d.fromDegrees(90)));
         // red side right
       }
     } else {
       if (!isRedAlliance) {
         swerve.resetOdometry(
-            new Pose2d(Units.inchesToMeters(156.61), Units.inchesToMeters(158.32),
-                Rotation2d.fromDegrees(270)));
+            new Pose2d(Units.inchesToMeters(156.61-(26/2)), Units.inchesToMeters(158.32-(73/2)),
+                Rotation2d.fromDegrees(90)));
         // blue side left
       } else {
         swerve.resetOdometry(
-            new Pose2d(Units.inchesToMeters(489.3), Units.inchesToMeters(158.32+(158.32/2)), Rotation2d.fromDegrees(90)));
+            new Pose2d(Units.inchesToMeters(489.3+(26/2)), Units.inchesToMeters(158.32+(73/2)), Rotation2d.fromDegrees(270)));
         // red side left
       }
     }
