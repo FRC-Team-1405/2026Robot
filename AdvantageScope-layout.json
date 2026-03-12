@@ -1,25 +1,29 @@
 {
   "hubs": [
     {
-      "x": 1280,
-      "y": 0,
-      "width": 1280,
-      "height": 1392,
+      "x": -7,
+      "y": -7,
+      "width": 1550,
+      "height": 926,
       "state": {
         "sidebar": {
-          "width": 207,
+          "width": 296,
           "expanded": [
             "/AdvantageScopeLogs",
             "/AUTOPILOT",
             "/AUTOPILOT/Pose",
             "/AUTOPILOT/Pose/translation",
-            "/RobotPose",
-            "/DriveState",
             "/SmartDashboard/Auto/AUTOPILOT",
-            "/SmartDashboard",
-            "/SmartDashboard/Commands",
             "/CommandTracker",
-            "/Drivetrain"
+            "/SmartDashboard",
+            "/DriveState/Pose/rotation",
+            "/DriveState/Pose/translation",
+            "/RobotPose/robotPose",
+            "/SmartDashboard/Vision/Left",
+            "/SmartDashboard/Auto/AUTOPILOT/TargetPose",
+            "/SmartDashboard/Auto/Auto Mode/options",
+            "/SmartDashboard/Auto/AUTOPILOT/PID_TO_POSE",
+            "/SmartDashboard/Shooter"
           ]
         },
         "tabs": {
@@ -30,7 +34,7 @@
               "title": "",
               "controller": null,
               "controllerUUID": "50nautkyc4smoe33rob2u4zjyp2buwjo",
-              "renderer": "#/",
+              "renderer": "",
               "controlsHeight": 0
             },
             {
@@ -38,7 +42,48 @@
               "title": "Line Graph",
               "controller": {
                 "leftSources": [],
-                "rightSources": [],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/Shooter/Motor1RPS",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/Indexer/Velocity",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/Hopper/Velocity",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/Intake/PickupVelocity",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#e48b32",
+                      "size": "normal"
+                    }
+                  }
+                ],
                 "discreteSources": [],
                 "leftLockedRange": null,
                 "rightLockedRange": null,
@@ -55,11 +100,11 @@
               },
               "controllerUUID": "a7sh9ujh8zqntm7rr3mabalz121p3ewx",
               "renderer": null,
-              "controlsHeight": 200
+              "controlsHeight": 298
             },
             {
               "type": 2,
-              "title": "Odometry",
+              "title": "2D Field",
               "controller": {
                 "sources": [
                   {
@@ -72,93 +117,40 @@
                     }
                   },
                   {
-                    "type": "arrow",
-                    "logKey": "NT:SmartDashboard/Auto/AUTOPILOT/TargetPose",
+                    "type": "ghost",
+                    "logKey": "NT:Camera1_EstimatedPose",
                     "logType": "Pose2d",
                     "visible": true,
                     "options": {
-                      "position": "center"
+                      "color": "#00ff00"
                     }
                   },
                   {
                     "type": "ghost",
-                    "logKey": "NT:SmartDashboard/Auto/AUTOPILOT/PointTowardsTargetPose",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "color": "#00ffff"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_20",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_4",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "NT:Drivetrain/EstimatedAimPoint",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "color": "#00ffff"
-                    }
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "NT:Drivetrain/EstimatedAimPoint_VelocityCompensated",
+                    "logKey": "NT:Camera2_EstimatedPose",
                     "logType": "Pose2d",
                     "visible": true,
                     "options": {
                       "color": "#ff8c00"
                     }
+                  },
+                  {
+                    "type": "arrow",
+                    "logKey": "NT:SmartDashboard/Auto/AUTOPILOT/PID_TO_POSE/TargetPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "position": "center"
+                    }
                   }
                 ],
-                "field": "FRC:Evergreen",
+                "field": "FRC:2026 Field",
                 "orientation": 1,
-                "size": "medium"
+                "size": "large"
               },
-              "controllerUUID": "8w7x6wodeb0f5hyhcyrxm5mey0a7f07p",
+              "controllerUUID": "rus54iuqrg1zyorlb3ryv9hs1ngfcqwy",
               "renderer": null,
-              "controlsHeight": 139
-            },
-            {
-              "type": 5,
-              "title": "SwerveFeatures",
-              "controller": "NT:/AdvantageScopeLogs/SwerveFeatures",
-              "controllerUUID": "3e5jnnqqsmpo6p37jronn6z54kma2jbf",
-              "renderer": {
-                "highlight": false
-              },
               "controlsHeight": 0
-            },
-            {
-              "type": 10,
-              "title": "Auto-Point",
-              "controller": [
-                {
-                  "type": "mechanism",
-                  "logKey": "NT:/SmartDashboard/Aim Visualization",
-                  "logType": "Mechanism2d",
-                  "visible": true,
-                  "options": {}
-                }
-              ],
-              "controllerUUID": "kqzva0jlfr4m7jx7onw7g9augf6hhstk",
-              "renderer": null,
-              "controlsHeight": 200
             },
             {
               "type": 9,
@@ -184,6 +176,13 @@
                       "color": "#0000ff",
                       "arrangement": "0,1,2,3"
                     }
+                  },
+                  {
+                    "type": "rotation",
+                    "logKey": "NT:/DriveState/Pose/rotation",
+                    "logType": "Rotation2d",
+                    "visible": true,
+                    "options": {}
                   }
                 ],
                 "maxSpeed": 5,
@@ -191,348 +190,57 @@
                 "sizeY": 0.65,
                 "orientation": 1
               },
-              "controllerUUID": "lo7plrce4uxy92r09o0gs5hruxyf90dz",
+              "controllerUUID": "t2gfr48cgc3ofurlih1q8drkt103a9lc",
               "renderer": null,
-              "controlsHeight": 200
+              "controlsHeight": 205
             },
             {
               "type": 5,
-              "title": "P2P",
+              "title": "Console",
+              "controller": "NT:/AdvantageScopeLogs/Shooter",
+              "controllerUUID": "9y0jqq2rrhew8pz5o2lt78nlvfga71l3",
+              "renderer": {
+                "highlight": false
+              },
+              "controlsHeight": 0
+            },
+            {
+              "type": 5,
+              "title": "Console",
+              "controller": "NT:/AdvantageScopeLogs/Intake",
+              "controllerUUID": "yckl38w44bz32g69lswc4po0bo0952lj",
+              "renderer": {
+                "highlight": false
+              },
+              "controlsHeight": 0
+            },
+            {
+              "type": 5,
+              "title": "Console",
               "controller": "NT:/AdvantageScopeLogs/PidToPoseCommand",
-              "controllerUUID": "duq44rjnoov5f1xi7ouwggyoj0c9bnjw",
+              "controllerUUID": "r97s0bdp1luziwsnttqytgu7czlroa5o",
               "renderer": {
                 "highlight": false
               },
               "controlsHeight": 0
-            },
-            {
-              "type": 5,
-              "title": "AP",
-              "controller": "NT:/AdvantageScopeLogs/AutoPilotCommand",
-              "controllerUUID": "u0e3vw2oe95yqbvtpajjc0aqb6retxe1",
-              "renderer": {
-                "highlight": false
-              },
-              "controlsHeight": 0
-            },
-            {
-              "type": 2,
-              "title": "AprilTags",
-              "controller": {
-                "sources": [
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_1",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_2",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_3",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_4",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_5",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_6",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_7",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_8",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_9",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_10",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_11",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_12",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_13",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_14",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_15",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_16",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_17",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_18",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_19",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_20",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_21",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_22",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_23",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_24",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_25",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_26",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_27",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_28",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_29",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_30",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_31",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  },
-                  {
-                    "type": "arrow",
-                    "logKey": "NT:TagMap/AprilTags_32",
-                    "logType": "Pose2d",
-                    "visible": true,
-                    "options": {
-                      "position": "center"
-                    }
-                  }
-                ],
-                "field": "FRC:Evergreen",
-                "orientation": 2,
-                "size": "large"
-              },
-              "controllerUUID": "04megcv4v00ox7uqktwm7h57xvandi82",
-              "renderer": null,
-              "controlsHeight": 207
-            },
-            {
-              "type": 3,
-              "title": "3D Field",
-              "controller": {
-                "sources": [],
-                "game": "FRC:Evergreen"
-              },
-              "controllerUUID": "ropfmp5yelzrnnds5iu2ac7k2wj8qrd3",
-              "renderer": null,
-              "controlsHeight": 200
             }
           ]
         }
       }
     }
   ],
-  "satellites": [],
+  "satellites": [
+    {
+      "x": 794,
+      "y": 0,
+      "width": 748,
+      "height": 918,
+      "state": {
+        "type": 9,
+        "visualizer": null
+      },
+      "uuid": "t2gfr48cgc3ofurlih1q8drkt103a9lc"
+    }
+  ],
   "version": "26.0.0"
 }
