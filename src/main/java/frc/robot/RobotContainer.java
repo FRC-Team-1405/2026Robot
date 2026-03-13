@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -34,6 +36,7 @@ import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.PointAtTarget;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
+import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
@@ -297,13 +300,14 @@ public class RobotContainer {
                 //
                 // A: spin up to whatever value is set in the Shooter/TestTargetRPS dashboard
                 // slider
-                // shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
+                shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
                 // B: stop shooter
                 shooterJoystick.b().onTrue(shooter.stopShooter());
                 // Preset speeds
                 shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
                 shooterJoystick.x().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
-                shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.LONG));
                 // Fire + stop
                 shooterJoystick.rightBumper().onTrue(
                                 new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY));

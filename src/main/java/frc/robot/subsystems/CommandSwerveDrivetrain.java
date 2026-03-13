@@ -476,5 +476,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void publishDistanceToHub() {
         SmartDashboard.putNumber("SwerveDrive/DistanceToHub",
                 m_swerveFeatures.getDistanceToHub(this, FieldConstants.ALLIANCE_HUB_POSITION));
+        m_swerveFeatures.getDistancePoses(FieldConstants.BLUE_HUB,
+                new Pose2d(3.069361, 4.034638, Rotation2d.fromDegrees(0)));
     }
 }

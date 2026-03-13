@@ -206,6 +206,7 @@ public class Constants {
     public static class AutonomousPreferences {
 
         public static final double WAIT_TIME;
+        public static final double WAIT_FEEDER_TIME = 4.0;
 
         static {
             Preferences.initDouble("Auto Wait Time (Seconds)", 3.0);

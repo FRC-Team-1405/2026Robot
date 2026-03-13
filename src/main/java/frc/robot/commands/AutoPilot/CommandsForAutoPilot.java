@@ -1,5 +1,6 @@
 package frc.robot.commands.AutoPilot;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.function.Supplier;
@@ -9,6 +10,7 @@ import com.therekrab.autopilot.APConstraints;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterPreferences;
+import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.PidToPose.PidToPoseCommand;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
@@ -195,10 +198,9 @@ public class CommandsForAutoPilot {
                                 .withFlipPoseForAlliance(true)
                                 .build();
                 // Shooter
-                Supplier<Command> MoveTo_FrontHubShoot = () -> new PidToPoseCommand.Builder(
-                                () -> FrontHubShoot.get(), drivetrain, "MoveTo_FrontHubShoot")
-                                .withFlipPoseForAlliance(true)
-                                .build();
+                Supplier<Command> MoveTo_FrontHubShoot = () -> new DriveToHubDistance(drivetrain,
+                                FieldConstants.ALLIANCE_HUB_POSITION,
+                                shooter.getDistanceFromSpeed());
                 Supplier<Command> MoveTo_IntakeIN_FrontHubShoot = () -> new PidToPoseCommand.Builder(
                                 () -> IntakeIN_FrontHubShoot.get(), drivetrain, "MoveTo_FrontHubShoot")
                                 .withFlipPoseForAlliance(true)
@@ -422,7 +424,7 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MEDIUM_shoot = () -> Commands
                                 .parallel(shooter.runShooterAuto(() -> Constants.ShooterPreferences.MEDIUM),
                                                 indexer.runIndexer())
-                                .withTimeout(Seconds.of(3))
+                                .withTimeout(Seconds.of(10))
                                 .andThen(Commands.parallel(shooter.stopShooter(), indexer.runStopIndexer()));
                 Supplier<Command> SHORT_shoot = () -> Commands
                                 .parallel(shooter.runShooterAuto(() -> Constants.ShooterPreferences.SHORT),
@@ -557,12 +559,12 @@ public class CommandsForAutoPilot {
                 // Commands.print("climbing").andThen(Commands.waitSeconds(3))
 
                 Command AP_CenterStartFeedingStationScore = new SequentialCommandGroup(
-                                MoveTo_FrontHubShoot.get(),
-                                _shoot.get(),
+                                // MoveTo_FrontHubShoot.get(),
+                                // _shoot.get(),
                                 Commands.parallel(intake.runIntakeOut(), MoveTo_feedingStation.get()),
-                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
+                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_FEEDER_TIME),
                                 MoveTo_FrontHubShoot.get(),
-                                _shoot.get());
+                                MEDIUM_shoot.get());
 
                 // TODO: Fix this
                 Command AP_RightStartCenterHarvestInLeft = new SequentialCommandGroup(
