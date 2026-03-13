@@ -82,8 +82,21 @@ public class AutoCommands {
                 // NamedCommands.getCommand("AP_TheShowboater"));
 
                 commandsToAddToChooser.put("AP_TEST", NamedCommands.getCommand("AP_TEST"));
+
+                // Feeding station
+                commandsToAddToChooser.put("AP_RightStartFeedingStationScore",
+                                NamedCommands.getCommand("AP_RightStartFeedingStationScore"));
                 commandsToAddToChooser.put("AP_CenterStartFeedingStationScore",
                                 NamedCommands.getCommand("AP_CenterStartFeedingStationScore"));
+                commandsToAddToChooser.put("AP_LeftStartFeedingStationScore",
+                                NamedCommands.getCommand("AP_LeftStartFeedingStationScore"));
+
+                // NamedCommands.registerCommand("AP_RightStartFeedingStationScore",
+                // AP_RightStartFeedingStationScore);
+                // NamedCommands.registerCommand("AP_CenterStartFeedingStationScore",
+                // AP_CenterStartFeedingStationScore);
+                // NamedCommands.registerCommand("AP_LeftStartFeedingStationScore",
+                // AP_LeftStartFeedingStationScore);
 
                 commandsToAddToChooser.put("AP_RightStartCenterHarvestInLeft",
                                 NamedCommands.getCommand("AP_RightStartCenterHarvestInLeft"));

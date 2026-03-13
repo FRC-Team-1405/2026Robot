@@ -31,4 +31,18 @@ public class FieldConstants {
     public static Pose2d BLUE_FEED_ROBOT_POSITION = BLUE_FEEDER_WALL.transformBy(new Transform2d(
             RobotConstants.HALF_ROBOT_WIDTH + RobotConstants.INTAKE_EXTENSION_LENGTH + Units.inchesToMeters(1), 0.0,
             Rotation2d.k180deg));
+
+    // Start Positions
+    public static Pose2d CENTER_START = BLUE_HUB_EDGE.transformBy(new Transform2d(
+            -RobotConstants.HALF_ROBOT_WIDTH, 0,
+            Rotation2d.kZero));
+
+    public static Pose2d LEFT_START = BLUE_HUB_EDGE.transformBy(new Transform2d(
+            -RobotConstants.HALF_ROBOT_WIDTH, RobotConstants.ROBOT_WIDTH
+                    * 2,
+            Rotation2d.kZero));
+
+    public static Pose2d RIGHT_START = BLUE_HUB_EDGE.transformBy(new Transform2d(
+            -RobotConstants.HALF_ROBOT_WIDTH, -(RobotConstants.ROBOT_WIDTH * 2),
+            Rotation2d.kZero));
 }

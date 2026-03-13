@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -34,6 +35,9 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
 public class CommandsForAutoPilot {
+        // TODO: integrate shooting positions dropdown into all autos, include the shoot
+        // from distance in the dropdown
+        // TODO: add a start position dropdown, integrate into all autos
 
         // Velocity is max speed overall/ in a sec, how much can position change
         // Acceleration in a second, how much can velocity change
@@ -177,14 +181,27 @@ public class CommandsForAutoPilot {
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
+                Supplier<Command> MoveTo_CenterTransit = () -> new PidToPoseCommand.Builder(
+                                () -> FieldConstants.BLUE_HUB_SHOOT_CLOSE, drivetrain, "MoveTo_blueCenter")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+
                 Supplier<Command> MoveTo_centerOfField = () -> new PidToPoseCommand.Builder(
                                 () -> centerOfField.get(), drivetrain, "MoveTo_centerOfField")
                                 .withFlipPoseForAlliance(true)
                                 .build();
+
+                // Feeding station Movements
                 Supplier<Command> MoveTo_feedingStation = () -> new PidToPoseCommand.Builder(
                                 () -> feedingStation.get(), drivetrain, "MoveTo_feedingStation")
                                 .withFlipPoseForAlliance(true)
                                 .build();
+                Supplier<Command> MoveTo_feedingStation_leftStart = () -> Commands.sequence(MoveTo_CenterTransit.get(),
+                                MoveTo_feedingStation.get());
+                Supplier<Command> MoveTo_feedingStation_centerStart = () -> Commands.sequence(
+                                MoveTo_CenterTransit.get(),
+                                MoveTo_feedingStation.get());
+
                 Supplier<Command> MoveTo_fourMeters = () -> new PidToPoseCommand.Builder(
                                 () -> fourMeters.get(), drivetrain, "MoveTo_fourMeters")
                                 .withFlipPoseForAlliance(true)
@@ -201,6 +218,19 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MoveTo_FrontHubShoot = () -> new DriveToHubDistance(drivetrain,
                                 FieldConstants.ALLIANCE_HUB_POSITION,
                                 shooter.getDistanceFromSpeed());
+
+                Supplier<Command> MoveTo_requestedSpeedDistanceToHub = () -> new DriveToHubDistance(drivetrain,
+                                FieldConstants.ALLIANCE_HUB_POSITION,
+                                shooter.getDistanceFromSpeed());
+                Supplier<Command> MoveTo_ClosestShootingPosition_MEDIUM = () -> Commands.sequence(
+                                new InstantCommand(() -> shooter
+                                                .setRequestedSpeedWithoutShooting(() -> ShooterPreferences.MEDIUM)),
+                                MoveTo_requestedSpeedDistanceToHub.get());
+                Supplier<Command> MoveTo_ClosestShootingPosition_LONG = () -> Commands.sequence(
+                                new InstantCommand(() -> shooter
+                                                .setRequestedSpeedWithoutShooting(() -> ShooterPreferences.LONG)),
+                                MoveTo_requestedSpeedDistanceToHub.get());
+
                 Supplier<Command> MoveTo_IntakeIN_FrontHubShoot = () -> new PidToPoseCommand.Builder(
                                 () -> IntakeIN_FrontHubShoot.get(), drivetrain, "MoveTo_FrontHubShoot")
                                 .withFlipPoseForAlliance(true)
@@ -487,7 +517,8 @@ public class CommandsForAutoPilot {
                                 _shoot.get());
                 Command AP_JUSTSHOOT = new SequentialCommandGroup(
                                 // MoveTo_blueCenter.get(),
-                                MoveTo_RightHubShoot.get()// ,
+                                MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                MEDIUM_shoot.get()
                 // MoveTo_rightBump_AllianceToFieldStart.get(),
                 // MoveTo_rightBump_AllianceToFieldEnd.get(),
                 // MoveTo_centerRightIntakeStart.get(),
@@ -561,6 +592,25 @@ public class CommandsForAutoPilot {
                 Command AP_CenterStartFeedingStationScore = new SequentialCommandGroup(
                                 // MoveTo_FrontHubShoot.get(),
                                 // _shoot.get(),
+                                MoveTo_feedingStation_centerStart.get(),
+                                Commands.parallel(intake.runIntakeOut(), MoveTo_feedingStation.get()),
+                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_FEEDER_TIME),
+                                MoveTo_FrontHubShoot.get(),
+                                MEDIUM_shoot.get());
+
+                Command AP_LeftStartFeedingStationScore = new SequentialCommandGroup(
+                                // MoveTo_FrontHubShoot.get(),
+                                // _shoot.get(),
+                                MoveTo_feedingStation_leftStart.get(),
+                                Commands.parallel(intake.runIntakeOut(), MoveTo_feedingStation.get()),
+                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_FEEDER_TIME),
+                                MoveTo_FrontHubShoot.get(),
+                                MEDIUM_shoot.get());
+
+                Command AP_RightStartFeedingStationScore = new SequentialCommandGroup(
+                                // MoveTo_FrontHubShoot.get(),
+                                // _shoot.get(),
+                                MoveTo_feedingStation.get(),
                                 Commands.parallel(intake.runIntakeOut(), MoveTo_feedingStation.get()),
                                 Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_FEEDER_TIME),
                                 MoveTo_FrontHubShoot.get(),
@@ -673,7 +723,12 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("AP_CenterHarvest", AP_CenterHarvest);
                 NamedCommands.registerCommand("AP_LeftStartDepotScore", AP_LeftStartDepotScore);
                 NamedCommands.registerCommand("AP_RightStartDepotScore", AP_RightStartDepotScore);
+
+                // Feeding station
+                NamedCommands.registerCommand("AP_RightStartFeedingStationScore", AP_RightStartFeedingStationScore);
                 NamedCommands.registerCommand("AP_CenterStartFeedingStationScore", AP_CenterStartFeedingStationScore);
+                NamedCommands.registerCommand("AP_LeftStartFeedingStationScore", AP_LeftStartFeedingStationScore);
+
                 NamedCommands.registerCommand("AP_RightStartCenterHarvestInLeft", AP_RightStartCenterHarvestInLeft);
                 NamedCommands.registerCommand("AP_LeftStartCenterHarvestInRight", AP_LeftStartCenterHarvestInRight);
                 NamedCommands.registerCommand("AP_RightFeedShootCenterHarvest",

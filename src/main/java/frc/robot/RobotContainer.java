@@ -40,6 +40,7 @@ import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
+import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
 import frc.robot.lib.CommandTracker;
@@ -105,6 +106,7 @@ public class RobotContainer {
 
                 AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
+                drivetrain.initOverridePose();
         }
 
         public Command getAutonomousCommand() {

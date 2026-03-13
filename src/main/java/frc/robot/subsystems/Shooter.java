@@ -125,9 +125,21 @@ public class Shooter extends SubsystemBase {
     fLogger.log("shooterStop called");
   }
 
+  /**
+   * set requested speed and spin up shooter to that speed
+   */
   private void setRequestedSpeed(Supplier<AngularVelocity> speed) {
     requestedSpeed = speed;
     setShooterSpeed(requestedSpeed);
+  }
+
+  /**
+   * set requested speed and DON'T spin up shooter
+   * 
+   * @param speed
+   */
+  public void setRequestedSpeedWithoutShooting(Supplier<AngularVelocity> speed) {
+    requestedSpeed = speed;
   }
 
   /**
