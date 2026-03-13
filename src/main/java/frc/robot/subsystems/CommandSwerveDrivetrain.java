@@ -458,18 +458,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    private Command p2pCommand = null;
-
     public Command driveToPose(Supplier<Optional<Pose2d>> targetPoseSupplier, boolean flipPoseForRedAlliance) {
         Supplier<Pose2d> poseSupplier = () -> (targetPoseSupplier.get().get());
 
-        return p2pCommand = Commands.sequence(
-                Commands.runOnce(() -> {
-                    System.out.println("DriveToPose Called with targetPose: " +
-                            targetPoseSupplier.get());
-                }),
-                new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose").withTolerance(2)
-                        .withFlipPoseForAlliance(flipPoseForRedAlliance).build());
+        // return Commands.sequence(
+        // Commands.runOnce(() -> {
+        // System.out.println("DriveToPose Called with targetPose: " +
+        // targetPoseSupplier.get());
+        // }),
+        // new PidToPoseCommand.Builder(poseSupplier, this,
+        // "DriveToPose").withTolerance(2)
+        // .withFlipPoseForAlliance(flipPoseForRedAlliance).build());
+        return new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose").withTolerance(2)
+                .withFlipPoseForAlliance(flipPoseForRedAlliance).build();
     }
 
     public void publishDistanceToHub() {

@@ -137,7 +137,10 @@ public class Shooter extends SubsystemBase {
    * @return
    */
   public Supplier<Double> getDistanceFromSpeed() {
-    return ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.get(requestedSpeed.get());
+    return ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.get(requestedSpeed.get()) == null
+        ? ShooterPreferences.MEDIUM_DISTANCE
+        : ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE
+            .get(requestedSpeed.get());
   }
 
   public void increaseDistanceForSpeed() {
