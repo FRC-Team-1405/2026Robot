@@ -573,8 +573,9 @@ public class CommandsForAutoPilot {
                                 MoveTo_leftBump_FieldToAllianceStart.get(),
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 MoveTo_blueCenter.get(),
-                                MoveTo_FrontHubShoot.get(),
-                                MEDIUM_shoot.get());
+                                MoveTo_FrontHubShoot.get()// ,
+                // MEDIUM_shoot.get()
+                );
 
                 Command AP_LeftStartCenterHarvestInRight = new SequentialCommandGroup(
                                 MoveTo_leftBump_AllianceToFieldStart.get(),

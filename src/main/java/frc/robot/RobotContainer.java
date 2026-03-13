@@ -246,7 +246,7 @@ public class RobotContainer {
                 driverJoystick.y().onTrue(moveMode.togglePointMode());
 
                 Trigger hopperTrigger = new Trigger(() -> {
-                        return intake.isPickupRunning() || indexer.isIndexerRunning();
+                        return indexer.isIndexerRunning();
                 });
                 hopperTrigger.onTrue(hopper.runForwardHopper());
                 hopperTrigger.onFalse(hopper.runStopHopper());
