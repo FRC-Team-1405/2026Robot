@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -323,5 +325,13 @@ public class SwerveFeatures {
             // In case drivetrain state is not available yet, avoid crashing
             fLogger.log("publishRobotVelocity: failed to read drivetrain state: %s", ex.getMessage());
         }
+    }
+
+    public double getDistanceToHub(CommandSwerveDrivetrain drivetrain, Supplier<Pose2d> hubPosition) {
+        return drivetrain.getState().Pose.getTranslation().getDistance(hubPosition.get().getTranslation());
+    }
+
+    public double getDistancePoses(Pose2d firstPose, Pose2d secondPose) {
+        return firstPose.getTranslation().getDistance(secondPose.getTranslation());
     }
 }

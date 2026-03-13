@@ -1,12 +1,19 @@
 package frc.robot.constants;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.lib.AllianceSymmetry;
 
 public class FieldConstants {
     public static Pose2d BLUE_HUB = new Pose2d(4.546, 4.035, Rotation2d.kZero);
+
+    public static Supplier<Pose2d> ALLIANCE_HUB_POSITION = () -> {
+        return AllianceSymmetry.isBlue() ? BLUE_HUB : AllianceSymmetry.flip(BLUE_HUB);
+    };
 
     // location of middle april tag on the blue hub
     public static Pose2d BLUE_HUB_EDGE = new Pose2d(4.0218614, 4.0346376, Rotation2d.kZero);

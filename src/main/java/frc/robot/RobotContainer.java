@@ -11,6 +11,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -22,11 +24,13 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
+import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.PointAtTarget;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
@@ -169,6 +173,9 @@ public class RobotContainer {
                 SmartDashboard.putData(cmd);
                 operatorJoystick.povDown().onTrue(cmd);
 
+                operatorJoystick.povRight().onTrue(new InstantCommand(() -> shooter.increaseDistanceForSpeed()));
+                operatorJoystick.povLeft().onTrue(new InstantCommand(() -> shooter.descreaseDistanceForSpeed()));
+
                 operatorJoystick.y().onTrue(new SetHoodPosition(hood, HoodAngles.SHORT));
                 operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));
                 operatorJoystick.a().onTrue(new SetHoodPosition(hood, HoodAngles.LONG));
@@ -234,10 +241,27 @@ public class RobotContainer {
                 driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
 
                 // Auto Align
+                // driverJoystick.x()
+                // .whileTrue(
+                // Commands.either(Commands.defer(() -> drivetrain.driveToPose(
+                // () -> Optional.of(
+                // FieldConstants.BLUE_HUB_SHOOT_CLOSE),
+                // true), Set.of(drivetrain)),
+                // Commands.none(),
+                // MoveMode.inAllianceZone(drivetrain)));
+
+                // Command driveToHubCommand = new DriveToHubDistance(drivetrain,
+                // FieldConstants.ALLIANCE_HUB_POSITION,
+                // ShooterPreferences.MEDIUM_DISTANCE);
+                Supplier<Command> driveToDistanceCommand = () -> new DriveToHubDistance(drivetrain,
+                                FieldConstants.ALLIANCE_HUB_POSITION,
+                                shooter.getDistanceFromSpeed());
+
                 driverJoystick.x()
                                 .whileTrue(
-                                                Commands.either(drivetrain.driveToPose(() -> Optional.of(
-                                                                FieldConstants.BLUE_HUB_SHOOT_CLOSE)), Commands.none(),
+                                                Commands.either(Commands.defer(driveToDistanceCommand,
+                                                                Set.of(drivetrain)),
+                                                                Commands.none(),
                                                                 MoveMode.inAllianceZone(drivetrain)));
 
                 // Point at hub toggle (STANDARD ↔ POINT or POINT_VELOCITY_COMPENSATED).

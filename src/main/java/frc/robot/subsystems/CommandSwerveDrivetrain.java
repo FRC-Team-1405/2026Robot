@@ -34,7 +34,9 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.commands.PidToPose.PidToPoseCommand;
+import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.lib.AllianceSymmetry;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -458,20 +460,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private Command p2pCommand = null;
 
-    public Command driveToPose(Supplier<Optional<Pose2d>> targetPoseSupplier) {
+    public Command driveToPose(Supplier<Optional<Pose2d>> targetPoseSupplier, boolean flipPoseForRedAlliance) {
         Supplier<Pose2d> poseSupplier = () -> (targetPoseSupplier.get().get());
 
-        if (p2pCommand == null) {
-            p2pCommand = Commands.sequence(
-                    Commands.runOnce(() -> {
-                        System.out.println("DriveToPose Called with targetPose: " +
-                                targetPoseSupplier.get());
-                    }),
-                    new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose").withTolerance(2)
-                            .withFlipPoseForAlliance(true).build());
-        }
+        return p2pCommand = Commands.sequence(
+                Commands.runOnce(() -> {
+                    System.out.println("DriveToPose Called with targetPose: " +
+                            targetPoseSupplier.get());
+                }),
+                new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose").withTolerance(2)
+                        .withFlipPoseForAlliance(flipPoseForRedAlliance).build());
+    }
 
-        return p2pCommand;
-
+    public void publishDistanceToHub() {
+        SmartDashboard.putNumber("SwerveDrive/DistanceToHub",
+                m_swerveFeatures.getDistanceToHub(this, FieldConstants.ALLIANCE_HUB_POSITION));
     }
 }

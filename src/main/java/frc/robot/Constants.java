@@ -11,6 +11,10 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Preferences;
@@ -68,10 +72,22 @@ public class Constants {
     }
 
     public static class ShooterPreferences {
-        public static final AngularVelocity SHORT;
-        public static final AngularVelocity INTERMEDIATE;
-        public static final AngularVelocity MEDIUM;
-        public static final AngularVelocity LONG;
+        // Shooter speeds
+        public static final AngularVelocity SHORT = RotationsPerSecond.of(30);
+        public static final AngularVelocity INTERMEDIATE = RotationsPerSecond.of(20);
+        public static final AngularVelocity MEDIUM = RotationsPerSecond.of(42);
+        public static final AngularVelocity LONG = RotationsPerSecond.of(50);
+
+        // Shooting distances
+        // desired robot distances for each shooting speed
+        public static Supplier<Double> MEDIUM_DISTANCE = () -> 1.7509334859280068;
+        public static Supplier<Double> LONG_DISTANCE = () -> 1.85;
+
+        public static final HashMap<AngularVelocity, Supplier<Double>> SHOOTER_SPEED_TO_DISTANCE = new HashMap<>();
+        static {
+            SHOOTER_SPEED_TO_DISTANCE.put(MEDIUM, MEDIUM_DISTANCE);
+            SHOOTER_SPEED_TO_DISTANCE.put(LONG, LONG_DISTANCE);
+        };
 
         public static final AngularVelocity INDEXER_VELOCITY;
 
@@ -85,16 +101,6 @@ public class Constants {
         }
 
         static {
-            // Shooter Velocities
-
-            SHORT = RotationsPerSecond.of((30));
-
-            INTERMEDIATE = RotationsPerSecond.of(20);
-
-            MEDIUM = RotationsPerSecond.of(42);
-
-            LONG = RotationsPerSecond.of(50);
-
             // Indexer Velocities
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 35);
             INDEXER_VELOCITY = RotationsPerSecond.of(30);
