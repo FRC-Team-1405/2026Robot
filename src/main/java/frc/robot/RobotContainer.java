@@ -272,13 +272,13 @@ public class RobotContainer {
                 //
                 // A: spin up to whatever value is set in the Shooter/TestTargetRPS dashboard
                 // slider
-                shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
+                // shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
                 // B: stop shooter
                 shooterJoystick.b().onTrue(shooter.stopShooter());
                 // Preset speeds
                 shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
                 shooterJoystick.x().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
-                shooterJoystick.leftBumper().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
                 // Fire + stop
                 shooterJoystick.rightBumper().onTrue(
                                 new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY));

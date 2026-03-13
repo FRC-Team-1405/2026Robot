@@ -86,14 +86,14 @@ public class Constants {
 
         static {
             // Shooter Velocities
-            Preferences.initDouble("ShooterVelocities/Short", 10);
-            SHORT = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Short", 10));
-            Preferences.initDouble("ShooterVelocities/Intermediate", 20);
-            INTERMEDIATE = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Intermediate", 20));
-            Preferences.initDouble("ShooterVelocities/Medium", 30);
-            MEDIUM = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Medium", 30));
-            Preferences.initDouble("ShooterVelocities/Long", 50);
-            LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 50));
+
+            SHORT = RotationsPerSecond.of((30));
+
+            INTERMEDIATE = RotationsPerSecond.of(20);
+
+            MEDIUM = RotationsPerSecond.of(42);
+
+            LONG = RotationsPerSecond.of(50);
 
             // Indexer Velocities
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 35);

@@ -133,7 +133,7 @@ public class Shooter extends SubsystemBase {
     return Commands.runOnce(() -> setShooterSpeed(speed), this);
   }
 
-  public Command runShooterAuto() {
+  public Command runShooterAuto(Supplier<AngularVelocity> requestedSpeed) {
     return Commands.startEnd(
         () -> setShooterSpeed(requestedSpeed),
         () -> stopShooter(),
