@@ -20,6 +20,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.PidToPose.PidToPoseCommand;
 import frc.robot.commands.Shooter.AutoFire;
+import frc.robot.constants.FieldConstants;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
 import frc.robot.subsystems.Climber;
@@ -55,7 +56,7 @@ public class CommandsForAutoPilot {
         // off blue center only used for Right Start Depot Score
         public static Supplier<Pose2d> offBlueCenter1 = () -> new Pose2d(2, 4.85, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> offBlueCenter2 = () -> new Pose2d(0.40, 4.85, Rotation2d.fromDegrees(90));
-        public static Supplier<Pose2d> feedingStation = () -> new Pose2d(0.45, 0.55, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> feedingStation = () -> FieldConstants.BLUE_FEED_ROBOT_POSITION;
         public static Supplier<Pose2d> rightLoadInZone = () -> new Pose2d(5.75, 2.5, Rotation2d.fromDegrees(180));
         public static Supplier<Pose2d> leftLoadInZone = () -> new Pose2d(5.75, 5.5, Rotation2d.fromDegrees(180));
         public static Supplier<Pose2d> quadLeft = () -> new Pose2d(7.5, 3.5, Rotation2d.fromDegrees(90));
