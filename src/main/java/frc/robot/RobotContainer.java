@@ -20,6 +20,7 @@ import frc.robot.commands.CalibrateTurret;
 import frc.robot.commands.DefaultTurretCommand;
 import frc.robot.commands.FixedShooter;
 import frc.robot.commands.LadderPosition;
+import frc.robot.commands.PidToPoseCommand;
 import frc.robot.commands.ResetOdometry;
 import frc.robot.commands.ShootWithIndexer;
 import frc.robot.commands.SwerveDriveWithGamepad;
@@ -31,6 +32,7 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Vision;
+import frc.robot.util.FieldConstants;
 
 public class RobotContainer {
   // Define set points for shooting if autos fail
@@ -86,6 +88,7 @@ public class RobotContainer {
     chooser.addOption("leftTrench", leftTrenchAutoCommand());
     chooser.addOption("rightBump", rightBumpAutoCommand());
     chooser.addOption("leftBump", leftBumpAutoCommand());
+    chooser.addOption("leftStart", combo);
     return chooser;
   }
 
@@ -206,4 +209,13 @@ public class RobotContainer {
         new FixedShooter(shooter, turret, rpm, angle).finallyDo(() -> shooter.stopShooterMotors()));
   }
 
+  public Command leftStart = new PidToPoseCommand.Builder(
+        () -> FieldConstants.LEFT_START, swerve, "leftStart")
+        .withFlipPoseForAlliance(true)
+        .build();
+  public Command rightStart = new PidToPoseCommand.Builder(
+        () -> FieldConstants.RIGHT_START, swerve, "rightStart")
+        .withFlipPoseForAlliance(true)
+        .build();
+  public Command combo = Commands.sequence(rightStart, leftStart);
 }
