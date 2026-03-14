@@ -12,6 +12,7 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
@@ -73,30 +74,60 @@ public class Shooter extends SubsystemBase {
   }
 
   private void setupMotors() {
-    TalonFXConfiguration cfg = new TalonFXConfiguration();
+    // Leader Motor
+    TalonFXConfiguration mainMotorCfg = new TalonFXConfiguration();
 
-    cfg.Slot0.kP = ShooterPIDConfig.KP;
-    cfg.Slot0.kI = ShooterPIDConfig.KI;
-    cfg.Slot0.kD = ShooterPIDConfig.KD;
-    cfg.Slot0.kV = ShooterPIDConfig.KV;
-    cfg.Slot0.kS = ShooterPIDConfig.KS;
+    mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
+    mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
+    mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
+    mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
+    mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
 
-    cfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
+    mainMotorCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
         .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
 
-    cfg.MotionMagic.MotionMagicAcceleration = ShooterPIDConfig.MOTION_MAGIC_ACCELERATION;
-    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    mainMotorCfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    mainMotorCfg.MotionMagic.MotionMagicAcceleration = ShooterPIDConfig.MOTION_MAGIC_ACCELERATION;
+    mainMotorCfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    StatusCode status1 = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
-      status = shooterMotor1.getConfigurator().apply(cfg);
-      if (status.isOK())
+      status1 = shooterMotor1.getConfigurator().apply(mainMotorCfg);
+      if (status1.isOK())
         break;
     }
-    if (!status.isOK()) {
-      System.out.println("Could not configure shooter motor. Error: " + status.toString());
+    if (!status1.isOK()) {
+      System.out.println("Could not configure shooter motor1. Error: " + status1.toString());
       configAlert.set(true);
       shooterMotor1.setControl(brake);
+    }
+
+    // Follower Motors
+    TalonFXConfiguration followerMotorsCfg = new TalonFXConfiguration();
+    followerMotorsCfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+
+    StatusCode status2 = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status2 = shooterMotor2.getConfigurator().apply(mainMotorCfg);
+      if (status2.isOK())
+        break;
+    }
+    if (!status2.isOK()) {
+      System.out.println("Could not configure shooter motor2. Error: " + status2.toString());
+      configAlert.set(true);
+      shooterMotor2.setControl(brake);
+    }
+
+    StatusCode status3 = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status3 = shooterMotor3.getConfigurator().apply(mainMotorCfg);
+      if (status3.isOK())
+        break;
+    }
+    if (!status3.isOK()) {
+      System.out.println("Could not configure shooter motor3. Error: " + status3.toString());
+      configAlert.set(true);
+      shooterMotor3.setControl(brake);
     }
   }
 
