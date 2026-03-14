@@ -199,8 +199,8 @@ public class CommandsForAutoPilot {
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
-                Supplier<Command> MoveTo_thing = () -> new PidToPoseCommand.Builder(
-                                () -> LeftMidAlliance.get(), drivetrain, "MoveTo_thing")
+                Supplier<Command> MoveTo_LeftMidAlliance = () -> new PidToPoseCommand.Builder(
+                                () -> LeftMidAlliance.get(), drivetrain, "MoveTo_LeftMidAlliance")
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
@@ -544,7 +544,6 @@ public class CommandsForAutoPilot {
                                 _shoot.get());
                 Command JUSTSHOOT = new SequentialCommandGroup(
                                 // MoveTo_blueCenter.get(),
-                                MoveTo_thing.get(),
                                 MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 midShoot.get()
                 // MoveTo_rightBump_AllianceToFieldStart.get(),
@@ -555,7 +554,7 @@ public class CommandsForAutoPilot {
                 // MoveTo_rightLoadInZone.get()
                 );
                 Command LeftStart_JUSTSHOOT = new SequentialCommandGroup(
-                                MoveTo_thing.get(),
+                                MoveTo_LeftMidAlliance.get(),
                                 MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 midShoot.get());
                 // Mini Autos
