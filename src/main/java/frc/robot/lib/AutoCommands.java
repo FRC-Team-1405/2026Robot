@@ -82,8 +82,21 @@ public class AutoCommands {
                 // NamedCommands.getCommand("TheShowboater"));
 
                 commandsToAddToChooser.put("TEST", NamedCommands.getCommand("TEST"));
-                commandsToAddToChooser.put("Center_Yum_Score",
-                                NamedCommands.getCommand("Center_Yum_Score"));
+
+                // Feeding station
+                commandsToAddToChooser.put("RightStartFeedingStationScore",
+                                NamedCommands.getCommand("RightStartFeedingStationScore"));
+                commandsToAddToChooser.put("CenterStartFeedingStationScore",
+                                NamedCommands.getCommand("CenterStartFeedingStationScore"));
+                commandsToAddToChooser.put("LeftStartFeedingStationScore",
+                                NamedCommands.getCommand("LeftStartFeedingStationScore"));
+
+                // NamedCommands.registerCommand("RightStartFeedingStationScore",
+                // RightStartFeedingStationScore);
+                // NamedCommands.registerCommand("CenterStartFeedingStationScore",
+                // CenterStartFeedingStationScore);
+                // NamedCommands.registerCommand("LeftStartFeedingStationScore",
+                // LeftStartFeedingStationScore);
 
                 commandsToAddToChooser.put("RightStartCenterHarvestInLeft",
                                 NamedCommands.getCommand("RightStartCenterHarvestInLeft"));

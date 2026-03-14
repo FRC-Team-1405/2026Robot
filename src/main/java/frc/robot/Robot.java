@@ -9,6 +9,7 @@ import com.ctre.phoenix6.HootAutoReplay;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.constants.FieldConstants;
 import frc.robot.lib.MotorSim.PhysicsSim;
 import frc.robot.sim.sjc.PhysicsSim_SJC;
 import frc.robot.util.GamePeriod;
@@ -74,6 +75,7 @@ public class Robot extends TimedRobot {
     public void autonomousPeriodic() {
         PhysicsSim.getInstance().run();
         m_robotContainer.drivetrain.publishDrivePidErrors();
+        m_robotContainer.drivetrain.publishDistanceToHub();
     }
 
     @Override
@@ -94,8 +96,9 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         GamePeriod.elasticPeriodic();
-        m_robotContainer.drivetrain.publishMotorCurrent();
+        // m_robotContainer.drivetrain.publishMotorCurrent();
         m_robotContainer.intake.publishMotorCurrents();
+        m_robotContainer.drivetrain.publishDistanceToHub();
     }
 
     @Override

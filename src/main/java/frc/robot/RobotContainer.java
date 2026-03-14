@@ -7,10 +7,13 @@ package frc.robot;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -19,20 +22,25 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
+import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.PointAtTarget;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
+import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
+import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
 import frc.robot.lib.CommandTracker;
@@ -98,6 +106,7 @@ public class RobotContainer {
 
                 AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
+                drivetrain.initOverridePose();
         }
 
         public Command getAutonomousCommand() {
@@ -169,11 +178,15 @@ public class RobotContainer {
                 SmartDashboard.putData(cmd);
                 operatorJoystick.povDown().onTrue(cmd);
 
-                operatorJoystick.y().onTrue(new SetHoodPosition(hood, HoodAngles.SHORT));
+                operatorJoystick.povRight().onTrue(new InstantCommand(() -> shooter.increaseDistanceForSpeed()));
+                operatorJoystick.povLeft().onTrue(new InstantCommand(() -> shooter.descreaseDistanceForSpeed()));
+
+                // operatorJoystick.y().onTrue(new SetHoodPosition(hood, HoodAngles.SHORT));
                 operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));
                 operatorJoystick.a().onTrue(new SetHoodPosition(hood, HoodAngles.LONG));
 
-                operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
+                // operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.SHORT));
                 operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
                 operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
                 operatorJoystick.rightBumper().onTrue(
@@ -234,10 +247,27 @@ public class RobotContainer {
                 driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
 
                 // Auto Align
+                // driverJoystick.x()
+                // .whileTrue(
+                // Commands.either(Commands.defer(() -> drivetrain.driveToPose(
+                // () -> Optional.of(
+                // FieldConstants.BLUE_HUB_SHOOT_CLOSE),
+                // true), Set.of(drivetrain)),
+                // Commands.none(),
+                // MoveMode.inAllianceZone(drivetrain)));
+
+                // Command driveToHubCommand = new DriveToHubDistance(drivetrain,
+                // FieldConstants.ALLIANCE_HUB_POSITION,
+                // ShooterPreferences.MEDIUM_DISTANCE);
+                Supplier<Command> driveToDistanceCommand = () -> new DriveToHubDistance(drivetrain,
+                                FieldConstants.ALLIANCE_HUB_POSITION,
+                                shooter.getDistanceFromSpeed());
+
                 driverJoystick.x()
                                 .whileTrue(
-                                                Commands.either(drivetrain.driveToPose(() -> Optional.of(
-                                                                FieldConstants.BLUE_HUB_SHOOT_CLOSE)), Commands.none(),
+                                                Commands.either(Commands.defer(driveToDistanceCommand,
+                                                                Set.of(drivetrain)),
+                                                                Commands.none(),
                                                                 MoveMode.inAllianceZone(drivetrain)));
 
                 // Point at hub toggle (STANDARD ↔ POINT or POINT_VELOCITY_COMPENSATED).
@@ -272,13 +302,14 @@ public class RobotContainer {
                 //
                 // A: spin up to whatever value is set in the Shooter/TestTargetRPS dashboard
                 // slider
-                // shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
+                shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
                 // B: stop shooter
                 shooterJoystick.b().onTrue(shooter.stopShooter());
                 // Preset speeds
                 shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
                 shooterJoystick.x().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
-                shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.LONG));
                 // Fire + stop
                 shooterJoystick.rightBumper().onTrue(
                                 new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY));

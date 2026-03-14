@@ -190,7 +190,7 @@ public class PidToPoseCommand extends FinneyCommand {
                 private boolean applyFieldSymmetryToPose = false;
                 private double initialStateVelocity = 0;
                 private double endStateVelocity = 0;
-                private double toleranceInches = 6.0;
+                private double toleranceInches = 3.0;
                 private double waitSeconds = 0;
                 private TrapezoidProfile.Constraints drivingContraints = DEFAULT_CONSTRAINTS;
 
