@@ -9,6 +9,7 @@ import com.therekrab.autopilot.APConstraints;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -43,6 +44,14 @@ public class CommandsForAutoPilot {
         private static final APConstraints testBumpConstraints = new APConstraints()
                         .withAcceleration(2.0) // TUNE THIS TO YOUR ROBOT!
                         .withVelocity(2.0);
+
+        // TODO: Adjust
+        private static final APConstraints fullFieldConstraints = new APConstraints()
+                        .withAcceleration(2.0) // TUNE THIS TO YOUR ROBOT!
+                        .withVelocity(2.0);
+
+        private static final TrapezoidProfile.Constraints centerHarvestConstraint = new TrapezoidProfile.Constraints(
+                        0.5, 0.5);
         // .withJerk(67.0);
 
         // Rotations
@@ -124,15 +133,19 @@ public class CommandsForAutoPilot {
         public static Supplier<Pose2d> farLeftCenter = () -> new Pose2d(8.25,
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(0));
 
-        public static Supplier<Pose2d> centerRightIntakeStart = () -> new Pose2d(7.75,
+        // centerRightIntakeStart was (7.75, 1, 90)
+        public static Supplier<Pose2d> centerRightIntakeStart = () -> new Pose2d(7.45,
                         RIGHT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
-        public static Supplier<Pose2d> centerRightIntakeEnd = () -> new Pose2d(7.75,
+        // centerRightIntakeEnd was (7.75, 6, 90)
+        public static Supplier<Pose2d> centerRightIntakeEnd = () -> new Pose2d(7.45,
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
+        // rotation was 180
         public static Supplier<Pose2d> centerRightIntakeEndLookHub = () -> new Pose2d(7.75,
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(180));
-
+        // centerRightIntakeStart was (7.75, 7, 270)
         public static Supplier<Pose2d> centerLeftIntakeStart = () -> new Pose2d(7.75,
                         LEFT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
+        // centerLeftIntakeEnd was (7.75, 2, 270)
         public static Supplier<Pose2d> centerLeftIntakeEnd = () -> new Pose2d(7.75,
                         LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
 
@@ -219,6 +232,7 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MoveTo_centerRightIntakeEnd = () -> new PidToPoseCommand.Builder(
                                 () -> centerRightIntakeEnd.get(), drivetrain, "MoveTo_centerRightIntakeEnd")
                                 .withFlipPoseForAlliance(true)
+                                .withConstraints(centerHarvestConstraint)
                                 .build();
 
                 Supplier<Command> MoveTo_centerLeftIntakeStart = () -> new PidToPoseCommand.Builder(
@@ -229,6 +243,7 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MoveTo_centerLeftIntakeEnd = () -> new PidToPoseCommand.Builder(
                                 () -> centerLeftIntakeEnd.get(), drivetrain, "MoveTo_centerRightIntakeEnd")
                                 .withFlipPoseForAlliance(true)
+                                .withConstraints(centerHarvestConstraint)
                                 .build();
 
                 Supplier<Command> MoveAndDeploy_centerRightIntakeStart = () -> Commands.parallel(
@@ -243,6 +258,7 @@ public class CommandsForAutoPilot {
 
                 Supplier<Command> MoveToPickup_centerRightIntakeEnd = () -> Commands
                                 .deadline(MoveTo_centerRightIntakeEnd.get(), intake.runPickupIn());
+
                 Supplier<Command> MoveToPickup_centerLeftIntakeEnd = () -> Commands
                                 .deadline(MoveTo_centerLeftIntakeEnd.get(), intake.runPickupIn());
                 // deadline runs in
@@ -469,22 +485,24 @@ public class CommandsForAutoPilot {
 
                 /* Full Autos */ // TODO: DON'T FORGET THE COMMAS
                 // Test/Move to a position
-                // Command AP_blueCenter = new SequentialCommandGroup(
+                // Command blueCenter = new SequentialCommandGroup(
                 // // MoveTo_blueCenter.get()
                 // );
-                Command AP_FrontHubShoot = new SequentialCommandGroup(
+                Command FrontHubShoot = new SequentialCommandGroup(
                                 MoveTo_FrontHubShoot.get(),
                                 _shoot.get());
-                Command AP_blueCenterToDepot = new SequentialCommandGroup(
+                Command blueCenterToDepot = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get(),
                                 MoveTo_depotFaceIn.get());
 
                 Command TEST = new SequentialCommandGroup(
-                                MoveTo_IntakeIN_FrontHubShoot.get(),
-                                _shoot.get());
-                Command AP_JUSTSHOOT = new SequentialCommandGroup(
-                                // MoveTo_blueCenter.get(),
-                                MoveTo_RightHubShoot.get()// ,
+                                MoveAndDeploy_centerRightIntakeStart.get(),
+                                MoveToPickup_centerRightIntakeEnd.get());
+                Command JUSTSHOOT = new SequentialCommandGroup(
+
+                // MoveToIntakeUp_centerRightIntakeEndLookHub.get()
+                // MoveTo_blueCenter.get(),
+                // MoveTo_RightHubShoot.get()// ,
                 // MoveTo_rightBump_AllianceToFieldStart.get(),
                 // MoveTo_rightBump_AllianceToFieldEnd.get(),
                 // MoveTo_centerRightIntakeStart.get(),
@@ -496,37 +514,37 @@ public class CommandsForAutoPilot {
                 Command climbCommand = climber.runClimbUp().withName("Auto Climb Up");
                 SmartDashboard.putData(climbCommand);
                 // Depot
-                Command AP_DepotFaceIn = new SequentialCommandGroup(
+                Command DepotFaceIn = new SequentialCommandGroup(
                                 MoveTo_leftOfDepotFaceIn.get(),
                                 MoveTo_depotFaceIn.get(),
                                 MoveTo_midOfDepotFaceIn.get(),
                                 MoveTo_rightOfDepotFaceIn.get());
                 // Bumps
-                Command AP_rightBumpToField = new SequentialCommandGroup(
+                Command rightBumpToField = new SequentialCommandGroup(
                                 // MoveTo_rightBump_AllianceToFieldStart.get(),
                                 MoveTo_rightBump_AllianceToFieldEnd.get());
 
-                Command AP_leftBumpToField = new SequentialCommandGroup(
+                Command leftBumpToField = new SequentialCommandGroup(
                                 MoveTo_leftBump_AllianceToFieldStart.get(),
                                 MoveTo_leftBump_AllianceToFieldEnd.get());
 
-                Command AP_rightBumpToAlliance = new SequentialCommandGroup(
+                Command rightBumpToAlliance = new SequentialCommandGroup(
                                 // MoveTo_rightBump_FieldToAllianceStart.get(),
                                 MoveTo_rightBump_FieldToAllianceEnd.get());
 
-                Command AP_leftBumpToAlliance = new SequentialCommandGroup(
+                Command leftBumpToAlliance = new SequentialCommandGroup(
                                 MoveTo_leftBump_FieldToAllianceStart.get(),
                                 MoveTo_leftBump_FieldToAllianceEnd.get());
                 // Center Harvest
-                Command AP_CenterHarvest = new SequentialCommandGroup(
+                Command CenterHarvest = new SequentialCommandGroup(
                                 // MoveTo_centerRightIntakeStart.get(),
                                 // MoveTo_centerRightIntakeEnd.get()
                                 MoveTo_rightLoadInZone.get());
-                Command AP_CenterRtoLSupplying = new SequentialCommandGroup(
+                Command CenterRtoLSupplying = new SequentialCommandGroup(
                                 MoveTo_leftLoadInZone.get(),
                                 MoveTo_rightLoadInZone.get());
 
-                Command AP_climb = new SequentialCommandGroup(
+                Command climb = new SequentialCommandGroup(
                                 MoveTo_preClimbPosition.get(),
                                 climbCommand,
                                 MoveTo_climbPosition.get(),
@@ -534,14 +552,14 @@ public class CommandsForAutoPilot {
                                 Commands.print("climbing"));
 
                 // Actual Full autos
-                Command AP_LeftStartDepotScore = new SequentialCommandGroup(
+                Command LeftStartDepotScore = new SequentialCommandGroup(
                                 MoveTo_leftOfDepotFaceIn.get(),
                                 MoveTo_depotFaceIn.get(),
                                 MoveTo_midOfDepotFaceIn.get(),
                                 MoveTo_rightOfDepotFaceIn.get(),
                                 MoveTo_FrontHubShoot.get());
 
-                Command AP_RightStartDepotScore = new SequentialCommandGroup(
+                Command RightStartDepotScore = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get(),
                                 MoveTo_offBlueCenter1.get(),
                                 MoveTo_offBlueCenter2.get(),
@@ -555,7 +573,7 @@ public class CommandsForAutoPilot {
                 // Commands.parallel(MoveTo_fieldSideLeftBump.get(), cmd));
                 // Commands.print("climbing").andThen(Commands.waitSeconds(3))
 
-                Command AP_CenterStartFeedingStationScore = new SequentialCommandGroup(
+                Command Center_Yum_Score = new SequentialCommandGroup(
                                 MoveTo_FrontHubShoot.get(),
                                 _shoot.get(),
                                 Commands.parallel(intake.runIntakeOut(), MoveTo_feedingStation.get()),
@@ -564,7 +582,7 @@ public class CommandsForAutoPilot {
                                 _shoot.get());
 
                 // TODO: Fix this
-                Command AP_RightStartCenterHarvestInLeft = new SequentialCommandGroup(
+                Command RightStartCenterHarvestInLeft = new SequentialCommandGroup(
                                 MoveTo_rightBump_AllianceToFieldStart.get(),
                                 MoveTo_rightBump_AllianceToFieldEnd.get(),
                                 MoveAndDeploy_centerRightIntakeStart.get(),
@@ -577,7 +595,7 @@ public class CommandsForAutoPilot {
                 // MEDIUM_shoot.get()
                 );
 
-                Command AP_LeftStartCenterHarvestInRight = new SequentialCommandGroup(
+                Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
                                 MoveTo_leftBump_AllianceToFieldStart.get(),
                                 MoveTo_leftBump_AllianceToFieldEnd.get(),
                                 MoveAndDeploy_centerLeftIntakeStart.get(),
@@ -586,10 +604,11 @@ public class CommandsForAutoPilot {
                                 MoveTo_rightBump_FieldToAllianceStart.get(),
                                 MoveTo_rightBump_FieldToAllianceEnd.get(),
                                 MoveTo_blueCenter.get(),
-                                MoveTo_FrontHubShoot.get(),
-                                MEDIUM_shoot.get());
+                                MoveTo_FrontHubShoot.get()// ,
+                // MEDIUM_shoot.get()
+                );
 
-                Command AP_RightQuadHarvest = new SequentialCommandGroup(
+                Command RightQuad = new SequentialCommandGroup(
                                 MoveTo_rightBump_AllianceToFieldStart.get(),
                                 MoveTo_rightBump_AllianceToFieldEnd.get(),
                                 MoveAndDeploy_centerRightIntakeStart.get(),
@@ -601,7 +620,7 @@ public class CommandsForAutoPilot {
                                 MoveTo_FrontHubShoot.get(),
                                 _shoot.get());
 
-                Command AP_LeftQuadHarvest = new SequentialCommandGroup(
+                Command LeftQuad = new SequentialCommandGroup(
                                 MoveTo_leftBump_AllianceToFieldStart.get(),
                                 MoveTo_leftBump_AllianceToFieldEnd.get(),
                                 MoveAndDeploy_centerLeftIntakeStart.get(),
@@ -613,7 +632,8 @@ public class CommandsForAutoPilot {
                                 MoveTo_FrontHubShoot.get(),
                                 _shoot.get());
 
-                Command AP_RightFeedShootCenterHarvest = new SequentialCommandGroup(
+                // Actual name: RightFeedShootCenterHarvest
+                Command Right_Yum_Middle = new SequentialCommandGroup(
                                 MoveTo_feedingStation.get(),
                                 Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
                                 MoveTo_FrontHubShoot.get(),
@@ -627,7 +647,7 @@ public class CommandsForAutoPilot {
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 MoveTo_FrontHubShoot.get());
                 // TODO: Debug SelectedShootPOS
-                Command AP_LeftDepotShootCenterHarvestInLeftShoot = new SequentialCommandGroup(
+                Command LeftDepotShootCenterHarvestInLeftShoot = new SequentialCommandGroup(
                                 MoveTo_leftOfDepotFaceIn.get(),
                                 MoveTo_depotFaceIn.get(),
                                 MoveTo_midOfDepotFaceIn.get(),
@@ -642,7 +662,7 @@ public class CommandsForAutoPilot {
                                 MoveTo_blueCenter.get(),
                                 MoveTo_FrontHubShoot.get());
 
-                Command AP_TheShowboater = new SequentialCommandGroup(
+                Command TheShowboater = new SequentialCommandGroup(
                                 MoveTo_leftOfDepotFaceIn.get(),
                                 MoveTo_depotFaceIn.get(),
                                 MoveTo_midOfDepotFaceIn.get(),
@@ -654,31 +674,31 @@ public class CommandsForAutoPilot {
 
                 /* Register Commands */ // any auto added here needs to be registered in AutoCommands to show up on
                                         // Elastic
-                // NamedCommands.registerCommand("AP_blueCenter", AP_blueCenter);
-                NamedCommands.registerCommand("AP_FrontHubShoot", AP_FrontHubShoot);
-                NamedCommands.registerCommand("AP_blueCenterToDepot", AP_blueCenterToDepot);
+                // NamedCommands.registerCommand("blueCenter", blueCenter);
+                NamedCommands.registerCommand("FrontHubShoot", FrontHubShoot);
+                NamedCommands.registerCommand("blueCenterToDepot", blueCenterToDepot);
                 NamedCommands.registerCommand("TEST", TEST);
-                NamedCommands.registerCommand("AP_DepotFaceIn", AP_DepotFaceIn);
-                NamedCommands.registerCommand("AP_climb", AP_climb);
-                NamedCommands.registerCommand("AP_JUSTSHOOT", AP_JUSTSHOOT);
+                NamedCommands.registerCommand("DepotFaceIn", DepotFaceIn);
+                NamedCommands.registerCommand("climb", climb);
+                NamedCommands.registerCommand("JUSTSHOOT", JUSTSHOOT);
 
-                NamedCommands.registerCommand("AP_rightBumpToField", AP_rightBumpToField);
-                NamedCommands.registerCommand("AP_leftBumpToField", AP_leftBumpToField);
-                NamedCommands.registerCommand("AP_rightBumpToAlliance", AP_rightBumpToAlliance);
-                NamedCommands.registerCommand("AP_leftBumpToAlliance", AP_leftBumpToAlliance);
+                NamedCommands.registerCommand("rightBumpToField", rightBumpToField);
+                NamedCommands.registerCommand("leftBumpToField", leftBumpToField);
+                NamedCommands.registerCommand("rightBumpToAlliance", rightBumpToAlliance);
+                NamedCommands.registerCommand("leftBumpToAlliance", leftBumpToAlliance);
 
-                NamedCommands.registerCommand("AP_CenterHarvest", AP_CenterHarvest);
-                NamedCommands.registerCommand("AP_LeftStartDepotScore", AP_LeftStartDepotScore);
-                NamedCommands.registerCommand("AP_RightStartDepotScore", AP_RightStartDepotScore);
-                NamedCommands.registerCommand("AP_CenterStartFeedingStationScore", AP_CenterStartFeedingStationScore);
-                NamedCommands.registerCommand("AP_RightStartCenterHarvestInLeft", AP_RightStartCenterHarvestInLeft);
-                NamedCommands.registerCommand("AP_LeftStartCenterHarvestInRight", AP_LeftStartCenterHarvestInRight);
-                NamedCommands.registerCommand("AP_RightFeedShootCenterHarvest",
-                                AP_RightFeedShootCenterHarvest);
-                NamedCommands.registerCommand("AP_LeftDepotShootCenterHarvestInLeftShoot",
-                                AP_LeftDepotShootCenterHarvestInLeftShoot);
-                NamedCommands.registerCommand("AP_TheShowboater", AP_TheShowboater);
-                NamedCommands.registerCommand("AP_RightQuadHarvest", AP_RightQuadHarvest);
-                NamedCommands.registerCommand("AP_LeftQuadHarvest", AP_LeftQuadHarvest);
+                NamedCommands.registerCommand("CenterHarvest", CenterHarvest);
+                NamedCommands.registerCommand("LeftStartDepotScore", LeftStartDepotScore);
+                NamedCommands.registerCommand("RightStartDepotScore", RightStartDepotScore);
+                NamedCommands.registerCommand("Center_Yum_Score", Center_Yum_Score);
+                NamedCommands.registerCommand("RightStartCenterHarvestInLeft", RightStartCenterHarvestInLeft);
+                NamedCommands.registerCommand("LeftStartCenterHarvestInRight", LeftStartCenterHarvestInRight);
+                NamedCommands.registerCommand("Right_Yum_Middle",
+                                Right_Yum_Middle);
+                NamedCommands.registerCommand("LeftDepotShootCenterHarvestInLeftShoot",
+                                LeftDepotShootCenterHarvestInLeftShoot);
+                NamedCommands.registerCommand("TheShowboater", TheShowboater);
+                NamedCommands.registerCommand("RightQuad", RightQuad);
+                NamedCommands.registerCommand("LeftQuad", LeftQuad);
         }
 }

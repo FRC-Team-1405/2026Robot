@@ -50,55 +50,55 @@ public class AutoCommands {
                 // NamedCommands.getCommand("P2P_auto1"));
                 // endregion PidToPose
 
-                commandsToAddToChooser.put("AP_FrontHubShoot", NamedCommands.getCommand("AP_FrontHubShoot"));
+                commandsToAddToChooser.put("FrontHubShoot", NamedCommands.getCommand("FrontHubShoot"));
 
-                // commandsToAddToChooser.put("AP_blueCenterToDepot",
-                // NamedCommands.getCommand("AP_blueCenterToDepot"));
-                // commandsToAddToChooser.put("AP_DepotFaceIn",
-                // NamedCommands.getCommand("AP_DepotFaceIn"));
-                // commandsToAddToChooser.put("AP_climb", NamedCommands.getCommand("AP_climb"));
+                // commandsToAddToChooser.put("blueCenterToDepot",
+                // NamedCommands.getCommand("blueCenterToDepot"));
+                // commandsToAddToChooser.put("DepotFaceIn",
+                // NamedCommands.getCommand("DepotFaceIn"));
+                // commandsToAddToChooser.put("climb", NamedCommands.getCommand("climb"));
 
-                commandsToAddToChooser.put("AP_JUSTSHOOT", NamedCommands.getCommand("AP_JUSTSHOOT"));
+                commandsToAddToChooser.put("JUSTSHOOT", NamedCommands.getCommand("JUSTSHOOT"));
 
                 // TODO:BUMP AUTOS
-                // commandsToAddToChooser.put("AP_rightBumpToField",
-                // NamedCommands.getCommand("AP_rightBumpToField"));
-                // commandsToAddToChooser.put("AP_leftBumpToField",
-                // NamedCommands.getCommand("AP_leftBumpToField"));
-                // commandsToAddToChooser.put("AP_rightBumpToAlliance",
-                // NamedCommands.getCommand("AP_rightBumpToAlliance"));
-                // commandsToAddToChooser.put("AP_leftBumpToAlliance",
-                // NamedCommands.getCommand("AP_leftBumpToAlliance"));
+                // commandsToAddToChooser.put("rightBumpToField",
+                // NamedCommands.getCommand("rightBumpToField"));
+                // commandsToAddToChooser.put("leftBumpToField",
+                // NamedCommands.getCommand("leftBumpToField"));
+                // commandsToAddToChooser.put("rightBumpToAlliance",
+                // NamedCommands.getCommand("rightBumpToAlliance"));
+                // commandsToAddToChooser.put("leftBumpToAlliance",
+                // NamedCommands.getCommand("leftBumpToAlliance"));
 
-                // commandsToAddToChooser.put("AP_ShootFromDepot",
-                // NamedCommands.getCommand("AP_ShootFromDepot"));
-                // commandsToAddToChooser.put("AP_CenterHarvest",
-                // NamedCommands.getCommand("AP_CenterHarvest"));
-                // commandsToAddToChooser.put("AP_LeftStartDepotScore",
-                // NamedCommands.getCommand("AP_LeftStartDepotScore"));
-                // commandsToAddToChooser.put("AP_RightStartDepotScore",
-                // NamedCommands.getCommand("AP_RightStartDepotScore"));
-                // commandsToAddToChooser.put("AP_TheShowboater",
-                // NamedCommands.getCommand("AP_TheShowboater"));
+                // commandsToAddToChooser.put("ShootFromDepot",
+                // NamedCommands.getCommand("ShootFromDepot"));
+                // commandsToAddToChooser.put("CenterHarvest",
+                // NamedCommands.getCommand("CenterHarvest"));
+                // commandsToAddToChooser.put("LeftStartDepotScore",
+                // NamedCommands.getCommand("LeftStartDepotScore"));
+                // commandsToAddToChooser.put("RightStartDepotScore",
+                // NamedCommands.getCommand("RightStartDepotScore"));
+                // commandsToAddToChooser.put("TheShowboater",
+                // NamedCommands.getCommand("TheShowboater"));
 
-                commandsToAddToChooser.put("AP_TEST", NamedCommands.getCommand("AP_TEST"));
-                commandsToAddToChooser.put("AP_CenterStartFeedingStationScore",
-                                NamedCommands.getCommand("AP_CenterStartFeedingStationScore"));
+                commandsToAddToChooser.put("TEST", NamedCommands.getCommand("TEST"));
+                commandsToAddToChooser.put("Center_Yum_Score",
+                                NamedCommands.getCommand("Center_Yum_Score"));
 
-                commandsToAddToChooser.put("AP_RightStartCenterHarvestInLeft",
-                                NamedCommands.getCommand("AP_RightStartCenterHarvestInLeft"));
-                commandsToAddToChooser.put("AP_LeftStartCenterHarvestInRight",
-                                NamedCommands.getCommand("AP_LeftStartCenterHarvestInRight"));
+                commandsToAddToChooser.put("RightStartCenterHarvestInLeft",
+                                NamedCommands.getCommand("RightStartCenterHarvestInLeft"));
+                commandsToAddToChooser.put("LeftStartCenterHarvestInRight",
+                                NamedCommands.getCommand("LeftStartCenterHarvestInRight"));
 
-                // commandsToAddToChooser.put("AP_LeftDepotShootCenterHarvestInLeftShoot",
-                // NamedCommands.getCommand("AP_LeftDepotShootCenterHarvestInLeftShoot"));
-                commandsToAddToChooser.put("AP_RightQuadHarvest",
-                                NamedCommands.getCommand("AP_RightQuadHarvest"));
-                commandsToAddToChooser.put("AP_LeftQuadHarvest",
-                                NamedCommands.getCommand("AP_LeftQuadHarvest"));
+                // commandsToAddToChooser.put("LeftDepotShootCenterHarvestInLeftShoot",
+                // NamedCommands.getCommand("LeftDepotShootCenterHarvestInLeftShoot"));
+                commandsToAddToChooser.put("RightQuad",
+                                NamedCommands.getCommand("RightQuad"));
+                commandsToAddToChooser.put("LeftQuad",
+                                NamedCommands.getCommand("LeftQuad"));
 
-                commandsToAddToChooser.put("AP_RightFeedShootCenterHarvest",
-                                NamedCommands.getCommand("AP_RightFeedShootCenterHarvest"));
+                commandsToAddToChooser.put("Right_Yum_Middle",
+                                NamedCommands.getCommand("Right_Yum_Middle"));
 
                 // endregion autopilot
                 // commandsToAddToChooser.put("Left_First_Auto", NamedCommands.getCommand("Left
@@ -130,7 +130,7 @@ public class AutoCommands {
         public static Supplier<Pose2d> getShootPosition() {
                 return shootingPositions.getSelected();
                 // SmartDashboard.getString(AUTO_SMARTDASHBOARD_FOLDER + "shooterPositions",
-                // NamedCommands.getCommand("AP_FrontHubShoot"));
+                // NamedCommands.getCommand("FrontHubShoot"));
 
         }
 
