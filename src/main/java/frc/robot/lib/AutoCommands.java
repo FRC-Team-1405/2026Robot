@@ -110,8 +110,8 @@ public class AutoCommands {
                 commandsToAddToChooser.put("LeftQuad",
                                 NamedCommands.getCommand("LeftQuad"));
 
-                commandsToAddToChooser.put("Right_Yum_Middle",
-                                NamedCommands.getCommand("Right_Yum_Middle"));
+                // commandsToAddToChooser.put("Right_Yum_Middle",
+                // NamedCommands.getCommand("Right_Yum_Middle"));
 
                 // endregion autopilot
                 // commandsToAddToChooser.put("Left_First_Auto", NamedCommands.getCommand("Left

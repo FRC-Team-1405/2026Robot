@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -36,6 +37,9 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
 public class CommandsForAutoPilot {
+        // TODO: integrate shooting positions dropdown into all autos, include the shoot
+        // from distance in the dropdown
+        // TODO: add a start position dropdown, integrate into all autos
         // TODO: integrate shooting positions dropdown into all autos, include the shoot
         // from distance in the dropdown
         // TODO: add a start position dropdown, integrate into all autos
