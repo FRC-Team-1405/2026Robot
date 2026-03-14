@@ -9,6 +9,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -82,6 +83,7 @@ public class PidToPoseCommand extends FinneyCommand {
         private final CommandSwerveDrivetrain drive;
         private final Supplier<Pose2d> targetPose;
         private final double toleranceInches;
+        private final double toleranceDegrees;
 
         // a wait timer to run the auto for at least that many seconds. used for
         // rotating in place currently very hacky
@@ -136,6 +138,7 @@ public class PidToPoseCommand extends FinneyCommand {
                 this.drive = builder.drive;
                 this.targetPose = builder.targetPose;
                 this.toleranceInches = builder.toleranceInches;
+                this.toleranceDegrees = builder.toleranceDegrees;
                 this.applyFieldSymmetryToPose = builder.applyFieldSymmetryToPose;
                 this.initialStateVelocity = builder.initialStateVelocity;
                 this.endStateVelocity = builder.endStateVelocity;
@@ -191,6 +194,7 @@ public class PidToPoseCommand extends FinneyCommand {
                 private double initialStateVelocity = 0;
                 private double endStateVelocity = 0;
                 private double toleranceInches = 3.0;
+                private double toleranceDegrees = 3.0;
                 private double waitSeconds = 0;
                 private TrapezoidProfile.Constraints drivingContraints = DEFAULT_CONSTRAINTS;
 
@@ -217,6 +221,11 @@ public class PidToPoseCommand extends FinneyCommand {
 
                 public Builder withTolerance(double toleranceInches) {
                         this.toleranceInches = toleranceInches;
+                        return this;
+                }
+
+                public Builder withThetaTolerance(double toleranceDegrees) {
+                        this.toleranceDegrees = toleranceDegrees;
                         return this;
                 }
 
@@ -392,7 +401,10 @@ public class PidToPoseCommand extends FinneyCommand {
         @Override
         public boolean isFinished() {
                 double distance = drive.getState().Pose.getTranslation().getDistance(poseToMoveTo.getTranslation());
-                return Units.metersToInches(distance) < toleranceInches;
+                boolean distanceThreshold = Units.metersToInches(distance) < toleranceInches;
+                Rotation2d thetaDiff = drive.getState().Pose.getRotation().minus(poseToMoveTo.getRotation());
+                boolean thetaThreshold = Math.abs(thetaDiff.getDegrees()) <= toleranceDegrees;
+                return distanceThreshold && thetaThreshold;
         }
 
         @Override
