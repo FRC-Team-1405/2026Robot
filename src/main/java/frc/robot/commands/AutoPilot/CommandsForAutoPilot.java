@@ -48,6 +48,8 @@ public class CommandsForAutoPilot {
         // Acceleration in a second, how much can velocity change
         // Jerk is how fast it starts and stops
 
+        public static Command OVERRIDE_AUTO_COMMAND = null;
+
         private static final APConstraints bumpConstraints = new APConstraints()
                         .withAcceleration(2.0) // TUNE THIS TO YOUR ROBOT!
                         .withVelocity(2.0);
@@ -768,5 +770,7 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("TheShowboater", TheShowboater);
                 NamedCommands.registerCommand("RightQuad", RightQuad);
                 NamedCommands.registerCommand("LeftQuad", LeftQuad);
+
+                OVERRIDE_AUTO_COMMAND = RightStartFeedingStationScore;
         }
 }
