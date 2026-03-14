@@ -59,6 +59,7 @@ public class AutoCommands {
                 // commandsToAddToChooser.put("climb", NamedCommands.getCommand("climb"));
 
                 commandsToAddToChooser.put("JUSTSHOOT", NamedCommands.getCommand("JUSTSHOOT"));
+                commandsToAddToChooser.put("LeftStart_JUSTSHOOT", NamedCommands.getCommand("LeftStart_JUSTSHOOT"));
 
                 // TODO:BUMP AUTOS
                 // commandsToAddToChooser.put("rightBumpToField",
