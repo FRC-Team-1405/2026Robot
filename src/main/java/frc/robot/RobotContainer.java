@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -339,5 +340,10 @@ public class RobotContainer {
                 }
 
                 table.getEntry("count").setNumber(CommandTracker.getRunning().size());
+        }
+
+        public static void publishRobotData() {
+                SmartDashboard.putNumber("Battery/BatteryVoltage", RobotController.getBatteryVoltage());
+                SmartDashboard.putNumber("Battery/BrownoutVoltage", RobotController.getBrownoutVoltage());
         }
 }
