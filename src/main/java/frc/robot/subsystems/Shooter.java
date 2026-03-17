@@ -12,9 +12,11 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -72,30 +74,60 @@ public class Shooter extends SubsystemBase {
   }
 
   private void setupMotors() {
-    TalonFXConfiguration cfg = new TalonFXConfiguration();
+    // Leader Motor
+    TalonFXConfiguration mainMotorCfg = new TalonFXConfiguration();
 
-    cfg.Slot0.kP = ShooterPIDConfig.KP;
-    cfg.Slot0.kI = ShooterPIDConfig.KI;
-    cfg.Slot0.kD = ShooterPIDConfig.KD;
-    cfg.Slot0.kV = ShooterPIDConfig.KV;
-    cfg.Slot0.kS = ShooterPIDConfig.KS;
+    mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
+    mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
+    mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
+    mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
+    mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
 
-    cfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
+    mainMotorCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
         .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
 
-    cfg.MotionMagic.MotionMagicAcceleration = ShooterPIDConfig.MOTION_MAGIC_ACCELERATION;
-    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    mainMotorCfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    mainMotorCfg.MotionMagic.MotionMagicAcceleration = ShooterPIDConfig.MOTION_MAGIC_ACCELERATION;
+    mainMotorCfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    StatusCode status1 = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
-      status = shooterMotor1.getConfigurator().apply(cfg);
-      if (status.isOK())
+      status1 = shooterMotor1.getConfigurator().apply(mainMotorCfg);
+      if (status1.isOK())
         break;
     }
-    if (!status.isOK()) {
-      System.out.println("Could not configure shooter motor. Error: " + status.toString());
+    if (!status1.isOK()) {
+      System.out.println("Could not configure shooter motor1. Error: " + status1.toString());
       configAlert.set(true);
       shooterMotor1.setControl(brake);
+    }
+
+    // Follower Motors
+    TalonFXConfiguration followerMotorsCfg = new TalonFXConfiguration();
+    followerMotorsCfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+
+    StatusCode status2 = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status2 = shooterMotor2.getConfigurator().apply(mainMotorCfg);
+      if (status2.isOK())
+        break;
+    }
+    if (!status2.isOK()) {
+      System.out.println("Could not configure shooter motor2. Error: " + status2.toString());
+      configAlert.set(true);
+      shooterMotor2.setControl(brake);
+    }
+
+    StatusCode status3 = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status3 = shooterMotor3.getConfigurator().apply(mainMotorCfg);
+      if (status3.isOK())
+        break;
+    }
+    if (!status3.isOK()) {
+      System.out.println("Could not configure shooter motor3. Error: " + status3.toString());
+      configAlert.set(true);
+      shooterMotor3.setControl(brake);
     }
   }
 
@@ -124,16 +156,51 @@ public class Shooter extends SubsystemBase {
     fLogger.log("shooterStop called");
   }
 
+  /**
+   * set requested speed and spin up shooter to that speed
+   */
   private void setRequestedSpeed(Supplier<AngularVelocity> speed) {
     requestedSpeed = speed;
     setShooterSpeed(requestedSpeed);
+  }
+
+  /**
+   * set requested speed and DON'T spin up shooter
+   * 
+   * @param speed
+   */
+  public void setRequestedSpeedWithoutShooting(Supplier<AngularVelocity> speed) {
+    requestedSpeed = speed;
+  }
+
+  /**
+   * get the desired robot distance to the center of the hub for the set shooter
+   * speed.
+   * 
+   * @return
+   */
+  public Supplier<Double> getDistanceFromSpeed() {
+    return ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.get(requestedSpeed.get()) == null
+        ? ShooterPreferences.MEDIUM_DISTANCE
+        : ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE
+            .get(requestedSpeed.get());
+  }
+
+  public void increaseDistanceForSpeed() {
+    Double value = ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.get(requestedSpeed.get()).get();
+    ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.put(requestedSpeed.get(), () -> value + 0.1);
+  }
+
+  public void descreaseDistanceForSpeed() {
+    Double value = ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.get(requestedSpeed.get()).get();
+    ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.put(requestedSpeed.get(), () -> value - 0.1);
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
     return Commands.runOnce(() -> setShooterSpeed(speed), this);
   }
 
-  public Command runShooterAuto() {
+  public Command runShooterAuto(Supplier<AngularVelocity> requestedSpeed) {
     return Commands.startEnd(
         () -> setShooterSpeed(requestedSpeed),
         () -> stopShooter(),
@@ -262,39 +329,40 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putNumber("Shooter/Motor2RPS", motor2RPS);
       SmartDashboard.putNumber("Shooter/Motor3RPS", motor3RPS);
       SmartDashboard.putNumber("Shooter/TargetRPS", shooterTarget);
-      SmartDashboard.putNumber("Shooter/Motor1StdDev", stdDev);
-      SmartDashboard.putNumber("Shooter/BallExitVelocityFPS", exitVelocityFPS);
+      // SmartDashboard.putNumber("Shooter/Motor1StdDev", stdDev);
+      // SmartDashboard.putNumber("Shooter/BallExitVelocityFPS", exitVelocityFPS);
 
       // Follower sync
       SmartDashboard.putNumber("Shooter/Motor2RPSDelta", motor2RPSDelta);
       SmartDashboard.putNumber("Shooter/Motor3RPSDelta", motor3RPSDelta);
 
       // Supply & output voltage
-      SmartDashboard.putNumber("Shooter/SupplyVoltage", supplyVoltage);
-      SmartDashboard.putNumber("Shooter/Motor1OutputVoltage", motor1OutputVoltage);
-      SmartDashboard.putNumber("Shooter/Motor2OutputVoltage", motor2OutputVoltage);
-      SmartDashboard.putNumber("Shooter/Motor3OutputVoltage", motor3OutputVoltage);
+      // SmartDashboard.putNumber("Shooter/SupplyVoltage", supplyVoltage);
+      // SmartDashboard.putNumber("Shooter/Motor1OutputVoltage", motor1OutputVoltage);
+      // SmartDashboard.putNumber("Shooter/Motor2OutputVoltage", motor2OutputVoltage);
+      // SmartDashboard.putNumber("Shooter/Motor3OutputVoltage", motor3OutputVoltage);
 
       // Current
-      SmartDashboard.putNumber("Shooter/Motor1SupplyCurrent", motor1SupplyCurrent);
-      SmartDashboard.putNumber("Shooter/Motor2SupplyCurrent", motor2SupplyCurrent);
-      SmartDashboard.putNumber("Shooter/Motor3SupplyCurrent", motor3SupplyCurrent);
-      SmartDashboard.putNumber("Shooter/DifferentialCurrent", differentialCurrentDraw);
+      // SmartDashboard.putNumber("Shooter/Motor1SupplyCurrent", motor1SupplyCurrent);
+      // SmartDashboard.putNumber("Shooter/Motor2SupplyCurrent", motor2SupplyCurrent);
+      // SmartDashboard.putNumber("Shooter/Motor3SupplyCurrent", motor3SupplyCurrent);
+      // SmartDashboard.putNumber("Shooter/DifferentialCurrent",
+      // differentialCurrentDraw);
       SmartDashboard.putNumber("Shooter/Motor1TorqueCurrent", motor1TorqueCurrent);
       SmartDashboard.putNumber("Shooter/Motor2TorqueCurrent", motor2TorqueCurrent);
       SmartDashboard.putNumber("Shooter/Motor3TorqueCurrent", motor3TorqueCurrent);
       SmartDashboard.putNumber("Shooter/CumulativeStatorCurrent", cumulativeMotorStatorCurrent);
 
       // Temperature
-      SmartDashboard.putNumber("Shooter/Motor1Temp", motor1Temp);
-      SmartDashboard.putNumber("Shooter/Motor2Temp", motor2Temp);
-      SmartDashboard.putNumber("Shooter/Motor3Temp", motor3Temp);
+      // SmartDashboard.putNumber("Shooter/Motor1Temp", motor1Temp);
+      // SmartDashboard.putNumber("Shooter/Motor2Temp", motor2Temp);
+      // SmartDashboard.putNumber("Shooter/Motor3Temp", motor3Temp);
 
       // PID diagnostics
       SmartDashboard.putNumber("Shooter/Error", error);
       SmartDashboard.putNumber("Shooter/AverageError", averageError);
-      SmartDashboard.putNumber("Shooter/HighError", highError);
-      SmartDashboard.putNumber("Shooter/LowError", lowError);
+      // SmartDashboard.putNumber("Shooter/HighError", highError);
+      // SmartDashboard.putNumber("Shooter/LowError", lowError);
       SmartDashboard.putNumber("Shooter/SettleCount", settleCount);
 
       // Lock & shot
@@ -306,6 +374,10 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putBoolean("Shooter/Long Speed", requestedSpeed.get() == Constants.ShooterPreferences.LONG);
       SmartDashboard.putBoolean("Shooter/Medium Speed", requestedSpeed.get() == Constants.ShooterPreferences.MEDIUM);
       SmartDashboard.putBoolean("Shooter/Short Speed", requestedSpeed.get() == Constants.ShooterPreferences.SHORT);
+
+      // Shooter Distance
+      SmartDashboard.putNumber("Shooter/Requested Speed", requestedSpeed.get().in(RotationsPerSecond));
+      SmartDashboard.putNumber("Shooter/Desired Distance", getDistanceFromSpeed().get());
     }
   }
 

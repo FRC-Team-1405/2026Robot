@@ -26,6 +26,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -34,7 +36,9 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.commands.PidToPose.PidToPoseCommand;
+import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.lib.AllianceSymmetry;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -276,6 +280,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         // Update swerve features (handles aim visualization auto-clearing)
         m_swerveFeatures.periodic();
+        checkForSetPose();
     }
 
     /**
@@ -422,15 +427,24 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return m_swerveFeatures.getAngleToTargetWithVelocityCompensation(targetPose);
     }
 
+    public void publishDriveOutputVoltage() {
+        SwerveModule<TalonFX, TalonFX, CANcoder>[] modules = this.getModules();
+
+        for (int j = 0; j < modules.length; j++) {
+            SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_OutputVoltage_" + j,
+                    modules[j].getDriveMotor().getMotorVoltage().getValueAsDouble());
+        }
+    }
+
     public void publishMotorCurrent() {
         SwerveModule<TalonFX, TalonFX, CANcoder>[] modules = this.getModules();
 
         for (int j = 0; j < modules.length; j++) {
-            SmartDashboard.putNumber("SwerveDrive/DriveMotor_StatorCurrent_" + j,
+            SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_StatorCurrent_" + j,
                     modules[j].getDriveMotor().getStatorCurrent().getValueAsDouble());
-            SmartDashboard.putNumber("SwerveDrive/DriveMotor_SupplyCurrent_" + j,
+            SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_SupplyCurrent_" + j,
                     modules[j].getDriveMotor().getSupplyCurrent().getValueAsDouble());
-            SmartDashboard.putNumber("SwerveDrive/DriveMotor_TorqueCurrent_" + j,
+            SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_TorqueCurrent_" + j,
                     modules[j].getDriveMotor().getTorqueCurrent().getValueAsDouble());
         }
     }
@@ -442,36 +456,79 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             TalonFX driveMotor = modules[j].getDriveMotor();
 
             SmartDashboard.putNumber(
-                    "SwerveDrive/DriveMotor_ClosedLoopError_" + j,
+                    SWERVE_DRIVE + "DriveMotor_ClosedLoopError_" + j,
                     driveMotor.getClosedLoopError().getValueAsDouble());
 
             SmartDashboard.putNumber(
-                    "SwerveDrive/DriveMotor_ClosedLoopReference_" + j,
+                    SWERVE_DRIVE + "DriveMotor_ClosedLoopReference_" + j,
                     driveMotor.getClosedLoopReference().getValueAsDouble());
 
             SmartDashboard.putNumber(
-                    "SwerveDrive/DriveMotor_ClosedLoopOutput_" + j,
+                    SWERVE_DRIVE + "DriveMotor_ClosedLoopOutput_" + j,
                     driveMotor.getClosedLoopOutput().getValueAsDouble());
 
         }
     }
 
-    private Command p2pCommand = null;
-
-    public Command driveToPose(Supplier<Optional<Pose2d>> targetPoseSupplier) {
+    public Command driveToPose(Supplier<Optional<Pose2d>> targetPoseSupplier, boolean flipPoseForRedAlliance) {
         Supplier<Pose2d> poseSupplier = () -> (targetPoseSupplier.get().get());
 
-        if (p2pCommand == null) {
-            p2pCommand = Commands.sequence(
-                    Commands.runOnce(() -> {
-                        System.out.println("DriveToPose Called with targetPose: " +
-                                targetPoseSupplier.get());
-                    }),
-                    new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose").withTolerance(2)
-                            .withFlipPoseForAlliance(true).build());
+        // return Commands.sequence(
+        // Commands.runOnce(() -> {
+        // System.out.println("DriveToPose Called with targetPose: " +
+        // targetPoseSupplier.get());
+        // }),
+        // new PidToPoseCommand.Builder(poseSupplier, this,
+        // "DriveToPose").withTolerance(2)
+        // .withFlipPoseForAlliance(flipPoseForRedAlliance).build());
+        return new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose").withTolerance(2)
+                .withFlipPoseForAlliance(flipPoseForRedAlliance).build();
+    }
+
+    public void publishDistanceToHub() {
+        SmartDashboard.putNumber(SWERVE_DRIVE + "DistanceToHub",
+                m_swerveFeatures.getDistanceToHub(this, FieldConstants.ALLIANCE_HUB_POSITION));
+    }
+
+    private static final SendableChooser<Pose2d> positionChooser = new SendableChooser<>();
+
+    private static final String SWERVE_DRIVE = "SwerveDrive/";
+    private static final String SET_OVERRIDE_POSE = "Set Override Pose";
+    private static final String OVERRIDE_POSE = "Override Pose";
+
+    public void initOverridePose() {
+        SmartDashboard.putNumber(SWERVE_DRIVE + "OverridePose_X", 0);
+        SmartDashboard.putNumber(SWERVE_DRIVE + "OverridePose_Y", 0);
+        SmartDashboard.putBoolean(SWERVE_DRIVE + SET_OVERRIDE_POSE, false);
+
+        positionChooser.addOption("NONE", null);
+        positionChooser.addOption("RightStart", FieldConstants.RIGHT_START);
+        positionChooser.addOption("CenterStart", FieldConstants.CENTER_START);
+        positionChooser.addOption("LeftStart", FieldConstants.LEFT_START);
+        SmartDashboard.putData(SWERVE_DRIVE + OVERRIDE_POSE, positionChooser);
+    }
+
+    public void checkForSetPose() {
+        boolean value = SmartDashboard.getBoolean(SWERVE_DRIVE + SET_OVERRIDE_POSE, false);
+        if (value) {
+            // override pose button pushed
+            Pose2d overridePose = positionChooser.getSelected();
+
+            if (overridePose == null) {
+                double x = SmartDashboard.getNumber(SWERVE_DRIVE + "OverridePose_X", 0);
+                double y = SmartDashboard.getNumber(SWERVE_DRIVE + "OverridePose_Y", 0);
+                resetPose(new Pose2d(x, y, Rotation2d.kZero));
+            } else {
+                // override pose selected
+                if (AllianceSymmetry.isBlue()) {
+                    resetPose(overridePose);
+                } else {
+                    resetPose(AllianceSymmetry.flip(overridePose));
+                }
+            }
+
+            // disable set override pose button, resets the UI
+            SmartDashboard.putBoolean(SWERVE_DRIVE + SET_OVERRIDE_POSE, false);
         }
-
-        return p2pCommand;
-
     }
 }

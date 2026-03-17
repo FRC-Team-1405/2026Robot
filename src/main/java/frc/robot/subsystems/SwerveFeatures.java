@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -38,6 +40,10 @@ public class SwerveFeatures {
     // Track last update time for auto-clearing
     private double m_lastAimUpdateTime = 0.0;
     private static final double AIM_VISUALIZATION_TIMEOUT = 0.5; // seconds
+
+    // State for acceleration calculation
+    private double m_lastSpeed = 0.0;
+    private double m_lastSpeedTimestamp = -1.0;
 
     /* Publisher for estimated aim point pose */
     private final StructPublisher<Pose2d> m_estimatedAimPointPublisher = NetworkTableInstance.getDefault()
@@ -101,6 +107,7 @@ public class SwerveFeatures {
         }
 
         publishRobotVelocity();
+        // publishRobotAcceleration();
     }
 
     /**
@@ -323,5 +330,48 @@ public class SwerveFeatures {
             // In case drivetrain state is not available yet, avoid crashing
             fLogger.log("publishRobotVelocity: failed to read drivetrain state: %s", ex.getMessage());
         }
+    }
+
+    /**
+     * Calculate and publish the robot's overall translational acceleration (m/s²)
+     * to SmartDashboard under the "SwerveDrive/" namespace.
+     * Uses finite difference (Δspeed / Δtime) from the previous periodic call.
+     */
+    public void publishRobotAcceleration() {
+        try {
+            ChassisSpeeds currentSpeeds = m_drivetrain.getState().Speeds;
+            double speed = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+            double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+
+            double acceleration = 0.0;
+            if (m_lastSpeedTimestamp >= 0.0) {
+                double dt = now - m_lastSpeedTimestamp;
+                if (dt > 0.0) {
+                    acceleration = (speed - m_lastSpeed) / dt;
+                }
+            }
+
+            m_lastSpeed = speed;
+            m_lastSpeedTimestamp = now;
+
+            SmartDashboard.putNumber("SwerveDrive/Acceleration", acceleration);
+        } catch (Exception ex) {
+            // In case drivetrain state is not available yet, avoid crashing
+            fLogger.log("publishRobotAcceleration: failed to read drivetrain state: %s", ex.getMessage());
+        }
+    }
+
+    /**
+     * 
+     * @param drivetrain
+     * @param hubPosition alliance-flipped position of the hub
+     * @return The distance to the hub in meters
+     */
+    public double getDistanceToHub(CommandSwerveDrivetrain drivetrain, Supplier<Pose2d> hubPosition) {
+        return drivetrain.getState().Pose.getTranslation().getDistance(hubPosition.get().getTranslation());
+    }
+
+    public double getDistancePoses(Pose2d firstPose, Pose2d secondPose) {
+        return firstPose.getTranslation().getDistance(secondPose.getTranslation());
     }
 }
