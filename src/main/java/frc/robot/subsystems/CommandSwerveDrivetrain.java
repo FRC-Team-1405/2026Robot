@@ -427,6 +427,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return m_swerveFeatures.getAngleToTargetWithVelocityCompensation(targetPose);
     }
 
+    public void publishDriveOutputVoltage() {
+        SwerveModule<TalonFX, TalonFX, CANcoder>[] modules = this.getModules();
+
+        for (int j = 0; j < modules.length; j++) {
+            SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_OutputVoltage_" + j,
+                    modules[j].getDriveMotor().getMotorVoltage().getValueAsDouble());
+        }
+    }
+
     public void publishMotorCurrent() {
         SwerveModule<TalonFX, TalonFX, CANcoder>[] modules = this.getModules();
 
@@ -479,8 +488,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void publishDistanceToHub() {
         SmartDashboard.putNumber(SWERVE_DRIVE + "DistanceToHub",
                 m_swerveFeatures.getDistanceToHub(this, FieldConstants.ALLIANCE_HUB_POSITION));
-        m_swerveFeatures.getDistancePoses(FieldConstants.BLUE_HUB,
-                new Pose2d(3.069361, 4.034638, Rotation2d.fromDegrees(0)));
     }
 
     private static final SendableChooser<Pose2d> positionChooser = new SendableChooser<>();
