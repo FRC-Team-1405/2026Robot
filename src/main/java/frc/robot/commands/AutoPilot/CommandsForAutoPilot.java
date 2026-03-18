@@ -66,6 +66,8 @@ public class CommandsForAutoPilot {
 
         private static final TrapezoidProfile.Constraints centerHarvestConstraint = new TrapezoidProfile.Constraints(
                         0.5, 0.5);
+        private static final TrapezoidProfile.Constraints feedingStationMovementConstraints = new TrapezoidProfile.Constraints(
+                        1.0, 1.0);
         // .withJerk(67.0);
 
         // Rotations
@@ -220,6 +222,8 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MoveTo_feedingStation = () -> new PidToPoseCommand.Builder(
                                 () -> feedingStation.get(), drivetrain, "MoveTo_feedingStation")
                                 .withFlipPoseForAlliance(true)
+                                .withConstraints(
+                                                feedingStationMovementConstraints)
                                 .build();
                 Supplier<Command> MoveTo_feedingStation_leftStart = () -> Commands.parallel(intake.runIntakeOut(),
                                 Commands.sequence(MoveTo_CenterTransit.get(),
@@ -626,9 +630,9 @@ public class CommandsForAutoPilot {
                                 // MoveTo_FrontHubShoot.get(),
                                 // _shoot.get(),
                                 MoveTo_feedingStation_centerStart.get(),
-                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_FEEDER_TIME),
-                                MoveTo_FrontHubShoot.get(),
-                                midShoot.get());
+                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_FEEDER_TIME));
+                // MoveTo_FrontHubShoot.get(),
+                // midShoot.get());
 
                 Command LeftStartFeedingStationScore = new SequentialCommandGroup(
                                 // MoveTo_FrontHubShoot.get(),
@@ -771,6 +775,6 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("RightQuad", RightQuad);
                 NamedCommands.registerCommand("LeftQuad", LeftQuad);
 
-                OVERRIDE_AUTO_COMMAND = RightStartFeedingStationScore;
+                OVERRIDE_AUTO_COMMAND = CenterStartFeedingStationScore;
         }
 }
