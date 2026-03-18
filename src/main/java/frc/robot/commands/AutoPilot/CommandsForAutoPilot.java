@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.DriveToHubDistance;
-import frc.robot.commands.PidToPose.PidToPoseCommand;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
 import frc.robot.lib.AprilTags;
@@ -196,28 +195,28 @@ public class CommandsForAutoPilot {
                 /* Commands */
                 // Uses command suppliers instead of commands so that we can reuse the same
                 // command in an autonomous
-                Supplier<Command> MoveTo_blueCenter = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_blueCenter = () -> new AutoPilotCommand.Builder(
                                 () -> blueCenter.get(), drivetrain, "MoveTo_blueCenter")
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
-                Supplier<Command> MoveTo_LeftMidAlliance = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_LeftMidAlliance = () -> new AutoPilotCommand.Builder(
                                 () -> LeftMidAlliance.get(), drivetrain, "MoveTo_LeftMidAlliance")
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
-                Supplier<Command> MoveTo_CenterTransit = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_CenterTransit = () -> new AutoPilotCommand.Builder(
                                 () -> FieldConstants.BLUE_HUB_SHOOT_CLOSE, drivetrain, "MoveTo_blueCenter")
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
-                Supplier<Command> MoveTo_centerOfField = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_centerOfField = () -> new AutoPilotCommand.Builder(
                                 () -> centerOfField.get(), drivetrain, "MoveTo_centerOfField")
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
                 // Feeding station Movements
-                Supplier<Command> MoveTo_feedingStation = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_feedingStation = () -> new AutoPilotCommand.Builder(
                                 () -> feedingStation.get(), drivetrain, "MoveTo_feedingStation")
                                 .withFlipPoseForAlliance(true)
                                 .build();
@@ -229,15 +228,15 @@ public class CommandsForAutoPilot {
                                                 MoveTo_CenterTransit.get(),
                                                 MoveTo_feedingStation.get()));
 
-                Supplier<Command> MoveTo_fourMeters = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_fourMeters = () -> new AutoPilotCommand.Builder(
                                 () -> fourMeters.get(), drivetrain, "MoveTo_fourMeters")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_preClimbPosition = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_preClimbPosition = () -> new AutoPilotCommand.Builder(
                                 () -> preClimbPosition.get(), drivetrain, "MoveTo_preClimbPosition")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_climbPosition = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_climbPosition = () -> new AutoPilotCommand.Builder(
                                 () -> climbPosition.get(), drivetrain, "MoveTo_climbPosition")
                                 .withFlipPoseForAlliance(true)
                                 .build();
@@ -258,39 +257,39 @@ public class CommandsForAutoPilot {
                                                 .setRequestedSpeedWithoutShooting(() -> ShooterPreferences.LONG)),
                                 MoveTo_requestedSpeedDistanceToHub.get());
 
-                Supplier<Command> MoveTo_IntakeIN_FrontHubShoot = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_IntakeIN_FrontHubShoot = () -> new AutoPilotCommand.Builder(
                                 () -> IntakeIN_FrontHubShoot.get(), drivetrain, "MoveTo_FrontHubShoot")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_IntakeOUT_FrontHubShoot = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_IntakeOUT_FrontHubShoot = () -> new AutoPilotCommand.Builder(
                                 () -> IntakeOUT_FrontHubShoot.get(), drivetrain, "MoveTo_FrontHubShoot")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_RightHubShoot = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_RightHubShoot = () -> new AutoPilotCommand.Builder(
                                 () -> RightHubShoot.get(), drivetrain, "MoveTo_RightHubShoot")
                                 .withFlipPoseForAlliance(true)
                                 .build();
                 // Center Harvest(s)
-                Supplier<Command> MoveTo_centerRightIntakeStart = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_centerRightIntakeStart = () -> new AutoPilotCommand.Builder(
                                 () -> centerRightIntakeStart.get(), drivetrain, "MoveTo_centerRightIntakeStart")
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
-                Supplier<Command> MoveTo_centerRightIntakeEnd = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_centerRightIntakeEnd = () -> new AutoPilotCommand.Builder(
                                 () -> centerRightIntakeEnd.get(), drivetrain, "MoveTo_centerRightIntakeEnd")
                                 .withFlipPoseForAlliance(true)
-                                .withConstraints(centerHarvestConstraint)
+                                // .withConstraints(centerHarvestConstraint)
                                 .build();
 
-                Supplier<Command> MoveTo_centerLeftIntakeStart = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_centerLeftIntakeStart = () -> new AutoPilotCommand.Builder(
                                 () -> centerLeftIntakeStart.get(), drivetrain, "MoveTo_centerLeftIntakeStart")
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
-                Supplier<Command> MoveTo_centerLeftIntakeEnd = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_centerLeftIntakeEnd = () -> new AutoPilotCommand.Builder(
                                 () -> centerLeftIntakeEnd.get(), drivetrain, "MoveTo_centerRightIntakeEnd")
                                 .withFlipPoseForAlliance(true)
-                                .withConstraints(centerHarvestConstraint)
+                                // .withConstraints(centerHarvestConstraint)
                                 .build();
 
                 Supplier<Command> MoveAndDeploy_centerRightIntakeStart = () -> Commands.parallel(
@@ -312,11 +311,11 @@ public class CommandsForAutoPilot {
                 // parrallel until the
                 // first command
                 // finishes
-                Supplier<Command> MoveTo_quadLeft = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_quadLeft = () -> new AutoPilotCommand.Builder(
                                 () -> quadLeft.get(), drivetrain, "MoveTo_quadLeft")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_quadRight = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_quadRight = () -> new AutoPilotCommand.Builder(
                                 () -> quadRight.get(), drivetrain, "MoveTo_quadRight")
                                 .withFlipPoseForAlliance(true)
                                 .build();
@@ -326,16 +325,16 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MoveToPickup_quadRight = () -> Commands
                                 .deadline(MoveTo_quadRight.get(), intake.runPickupIn());
 
-                Supplier<Command> MoveTo_centerRightIntakeEndLookHub = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_centerRightIntakeEndLookHub = () -> new AutoPilotCommand.Builder(
                                 () -> centerRightIntakeEndLookHub.get(), drivetrain, "centerRightIntakeEndLookHub")
                                 .withFlipPoseForAlliance(true)
-                                .withWaitSeconds(1)
+                                // .withWaitSeconds(1)
                                 .build();
 
-                Supplier<Command> MoveTo_centerLeftIntakeEndLookHub = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_centerLeftIntakeEndLookHub = () -> new AutoPilotCommand.Builder(
                                 () -> centerLeftIntakeEndLookHub.get(), drivetrain, "centerRightIntakeEndLookHub")
                                 .withFlipPoseForAlliance(true)
-                                .withWaitSeconds(1)
+                                // .withWaitSeconds(1)
                                 .build();
 
                 Supplier<Command> MoveToIntakeUp_centerRightIntakeEndLookHub = () -> Commands
@@ -350,83 +349,83 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MoveToIntakeUp_quadRight = () -> Commands
                                 .parallel(MoveTo_quadRight.get(), intake.runIntakeCenter());
 
-                Supplier<Command> MoveTo_rightLoadInZone = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_rightLoadInZone = () -> new AutoPilotCommand.Builder(
                                 () -> rightLoadInZone.get(), drivetrain, "MoveTo_rightLoadInZone")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_leftLoadInZone = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_leftLoadInZone = () -> new AutoPilotCommand.Builder(
                                 () -> leftLoadInZone.get(), drivetrain, "MoveTo_leftLoadInZone")
                                 .withFlipPoseForAlliance(true)
                                 .build();
                 // Depot
-                Supplier<Command> MoveTo_depotFaceIn = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_depotFaceIn = () -> new AutoPilotCommand.Builder(
                                 () -> depotFaceIn.get(), drivetrain, "MoveTo_depotFaceIn")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_leftOfDepotFaceIn = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_leftOfDepotFaceIn = () -> new AutoPilotCommand.Builder(
                                 () -> leftOfDepotFaceIn.get(), drivetrain, "MoveTo_leftOfDepotFaceIn")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_midOfDepotFaceIn = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_midOfDepotFaceIn = () -> new AutoPilotCommand.Builder(
                                 () -> midOfDepotFaceIn.get(), drivetrain, "MoveTo_midOfDepotFaceIn")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_rightOfDepotFaceIn = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_rightOfDepotFaceIn = () -> new AutoPilotCommand.Builder(
                                 () -> rightOfDepotFaceIn.get(), drivetrain, "MoveTo_rightOfDepotFaceIn")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_depotFaceOut = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_depotFaceOut = () -> new AutoPilotCommand.Builder(
                                 () -> depotFaceOut.get(), drivetrain, "MoveTo_depotFaceIn")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_leftOfDepotFaceOut = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_leftOfDepotFaceOut = () -> new AutoPilotCommand.Builder(
                                 () -> leftOfDepotFaceOut.get(), drivetrain, "MoveTo_leftOfDepotFaceOut")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_midOfDepotFaceOut = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_midOfDepotFaceOut = () -> new AutoPilotCommand.Builder(
                                 () -> midOfDepotFaceOut.get(), drivetrain, "MoveTo_midOfDepotFaceOut")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_rightOfDepotFaceOut = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_rightOfDepotFaceOut = () -> new AutoPilotCommand.Builder(
                                 () -> rightOfDepotFaceOut.get(), drivetrain, "MoveTo_rightOfDepotFaceOut")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_offBlueCenter1 = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_offBlueCenter1 = () -> new AutoPilotCommand.Builder(
                                 () -> offBlueCenter1.get(), drivetrain, "MoveTo_offBlueCenter1")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_offBlueCenter2 = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_offBlueCenter2 = () -> new AutoPilotCommand.Builder(
                                 () -> offBlueCenter2.get(), drivetrain, "MoveTo_offBlueCenter2")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_selectedShootPosition = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_selectedShootPosition = () -> new AutoPilotCommand.Builder(
                                 AutoCommands.getShootPosition(), drivetrain, "MoveTo_selectedShootPosition")
                                 .withFlipPoseForAlliance(true)
                                 .build();
                 // right from the driver station view
                 // Bump Stuff
 
-                Supplier<Command> MoveTo_leftBump_AllianceToFieldStart = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_leftBump_AllianceToFieldStart = () -> new AutoPilotCommand.Builder(
                                 () -> leftBump_AllianceToFieldStart.get(), drivetrain,
                                 "MoveTo_leftBump_AllianceToFieldStart")
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(bumpConstraints)
                                 .build();
 
-                Supplier<Command> MoveTo_leftBump_AllianceToFieldEnd = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_leftBump_AllianceToFieldEnd = () -> new AutoPilotCommand.Builder(
                                 () -> leftBump_AllianceToFieldEnd.get(), drivetrain,
                                 "MoveTo_leftBump_AllianceToFieldEnd")
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(bumpConstraints)
                                 .build();
 
-                Supplier<Command> MoveTo_rightBump_AllianceToFieldStart = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_rightBump_AllianceToFieldStart = () -> new AutoPilotCommand.Builder(
                                 () -> rightBump_AllianceToFieldStart.get(), drivetrain,
                                 "MoveTo_rightBump_AllianceToFieldStart")
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(bumpConstraints)
                                 .build();
-                Supplier<Command> MoveTo_rightBump_AllianceToFieldStartDos = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_rightBump_AllianceToFieldStartDos = () -> new AutoPilotCommand.Builder(
                                 () -> rightBump_AllianceToFieldStartDos.get(), drivetrain,
                                 "MoveTo_rightBump_AllianceToFieldStartDos")
                                 .withFlipPoseForAlliance(true)
@@ -434,40 +433,40 @@ public class CommandsForAutoPilot {
                                 .build();
 
                 // Supplier<Command> MoveTo_rightBump_AllianceToFieldEnd = () -> new
-                // PidToPoseCommand.Builder(
+                // AutoPilotCommand.Builder(
                 // () -> rightBump_AllianceToFieldEnd.get(), drivetrain,
                 // "MoveTo_rightBump_AllianceToFieldEnd")
                 // .withFlipPoseForAlliance(true)
                 // // .withConstraints(testBumpConstraints)
                 // .build();
 
-                Supplier<Command> MoveTo_rightBump_AllianceToFieldEnd = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_rightBump_AllianceToFieldEnd = () -> new AutoPilotCommand.Builder(
                                 () -> rightBump_AllianceToFieldEnd.get(), drivetrain,
                                 "MoveTo_rightBump_AllianceToFieldEnd")
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(testBumpConstraints)
                                 .build();
 
-                Supplier<Command> MoveTo_leftBump_FieldToAllianceStart = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_leftBump_FieldToAllianceStart = () -> new AutoPilotCommand.Builder(
                                 () -> leftBump_FieldToAllianceStart.get(), drivetrain,
                                 "MoveTo_leftBump_FieldToAllianceStart")
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(bumpConstraints)
                                 .build();
 
-                Supplier<Command> MoveTo_leftBump_FieldToAllianceEnd = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_leftBump_FieldToAllianceEnd = () -> new AutoPilotCommand.Builder(
                                 () -> leftBump_FieldToAllianceEnd.get(), drivetrain,
                                 "MoveTo_leftBump_FieldToAllianceEnd")
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(bumpConstraints)
                                 .build();
-                Supplier<Command> MoveTo_rightBump_FieldToAllianceStart = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_rightBump_FieldToAllianceStart = () -> new AutoPilotCommand.Builder(
                                 () -> rightBump_FieldToAllianceStart.get(), drivetrain,
                                 "MoveTo_rightBump_FieldToAllianceStart")
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(testBumpConstraints)
                                 .build();
-                Supplier<Command> MoveTo_rightBump_FieldToAllianceEnd = () -> new PidToPoseCommand.Builder(
+                Supplier<Command> MoveTo_rightBump_FieldToAllianceEnd = () -> new AutoPilotCommand.Builder(
                                 () -> rightBump_FieldToAllianceEnd.get(), drivetrain,
                                 "MoveTo_rightBump_FieldToAllianceEnd")
                                 .withFlipPoseForAlliance(true)
@@ -771,6 +770,6 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("RightQuad", RightQuad);
                 NamedCommands.registerCommand("LeftQuad", LeftQuad);
 
-                OVERRIDE_AUTO_COMMAND = RightStartFeedingStationScore;
+                // OVERRIDE_AUTO_COMMAND = RightStartFeedingStationScore;
         }
 }
