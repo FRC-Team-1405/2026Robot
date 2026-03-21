@@ -34,6 +34,7 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.SwerveFeatures;
 
 public class CommandsForAutoPilot {
         // TODO: integrate shooting positions dropdown into all autos, include the shoot
@@ -512,7 +513,9 @@ public class CommandsForAutoPilot {
 
                 Supplier<Command> midShoot = () -> Commands.sequence(
                                 shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG),
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY,
+                                                () -> SwerveFeatures.getDistanceToHub(drivetrain,
+                                                                FieldConstants.ALLIANCE_HUB_POSITION))
                                                 .repeatedly())
                                 .withTimeout(10)
                                 .andThen(Commands.sequence(

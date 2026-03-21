@@ -367,7 +367,7 @@ public class SwerveFeatures {
      * @param hubPosition alliance-flipped position of the hub
      * @return The distance to the hub in meters
      */
-    public double getDistanceToHub(CommandSwerveDrivetrain drivetrain, Supplier<Pose2d> hubPosition) {
+    public static double getDistanceToHub(CommandSwerveDrivetrain drivetrain, Supplier<Pose2d> hubPosition) {
         return drivetrain.getState().Pose.getTranslation().getDistance(hubPosition.get().getTranslation());
     }
 

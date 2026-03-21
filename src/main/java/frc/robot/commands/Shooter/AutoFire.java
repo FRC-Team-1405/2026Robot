@@ -11,6 +11,7 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Shooter;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -22,9 +23,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 public class AutoFire extends SequentialCommandGroup {
   /** Creates a new AutoFire. */
   public AutoFire(Shooter shooterSubsytem, Indexer indexerSubsystem, Hopper hopper,
-      Supplier<AngularVelocity> indexerVelocity) {
+      Supplier<AngularVelocity> indexerVelocity, DoubleSupplier distanceToHub) {
 
     addCommands(
+        new InstantCommand(() -> shooterSubsytem.setDynamicShooterSpeed(distanceToHub)),
         shooterSubsytem.runShooter(),
         Commands.waitUntil(() -> {
           return shooterSubsytem.isReadyToFire();

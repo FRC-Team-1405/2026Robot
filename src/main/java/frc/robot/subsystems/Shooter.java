@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.StatusCode;
@@ -196,6 +197,48 @@ public class Shooter extends SubsystemBase {
     ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.put(requestedSpeed.get(), () -> value - 0.1);
   }
 
+  public void setDynamicShooterSpeed(DoubleSupplier distanceToHub) {
+    double floorDistance;
+    double ceilingDistance;
+    AngularVelocity floorSpeed;
+    AngularVelocity ceilingSpeed;
+    if (distanceToHub.getAsDouble() <= ShooterPreferences.SHORT_DISTANCE.get()) {
+      floorDistance = 0.0;
+      ceilingDistance = ShooterPreferences.SHORT_DISTANCE.get();
+      floorSpeed = RotationsPerSecond.of(0);
+      ceilingSpeed = ShooterPreferences.SHORT;
+    } else if (distanceToHub.getAsDouble() <= ShooterPreferences.MEDIUM_DISTANCE.get()) {
+      floorDistance = ShooterPreferences.SHORT_DISTANCE.get();
+      ceilingDistance = ShooterPreferences.MEDIUM_DISTANCE.get();
+      floorSpeed = ShooterPreferences.SHORT;
+      ceilingSpeed = ShooterPreferences.MEDIUM;
+    } else if (distanceToHub.getAsDouble() <= ShooterPreferences.LONG_DISTANCE.get()) {
+      floorDistance = ShooterPreferences.MEDIUM_DISTANCE.get();
+      ceilingDistance = ShooterPreferences.LONG_DISTANCE.get();
+      floorSpeed = ShooterPreferences.MEDIUM;
+      ceilingSpeed = ShooterPreferences.LONG;
+    } else {
+      floorDistance = ShooterPreferences.LONG_DISTANCE.get();
+      ceilingDistance = 4.02844;
+      floorSpeed = ShooterPreferences.LONG;
+      ceilingSpeed = ShooterPreferences.LUDICROUS_SPEED;
+    }
+    setRequestedSpeedWithoutShooting(() -> {
+      return AngularVelocity.ofBaseUnits(
+          dynamicShooterRPS(floorDistance, ceilingDistance, floorSpeed, ceilingSpeed, distanceToHub),
+          RotationsPerSecond);
+    });
+  }
+
+  public double dynamicShooterRPS(Double floorDistance, Double ceilingDistance, AngularVelocity floorSpeed,
+      AngularVelocity ceilingSpeed, DoubleSupplier distanceToHub) {
+    double dynamicRPS;
+    dynamicRPS = (floorSpeed.baseUnitMagnitude() * (ceilingDistance - distanceToHub.getAsDouble())
+        + ceilingSpeed.baseUnitMagnitude() * (distanceToHub.getAsDouble() - floorDistance))
+        / (ceilingDistance - floorDistance);
+    return dynamicRPS;
+  }
+
   public Command runShooter(Supplier<AngularVelocity> speed) {
     return Commands.runOnce(() -> setShooterSpeed(speed), this);
   }
@@ -331,6 +374,9 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putNumber("Shooter/TargetRPS", shooterTarget);
       // SmartDashboard.putNumber("Shooter/Motor1StdDev", stdDev);
       // SmartDashboard.putNumber("Shooter/BallExitVelocityFPS", exitVelocityFPS);
+
+      // Dynamice Shooter
+      SmartDashboard.putNumber("Shooter/DynamicRPS", )) //TODO ben needs to finish writing this
 
       // Follower sync
       SmartDashboard.putNumber("Shooter/Motor2RPSDelta", motor2RPSDelta);

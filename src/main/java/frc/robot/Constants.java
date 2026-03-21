@@ -74,9 +74,10 @@ public class Constants {
     public static class ShooterPreferences {
         // Shooter speeds
         public static final AngularVelocity SHORT = RotationsPerSecond.of(30);
-        public static final AngularVelocity INTERMEDIATE = RotationsPerSecond.of(20);
         public static final AngularVelocity MEDIUM = RotationsPerSecond.of(42);
         public static final AngularVelocity LONG = RotationsPerSecond.of(50);
+        public static final AngularVelocity LUDICROUS_SPEED = RotationsPerSecond.of(75);
+        public static final AngularVelocity DYNAMIC = RotationsPerSecond.of(20);
 
         // Shooting distances
         // desired robot distances for each shooting speed

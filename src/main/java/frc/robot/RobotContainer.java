@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -53,6 +54,7 @@ import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.MoveMode;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.SwerveFeatures;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -100,6 +102,7 @@ public class RobotContainer {
         public final Hopper hopper = new Hopper();
         public final Intake intake = new Intake();
         private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
+        private final SwerveFeatures swerveFeatures = new SwerveFeatures(drivetrain);
         MoveMode moveMode = new MoveMode();
 
         public RobotContainer() {
@@ -293,7 +296,9 @@ public class RobotContainer {
 
                 // Shoot
                 driverJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY,
+                                                () -> SwerveFeatures.getDistanceToHub(drivetrain,
+                                                                FieldConstants.ALLIANCE_HUB_POSITION))
                                                 .repeatedly());
                 driverJoystick.rightBumper().onFalse(indexer.runStopIndexer());
 
@@ -312,7 +317,9 @@ public class RobotContainer {
                 // ShooterPreferences.LONG));
                 // Fire + stop
                 shooterJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY));
+                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY,
+                                                () -> SwerveFeatures.getDistanceToHub(drivetrain,
+                                                                FieldConstants.ALLIANCE_HUB_POSITION)));
                 shooterJoystick.rightBumper().onFalse(
                                 Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
         }
