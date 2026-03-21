@@ -120,6 +120,16 @@ public class Indexer extends SubsystemBase {
         fLogger.log("Indexer stopped");
     }
 
+    /** Start feeding balls at the given speed. For use by external commands. */
+    public void startFeeding(Supplier<AngularVelocity> speed) {
+        setIndexerSpeed(speed);
+    }
+
+    /** Stop feeding balls. For use by external commands. */
+    public void stopFeeding() {
+        indexerStop();
+    }
+
     // ── Public Commands ──────────────────────────────────────────────────────
 
     public Command runIndexer(Supplier<AngularVelocity> speed) {

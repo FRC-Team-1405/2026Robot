@@ -4,7 +4,9 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
@@ -43,6 +45,12 @@ public class Shooter extends SubsystemBase {
 
   private final MotionMagicVelocityVoltage velocityVoltage = new MotionMagicVelocityVoltage(0).withSlot(0);
   private final NeutralOut brake = new NeutralOut();
+
+  // Cached status signals — refreshed atomically each periodic() tick.
+  // Declared here so we can set update frequencies once during setup and avoid
+  // repeated CAN getter overhead (and duplicate reads) in the hot path.
+  private final StatusSignal<Double> m_closedLoopError = shooterMotor1.getClosedLoopError();
+  private final StatusSignal<Double> m_closedLoopReference = shooterMotor1.getClosedLoopReference();
 
   private final MotorSim_Mech shooterMotorSimMech = new MotorSim_Mech("Shooter/Mech2d");
 
@@ -129,6 +137,12 @@ public class Shooter extends SubsystemBase {
       configAlert.set(true);
       shooterMotor3.setControl(brake);
     }
+
+    // Increase update frequency on the signals used by the lock check so the
+    // periodic() poll sees data that is at most ~10 ms old (vs the default 20 ms).
+    m_closedLoopError.setUpdateFrequency(100);
+    m_closedLoopReference.setUpdateFrequency(100);
+    shooterMotor1.getVelocity().setUpdateFrequency(100);
   }
 
   /** Creates a new Shooter. */
@@ -154,6 +168,16 @@ public class Shooter extends SubsystemBase {
     shooterTarget = 0.0;
     shooterMotor1.setControl(brake);
     fLogger.log("shooterStop called");
+  }
+
+  /** Spin up the flywheel to the currently requested speed. */
+  public void spinUp() {
+    setShooterSpeed(requestedSpeed);
+  }
+
+  /** Stop the flywheel motors. */
+  public void spinDown() {
+    shooterStop();
   }
 
   /**
@@ -259,9 +283,12 @@ public class Shooter extends SubsystemBase {
     double motor3Temp = shooterMotor3.getDeviceTemp().getValueAsDouble();
 
     // --- Closed loop diagnostics ---
-    double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
-    double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
-    double target = shooterMotor1.getClosedLoopReference().getValueAsDouble();
+    // Atomically refresh the lock-critical signals (100 Hz on CAN) so both reads
+    // share the same timestamp and we avoid a duplicate CAN getter call.
+    BaseStatusSignal.refreshAll(m_closedLoopError, m_closedLoopReference);
+    double error = m_closedLoopError.getValueAsDouble();
+    double averageError = filter.calculate(error);
+    double target = m_closedLoopReference.getValueAsDouble();
     double range = locked ? ShooterPreferences.WIDE : ShooterPreferences.TIGHT;
 
     // --- Rolling std dev: sqrt(E[x^2] - E[x]^2) ---

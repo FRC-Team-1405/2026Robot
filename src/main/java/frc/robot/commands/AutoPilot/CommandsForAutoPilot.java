@@ -509,8 +509,8 @@ public class CommandsForAutoPilot {
 
                 Supplier<Command> midShoot = () -> Commands.sequence(
                                 shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG),
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
-                                                .repeatedly())
+                                AutoFire.autonomous(shooter, indexer, hopper,
+                                                () -> ShooterPreferences.INDEXER_VELOCITY))
                                 .withTimeout(10)
                                 .andThen(Commands.sequence(
                                                 indexer.runStopIndexer(),
@@ -617,7 +617,7 @@ public class CommandsForAutoPilot {
                                 MoveTo_leftOfDepotFaceOut.get(),
                                 MoveTo_FrontHubShoot.get());
                 Command cmd = climber.runExtendClimber().withName("Auto Climb");
-                SmartDashboard.putData(cmd);
+                SmartDashboard.putData("Commands/Auto Climb", cmd);
                 // Commands.parallel(MoveTo_fieldSideLeftBump.get(), cmd));
                 // Commands.print("climbing").andThen(Commands.waitSeconds(3))
 

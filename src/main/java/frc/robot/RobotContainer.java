@@ -4,14 +4,8 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
-
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -19,10 +13,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,14 +26,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.DriveToHubDistance;
-import frc.robot.commands.PointAtTarget;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
-import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
-import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
 import frc.robot.lib.CommandTracker;
@@ -53,31 +42,16 @@ import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.MoveMode;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.SwerveFeatures;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
 
 public class RobotContainer {
-        private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
-                                                                                            // top
-                                                                                            // speed
-        private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per
-                                                                                          // second
-                                                                                          // max angular velocity
-
-        private static final double DEADBAND = 0.10;
-
-        /* Setting up bindings for necessary control of the swerve drive platform */
-        public static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-                        .withDeadband(DEADBAND).withRotationalDeadband(DEADBAND); // Add a 10%
-                                                                                  // deadband
-        // .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop
-        // control for drive
-        // motors
         private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
         private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
-        private final Telemetry logger = new Telemetry(MaxSpeed);
+        private final Telemetry logger = new Telemetry(SwerveFeatures.MaxSpeed);
 
         private final CommandXboxController driverJoystick = new CommandXboxController(0);
         private final CommandXboxController operatorJoystick = new CommandXboxController(1);
@@ -172,11 +146,11 @@ public class RobotContainer {
                 //
                 RumbleJoystick.setPeriodChangeWarningOccasion(operatorJoystick);
                 cmd = intake.runIntakeOut();
-                SmartDashboard.putData(cmd);
+                SmartDashboard.putData("Commands/RunIntakeOut", cmd);
                 operatorJoystick.povUp().onTrue(cmd);
 
                 cmd = intake.runIntakeIn();
-                SmartDashboard.putData(cmd);
+                SmartDashboard.putData("Commands/RunIntakeIn", cmd);
                 operatorJoystick.povDown().onTrue(cmd);
 
                 operatorJoystick.povRight().onTrue(new InstantCommand(() -> shooter.increaseDistanceForSpeed()));
@@ -204,20 +178,12 @@ public class RobotContainer {
                 //
                 RumbleJoystick.setPeriodChangeOccasion(driverJoystick);
                 drivetrain.registerTelemetry(logger::telemeterize);
+
+                cmd = SwerveFeatures.teleopDriveCommand(drivetrain, moveMode, driverJoystick).withName("Teleop Drive");
+                SmartDashboard.putData("Commands/TeleopDrive", cmd);
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
-                                drivetrain.applyRequest(() -> drive
-                                                .withVelocityX(MaxSpeed
-                                                                * moveMode.selectSpeedMode(driverJoystick::getLeftY,
-                                                                                true)
-                                                                                .getAsDouble())
-                                                .withVelocityY(MaxSpeed
-                                                                * moveMode.selectSpeedMode(
-                                                                                driverJoystick::getLeftX, false)
-                                                                                .getAsDouble())
-                                                .withRotationalRate(
-                                                                moveMode.selectRotationMode(driverJoystick, drivetrain,
-                                                                                MaxAngularRate).getAsDouble())));
+                                cmd);
 
                 // Zeroize/reset the field-centric heading on start and back press.
                 driverJoystick.start().and(driverJoystick.back()).onTrue(
@@ -244,7 +210,9 @@ public class RobotContainer {
                 // joystick.b().onTrue(moveMode.setToCompassMode());
 
                 // Brake mode
-                driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
+                cmd = drivetrain.applyRequest(() -> brake).withName("Brake Mode");
+                SmartDashboard.putData("Commands/BrakeMode", cmd);
+                driverJoystick.b().whileTrue(cmd);
 
                 // Auto Align
                 // driverJoystick.x()
@@ -292,10 +260,15 @@ public class RobotContainer {
                 driverJoystick.leftBumper().whileTrue(intake.runPickupIn());
 
                 // Shoot
-                driverJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
-                                                .repeatedly());
-                driverJoystick.rightBumper().onFalse(indexer.runStopIndexer());
+                final Command shootCommand = Commands.parallel(
+                                AutoFire.teleop(shooter, indexer, hopper,
+                                                () -> ShooterPreferences.INDEXER_VELOCITY),
+                                SwerveFeatures.brakeWhenStationaryOrDrive(drivetrain, moveMode, driverJoystick));
+                SmartDashboard.putData("Commands/AutoFireWithBrakeAssist", shootCommand);
+                driverJoystick.rightBumper().whileTrue(shootCommand);
+                driverJoystick.rightBumper().onFalse(
+                                Commands.parallel(new InstantCommand(() -> shootCommand.end(true)),
+                                                indexer.runStopIndexer()));
 
                 //
                 // Shooter Joystick (DEBUG) Controls
@@ -312,7 +285,8 @@ public class RobotContainer {
                 // ShooterPreferences.LONG));
                 // Fire + stop
                 shooterJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY));
+                                AutoFire.teleop(shooter, indexer, hopper,
+                                                () -> ShooterPreferences.INDEXER_VELOCITY));
                 shooterJoystick.rightBumper().onFalse(
                                 Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
         }
