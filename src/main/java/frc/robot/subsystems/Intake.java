@@ -116,7 +116,6 @@ public class Intake extends SubsystemBase {
     config.Slot0.kS = IntakePreferences.PICKUP_KS;
     config.Slot0.kV = IntakePreferences.PICKUP_KV;
 
-    config.MotionMagic.MotionMagicCruiseVelocity = IntakePreferences.PICKUP_CRUISE_VELOCITY;
     config.MotionMagic.MotionMagicAcceleration = IntakePreferences.PICKUP_ACCELERATION;
     config.MotionMagic.MotionMagicJerk = IntakePreferences.PICKUP_JERK;
 
@@ -197,9 +196,11 @@ public class Intake extends SubsystemBase {
     // Pickup roller: small inertia, light load, direct drive
     PhysicsSim_SJC.getInstance().addTalonFX(pickupMotor,
         /* rotorInertia= */0.0002, /* loadMassKg= */0.05, /* armMeters= */0.05,
-        /* viscousCoeff= */0.01, /* numberOfMotors= */1, /* gearRatio= */1.0);
+        /* viscousCoeff= */0.01, /* numberOfMotors= */1, /* gearRatio= */0.5);
   }
 
+  // old pickup motor gear ratio = 0.5
+  // new pickup motor gear ratio = 0.3333333
   @Override
   public void simulationPeriodic() {
     PhysicsSim_SJC.getInstance().run();
@@ -372,8 +373,9 @@ public class Intake extends SubsystemBase {
       SmartDashboard.putNumber("Intake/DeployTarget", intakePositionTarget);
       SmartDashboard.putNumber("Intake/DeployError", Math.abs(position - intakePositionTarget));
       SmartDashboard.putNumber("Intake/DeployVelocity", intakeMotor.getVelocity().getValueAsDouble());
-      SmartDashboard.putNumber("Intake/DeployCurrent", intakeMotor.getStatorCurrent().getValueAsDouble());
-      SmartDashboard.putNumber("Intake/PickupCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/DeployStatorCurrent", intakeMotor.getStatorCurrent().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/PickupStatorCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/PickupSupplyCurrent", pickupMotor.getSupplyCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupVelocity", pickupMotor.getVelocity().getValueAsDouble());
       SmartDashboard.putBoolean("Intake/IsDeployed", isIntakeDeployed);
       SmartDashboard.putBoolean("Intake/IsPickupActive", isPickupActive);
