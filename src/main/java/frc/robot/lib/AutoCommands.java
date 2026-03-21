@@ -45,11 +45,6 @@ public class AutoCommands {
         public static void configureAutos(SendableChooser<Command> chooser, CommandSwerveDrivetrain drivetrain) {
                 HashMap<String, Command> commandsToAddToChooser = new HashMap<>();
 
-                // region PidToPose
-                // commandsToAddToChooser.put("P2P_auto1",
-                // NamedCommands.getCommand("P2P_auto1"));
-                // endregion PidToPose
-
                 commandsToAddToChooser.put("FrontHubShoot", NamedCommands.getCommand("FrontHubShoot"));
 
                 // commandsToAddToChooser.put("blueCenterToDepot",
@@ -113,13 +108,6 @@ public class AutoCommands {
 
                 // commandsToAddToChooser.put("Right_Yum_Middle",
                 // NamedCommands.getCommand("Right_Yum_Middle"));
-
-                // endregion autopilot
-                // commandsToAddToChooser.put("Left_First_Auto", NamedCommands.getCommand("Left
-                // - [My First Auto]"));
-
-                // chooser.setDefaultOption("P2P_auto1",
-                // commandsToAddToChooser.get("P2P_auto1"));
 
                 // Add all commands in Map to chooser
                 commandsToAddToChooser.keySet().stream()

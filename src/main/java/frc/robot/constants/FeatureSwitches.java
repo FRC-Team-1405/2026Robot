@@ -7,4 +7,5 @@ package frc.robot.constants;
 public class FeatureSwitches {
 
     public static final boolean ENABLE_SUBSYSTEM_LOGGING = true;
+    // public static final boolean = false;
 }
