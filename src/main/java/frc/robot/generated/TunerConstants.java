@@ -31,13 +31,13 @@ public class TunerConstants {
         // When using closed-loop control, the drive motor uses the control
         // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
         private static final Slot0Configs driveGains = new Slot0Configs()
-                        .withKP(0.25).withKI(0).withKD(0.01)
-                        .withKS(0.0).withKV(0.12).withKA(0);
+                        .withKP(0.3).withKI(0).withKD(0.01)
+                        .withKS(0.15).withKV(0.12).withKA(0);
 
         /**
-         * Example values for driveGains:
-         * .withKP(0.5).withKI(0).withKD(0.01)
-         * .withKS(0.3).withKV(1.6).withKA(3.0);
+         * Tuning order: kV first (SysId or estimate), then kS, then kP, then kD.
+         * kV = ~12.0 / (max motor rps). kS = voltage to overcome static friction.
+         * Verify with SysId when possible.
          */
 
         // The closed-loop output type to use for the steer motors;
