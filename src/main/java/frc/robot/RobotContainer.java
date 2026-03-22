@@ -29,6 +29,7 @@ import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.Shooter.AutoFire;
+import frc.robot.constants.FeatureSwitches;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.AprilTags;
@@ -260,15 +261,26 @@ public class RobotContainer {
                 driverJoystick.leftBumper().whileTrue(intake.runPickupIn());
 
                 // Shoot
-                final Command shootCommand = Commands.parallel(
-                                AutoFire.teleop(shooter, indexer, hopper,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY),
-                                SwerveFeatures.brakeWhenStationaryOrDrive(drivetrain, moveMode, driverJoystick));
-                SmartDashboard.putData("Commands/AutoFireWithBrakeAssist", shootCommand);
-                driverJoystick.rightBumper().whileTrue(shootCommand);
-                driverJoystick.rightBumper().onFalse(
-                                Commands.parallel(new InstantCommand(() -> shootCommand.end(true)),
-                                                indexer.runStopIndexer()));
+                if (FeatureSwitches.BRAKE_WHILE_SHOOTING) {
+                        final Command shootAndBrakeCommand = Commands.parallel(
+                                        AutoFire.teleop(shooter, indexer, hopper,
+                                                        () -> ShooterPreferences.INDEXER_VELOCITY),
+                                        SwerveFeatures.brakeWhenStationaryOrDrive(drivetrain, moveMode,
+                                                        driverJoystick));
+                        SmartDashboard.putData("Commands/AutoFireWithBrakeAssist", shootAndBrakeCommand);
+                        driverJoystick.rightBumper().whileTrue(shootAndBrakeCommand);
+                        driverJoystick.rightBumper().onFalse(
+                                        Commands.parallel(new InstantCommand(() -> shootAndBrakeCommand.end(true)),
+                                                        indexer.runStopIndexer()));
+                } else {
+                        final Command shootCommand = AutoFire.teleop(shooter, indexer, hopper,
+                                        () -> ShooterPreferences.INDEXER_VELOCITY);
+                        SmartDashboard.putData("Commands/AutoFire", shootCommand);
+                        driverJoystick.rightBumper().whileTrue(shootCommand);
+                        driverJoystick.rightBumper().onFalse(
+                                        Commands.parallel(new InstantCommand(() -> shootCommand.end(true)),
+                                                        indexer.runStopIndexer()));
+                }
 
                 //
                 // Shooter Joystick (DEBUG) Controls
