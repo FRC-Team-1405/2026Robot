@@ -244,7 +244,10 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MoveTo_FrontHubShoot = () -> new DriveToHubDistance(drivetrain,
                                 FieldConstants.ALLIANCE_HUB_POSITION,
                                 shooter.getDistanceFromSpeed());
-
+                Supplier<Command> MoveTo_New_FrontHubShoot = () -> new AutoPilotCommand.Builder(
+                                () -> FrontHubShoot.get(), drivetrain, "MoveTo_New_FrontHubShoot")
+                                .withFlipPoseForAlliance(true)
+                                .build();
                 Supplier<Command> MoveTo_requestedSpeedDistanceToHub = () -> new DriveToHubDistance(drivetrain,
                                 FieldConstants.ALLIANCE_HUB_POSITION,
                                 shooter.getDistanceFromSpeed());
@@ -535,7 +538,7 @@ public class CommandsForAutoPilot {
                 // );
                 Command FrontHubShoot = new SequentialCommandGroup(
                                 MoveTo_FrontHubShoot.get(),
-                                _shoot.get());
+                                midShoot.get());
                 Command blueCenterToDepot = new SequentialCommandGroup(
                                 MoveTo_blueCenter.get(),
                                 MoveTo_depotFaceIn.get());
@@ -545,7 +548,8 @@ public class CommandsForAutoPilot {
                                 _shoot.get());
                 Command JUSTSHOOT = new SequentialCommandGroup(
                                 // MoveTo_blueCenter.get(),
-                                MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                // MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                MoveTo_FrontHubShoot.get(),
                                 midShoot.get()
                 // MoveTo_rightBump_AllianceToFieldStart.get(),
                 // MoveTo_rightBump_AllianceToFieldEnd.get(),
@@ -770,6 +774,6 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("RightQuad", RightQuad);
                 NamedCommands.registerCommand("LeftQuad", LeftQuad);
 
-                // OVERRIDE_AUTO_COMMAND = RightStartFeedingStationScore;
+                OVERRIDE_AUTO_COMMAND = FrontHubShoot;
         }
 }

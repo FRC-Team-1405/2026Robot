@@ -270,22 +270,23 @@ public class Constants {
         public static final double DEPLOY_JERK = 100.0; // rotations per second^3
 
         // PID gains for pickup roller motor (velocity control)
-        public static final double PICKUP_KP = 0.5;
+        public static final double PICKUP_KP = 0.55;
         public static final double PICKUP_KI = 0.0;
         public static final double PICKUP_KD = 0.0;
         public static final double PICKUP_KS = 0.25;
-        public static final double PICKUP_KV = 0.12;
+        public static final double PICKUP_KV = 0.105;
 
         // MotionMagic profile for pickup roller (velocity mode)
-        public static final double PICKUP_CRUISE_VELOCITY = 10.0; // rotations per second
-        public static final double PICKUP_ACCELERATION = 50.0; // rotations per second^2
+        // public static final double PICKUP_CRUISE_VELOCITY = 10.0; // rotations per
+        // second
+        public static final double PICKUP_ACCELERATION = 33.0; // rotations per second^2, flr acceleration = 50
         public static final double PICKUP_JERK = 0.0; // rotations per second^3
 
         // Current limits to protect the chain and detect hard stops
         public static final double DEPLOY_STATOR_LIMIT = 40.0; // amps
         public static final double DEPLOY_SUPPLY_LIMIT = 30.0; // amps
-        public static final double PICKUP_STATOR_LIMIT = 60.0; // amps
-        public static final double PICKUP_SUPPLY_LIMIT = 40.0; // amps
+        public static final double PICKUP_STATOR_LIMIT = 80.0; // amps flr limit = 60, testing 80
+        public static final double PICKUP_SUPPLY_LIMIT = 60.0; // amps flr limit = 40, testing 60
         public static final double STALL_CURRENT_THRESHOLD = 30.0; // amps — above this = likely stalled
         public static final int STALL_CYCLES_THRESHOLD = 10; // consecutive cycles before stall shutdown
 
@@ -306,7 +307,10 @@ public class Constants {
             Preferences.initDouble("Pickup/Out", -25.0);
             PICKUP_MOTOR_OUT = Preferences.getDouble("Pickup/Out", -25.0);
             Preferences.initDouble("Pickup/In", 80.0);
-            PICKUP_MOTOR_IN = Preferences.getDouble("Pickup/In", 80.0);
+
+            // target pickup velocity (rps)
+            PICKUP_MOTOR_IN = 50;
+
             Preferences.initDouble("Intake/SettleCount", 5);
             SETTLE_COUNT = (int) Preferences.getDouble("Intake/SettleCount", 5);
             Preferences.initDouble("Intake/PositionTolerance", 1.0);
