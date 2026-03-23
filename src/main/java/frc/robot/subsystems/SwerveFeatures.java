@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -35,22 +36,23 @@ import frc.robot.lib.FinneyLogger;
 public class SwerveFeatures {
     FinneyLogger fLogger = new FinneyLogger("SwerveFeatures");
 
+    private static double DEADBAND = 0.1; // Deadband for joystick input detection
+
     private final CommandSwerveDrivetrain m_drivetrain;
 
-    private static final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-
-    // kSpeedAt12Volts desired top speed
-    public static double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-
-    // 3/4 of a rotation per second max angular velocity
-    public static double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
-
-    private static final double DEADBAND = 0.10;
+    public static double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
+                                                                                              // top
+    // speed
+    public static double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per
+                                                                                            // second
+    // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     public static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(DEADBAND).withRotationalDeadband(DEADBAND); // Add a 10%
-                                                                      // deadband
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+    public static final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    public static final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     /* Mechanism2d for visualizing aim angles */
     private final Mechanism2d m_aimMechanism = new Mechanism2d(3, 3);
@@ -135,8 +137,11 @@ public class SwerveFeatures {
 
         publishRobotVelocity();
         // publishRobotAcceleration();
+        // Publish command NAME only — do NOT use putData with a live Command object.
+        // putData creates a bidirectional .running property that can cancel the command
+        // when the NT entry retains a stale value from the previous command at this key.
         if (m_drivetrain != null && m_drivetrain.getCurrentCommand() != null) {
-            SmartDashboard.putData("Commands/SwerveDriveCommand", m_drivetrain.getCurrentCommand());
+            SmartDashboard.putString("Commands/SwerveDriveCommand", m_drivetrain.getCurrentCommand().getName());
         }
     }
 

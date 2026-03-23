@@ -13,6 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.RobotController;
@@ -23,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.DriveToHubDistance;
@@ -78,7 +80,8 @@ public class RobotContainer {
         MoveMode moveMode = new MoveMode();
 
         public RobotContainer() {
-                configureBindings();
+                // configureBindings();
+                configureBindings_CTReDefault();
 
                 AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
@@ -180,11 +183,28 @@ public class RobotContainer {
                 RumbleJoystick.setPeriodChangeOccasion(driverJoystick);
                 drivetrain.registerTelemetry(logger::telemeterize);
 
-                cmd = SwerveFeatures.teleopDriveCommand(drivetrain, moveMode, driverJoystick).withName("Teleop Drive");
-                SmartDashboard.putData("Commands/TeleopDrive", cmd);
+                // cmd = SwerveFeatures.teleopDriveCommand(drivetrain, moveMode,
+                // driverJoystick).withName("Teleop Drive");
+                // SmartDashboard.putData("Commands/TeleopDrive", cmd);
+                // drivetrain.setDefaultCommand(
+                // // Drivetrain will execute this command periodically
+                // cmd);
+
                 drivetrain.setDefaultCommand(
                                 // Drivetrain will execute this command periodically
-                                cmd);
+                                drivetrain.applyRequest(() -> SwerveFeatures.drive
+                                                .withVelocityX(SwerveFeatures.MaxSpeed
+                                                                * moveMode.selectSpeedMode(driverJoystick::getLeftY,
+                                                                                true)
+                                                                                .getAsDouble())
+                                                .withVelocityY(SwerveFeatures.MaxSpeed
+                                                                * moveMode.selectSpeedMode(
+                                                                                driverJoystick::getLeftX, false)
+                                                                                .getAsDouble())
+                                                .withRotationalRate(
+                                                                moveMode.selectRotationMode(driverJoystick, drivetrain,
+                                                                                SwerveFeatures.MaxAngularRate)
+                                                                                .getAsDouble())));
 
                 // Zeroize/reset the field-centric heading on start and back press.
                 driverJoystick.start().and(driverJoystick.back()).onTrue(
@@ -211,9 +231,9 @@ public class RobotContainer {
                 // joystick.b().onTrue(moveMode.setToCompassMode());
 
                 // Brake mode
-                cmd = drivetrain.applyRequest(() -> brake).withName("Brake Mode");
-                SmartDashboard.putData("Commands/BrakeMode", cmd);
-                driverJoystick.b().whileTrue(cmd);
+                // cmd = drivetrain.applyRequest(() -> brake).withName("Brake Mode");
+                // SmartDashboard.putData("Commands/BrakeMode", cmd);
+                driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> brake));
 
                 // Auto Align
                 // driverJoystick.x()
@@ -261,26 +281,27 @@ public class RobotContainer {
                 driverJoystick.leftBumper().whileTrue(intake.runPickupIn());
 
                 // Shoot
-                if (FeatureSwitches.BRAKE_WHILE_SHOOTING) {
-                        final Command shootAndBrakeCommand = Commands.parallel(
-                                        AutoFire.teleop(shooter, indexer, hopper,
-                                                        () -> ShooterPreferences.INDEXER_VELOCITY),
-                                        SwerveFeatures.brakeWhenStationaryOrDrive(drivetrain, moveMode,
-                                                        driverJoystick));
-                        SmartDashboard.putData("Commands/AutoFireWithBrakeAssist", shootAndBrakeCommand);
-                        driverJoystick.rightBumper().whileTrue(shootAndBrakeCommand);
-                        driverJoystick.rightBumper().onFalse(
-                                        Commands.parallel(new InstantCommand(() -> shootAndBrakeCommand.end(true)),
-                                                        indexer.runStopIndexer()));
-                } else {
-                        final Command shootCommand = AutoFire.teleop(shooter, indexer, hopper,
-                                        () -> ShooterPreferences.INDEXER_VELOCITY);
-                        SmartDashboard.putData("Commands/AutoFire", shootCommand);
-                        driverJoystick.rightBumper().whileTrue(shootCommand);
-                        driverJoystick.rightBumper().onFalse(
-                                        Commands.parallel(new InstantCommand(() -> shootCommand.end(true)),
-                                                        indexer.runStopIndexer()));
-                }
+                // if (FeatureSwitches.BRAKE_WHILE_SHOOTING) {
+                // final Command shootAndBrakeCommand = Commands.parallel(
+                // AutoFire.teleop(shooter, indexer, hopper,
+                // () -> ShooterPreferences.INDEXER_VELOCITY),
+                // SwerveFeatures.brakeWhenStationaryOrDrive(drivetrain, moveMode,
+                // driverJoystick));
+                // SmartDashboard.putData("Commands/AutoFireWithBrakeAssist",
+                // shootAndBrakeCommand);
+                // driverJoystick.rightBumper().whileTrue(shootAndBrakeCommand);
+                // driverJoystick.rightBumper().onFalse(
+                // Commands.parallel(new InstantCommand(() -> shootAndBrakeCommand.end(true)),
+                // indexer.runStopIndexer()));
+                // } else {
+                // final Command shootCommand = AutoFire.teleop(shooter, indexer, hopper,
+                // () -> ShooterPreferences.INDEXER_VELOCITY);
+                // SmartDashboard.putData("Commands/AutoFire", shootCommand);
+                // driverJoystick.rightBumper().whileTrue(shootCommand);
+                // driverJoystick.rightBumper().onFalse(
+                // Commands.parallel(new InstantCommand(() -> shootCommand.end(true)),
+                // indexer.runStopIndexer()));
+                // }
 
                 //
                 // Shooter Joystick (DEBUG) Controls
@@ -301,6 +322,57 @@ public class RobotContainer {
                                                 () -> ShooterPreferences.INDEXER_VELOCITY));
                 shooterJoystick.rightBumper().onFalse(
                                 Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
+        }
+
+        private void configureBindings_CTReDefault() {
+                // Note that X is defined as forward according to WPILib convention,
+                // and Y is defined as to the left according to WPILib convention.
+                drivetrain.setDefaultCommand(
+                                // Drivetrain will execute this command periodically
+                                drivetrain.applyRequest(() -> SwerveFeatures.drive
+                                                .withVelocityX(-driverJoystick.getLeftY() * SwerveFeatures.MaxSpeed) // Drive
+                                                // forward
+                                                // with
+                                                // negative
+                                                // Y
+                                                // (forward)
+                                                .withVelocityY(-driverJoystick.getLeftX() * SwerveFeatures.MaxSpeed) // Drive
+                                                                                                                     // left
+                                                                                                                     // with
+                                                // negative X
+                                                // (left)
+                                                .withRotationalRate(-driverJoystick.getRightX()
+                                                                * SwerveFeatures.MaxAngularRate) // Drive
+                                // counterclockwise
+                                // with
+                                // negative
+                                // X
+                                // (left)
+                                ));
+
+                // Idle while the robot is disabled. This ensures the configured
+                // neutral mode is applied to the drive motors while disabled.
+                final var idle = new SwerveRequest.Idle();
+                RobotModeTriggers.disabled().whileTrue(
+                                drivetrain.applyRequest(() -> idle).ignoringDisable(true));
+
+                driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+                driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(
+                                new Rotation2d(-driverJoystick.getLeftY(), -driverJoystick.getLeftX()))));
+
+                // Run SysId routines when holding back/start and X/Y.
+                // Note that each routine should be run exactly once in a single log.
+                driverJoystick.back().and(driverJoystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+                driverJoystick.back().and(driverJoystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+                driverJoystick.start().and(driverJoystick.y())
+                                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+                driverJoystick.start().and(driverJoystick.x())
+                                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+                // Reset the field-centric heading on left bumper press.
+                driverJoystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+                drivetrain.registerTelemetry(logger::telemeterize);
         }
 
         public static double applyDeadband(double value) {
