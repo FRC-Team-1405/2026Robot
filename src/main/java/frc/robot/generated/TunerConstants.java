@@ -100,9 +100,11 @@ public class TunerConstants {
 
         // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
         // This may need to be tuned to your individual robot
-        private static final double kCoupleRatio = 3.5; // TODO add a publisher that gives you drive wheel turns by
-                                                        // converting from drive encoders. this will help you determine
-                                                        // this value.
+        private static final double kCoupleRatio = 3.7142857142857144; // Rough estimate: about one wheel rotation
+                                                                       // per full azimuth turn, expressed in drive
+                                                                       // motor turns through the 3.71:1 drive ratio.
+                                                                       // Measure on-hardware and replace this when
+                                                                       // you have the real module coupling.
 
         private static final double kDriveGearRatio = 3.7142857142857144; // WCP Swerve X2S/X2St, X3 21T - 3.71:1
         private static final double kSteerGearRatio = 25.9;

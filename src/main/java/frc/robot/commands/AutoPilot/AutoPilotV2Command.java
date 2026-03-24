@@ -26,6 +26,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.constants.FeatureSwitches;
 import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.FinneyCommand;
 import frc.robot.lib.FinneyLogger;
@@ -42,10 +43,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  * {@code ApplyRobotSpeeds}, no manual frame conversion.</li>
  * <li>No distance-to-target code-path switching; every cycle takes the same
  * path.</li>
- * <li>Converts robot-relative speeds to field-relative before passing to
- * AutoPilot (the original command passed robot-relative speeds, which may
- * cause AutoPilot's internal motion profiler to miscalculate when the robot
- * is rotated).</li>
+ * <li>Logs both robot-relative and field-relative speeds so AutoPilot frame
+ * assumptions are easy to validate during tuning.</li>
  * <li>Comprehensive per-module drive motor logging for oscillation
  * debugging.</li>
  * </ul>
@@ -85,6 +84,10 @@ public class AutoPilotV2Command extends FinneyCommand {
     private final Optional<Rotation2d> m_entryAngle;
     private final boolean m_flipPoseForAlliance;
     private final String commandName;
+    private final double m_beelineRadiusMeters;
+    private final double m_headingDeadbandDegrees;
+    private boolean m_nearTargetVisionSuppressed = false;
+    private boolean m_previousVisionOdometryUpdatesEnabled = true;
 
     // Single swerve request for every cycle
     private final SwerveRequest.FieldCentricFacingAngle m_request;
@@ -110,6 +113,7 @@ public class AutoPilotV2Command extends FinneyCommand {
         private double beelineRadiusCentimeters = 16.0;
         private double headingKP = 2.0;
         private double headingKD = 0.0;
+        private double headingDeadbandDegrees = 1.0;
 
         public Builder(Supplier<Pose2d> targetSupplier, CommandSwerveDrivetrain drivetrain, String commandName) {
             this.targetSupplier = targetSupplier;
@@ -154,6 +158,11 @@ public class AutoPilotV2Command extends FinneyCommand {
             return this;
         }
 
+        public Builder withHeadingDeadband(double deadbandDegrees) {
+            this.headingDeadbandDegrees = deadbandDegrees;
+            return this;
+        }
+
         public AutoPilotV2Command build() {
             return new AutoPilotV2Command(this);
         }
@@ -176,6 +185,8 @@ public class AutoPilotV2Command extends FinneyCommand {
                 .withErrorTheta(Degrees.of(b.errorThetaDegrees))
                 .withBeelineRadius(Centimeters.of(b.beelineRadiusCentimeters));
         kAutopilot = new Autopilot(kProfile);
+        m_beelineRadiusMeters = b.beelineRadiusCentimeters / 100.0;
+        m_headingDeadbandDegrees = b.headingDeadbandDegrees;
 
         m_request = new SwerveRequest.FieldCentricFacingAngle()
                 .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance)
@@ -193,6 +204,8 @@ public class AutoPilotV2Command extends FinneyCommand {
     public void initialize() {
         super.initialize();
         m_cycleCount = 0;
+        m_nearTargetVisionSuppressed = false;
+        m_previousVisionOdometryUpdatesEnabled = m_drivetrain.areVisionOdometryUpdatesEnabled();
 
         if (m_flipPoseForAlliance
                 && DriverStation.Alliance.Red.equals(DriverStation.getAlliance().orElse(null))) {
@@ -223,12 +236,10 @@ public class AutoPilotV2Command extends FinneyCommand {
         Pose2d pose = m_drivetrain.getState().Pose;
         ChassisSpeeds robotSpeeds = m_drivetrain.getState().Speeds;
 
-        // --- 2. Convert robot-relative speeds → field-relative ---
-        // getState().Speeds is robot-relative. AutoPilot plans in field coordinates,
-        // so feeding robot-relative speeds causes its motion profiler to see the
-        // velocity in the wrong direction when the robot is rotated — a likely
-        // contributor to the oscillation bug in the original command.
+        // --- 2. Convert robot-relative speeds → field-relative for diagnostics ---
         ChassisSpeeds fieldSpeeds = toFieldRelative(robotSpeeds, pose.getRotation());
+        double distToTarget = pose.getTranslation().getDistance(m_target.getReference().getTranslation());
+        updateVisionSuppression(distToTarget);
 
         // --- 3. Compute AutoPilot result ---
         Optional<Rotation2d> fieldEntryAngle = m_entryAngle
@@ -248,13 +259,14 @@ public class AutoPilotV2Command extends FinneyCommand {
         // --- 4. Apply single control request ---
         // FieldCentricFacingAngle handles field→module kinematics and heading PID
         // internally. No frame conversion, no code-path branching.
+        Rotation2d commandedTargetDirection = applyHeadingDeadband(out.targetAngle(), pose.getRotation());
         m_drivetrain.setControl(m_request
                 .withVelocityX(out.vx())
                 .withVelocityY(out.vy())
-                .withTargetDirection(out.targetAngle()));
+                .withTargetDirection(commandedTargetDirection));
 
         // --- 5. Diagnostic logging ---
-        logAPOutputs(out, pose, robotSpeeds, fieldSpeeds);
+        logAPOutputs(out, pose, robotSpeeds, fieldSpeeds, commandedTargetDirection);
 
         if (m_cycleCount % MODULE_LOG_INTERVAL == 0) {
             logModuleDiagnostics();
@@ -269,6 +281,8 @@ public class AutoPilotV2Command extends FinneyCommand {
     @Override
     public void end(boolean interrupted) {
         super.end(interrupted);
+        m_nearTargetVisionSuppressed = false;
+        m_drivetrain.setVisionOdometryUpdatesEnabled(m_previousVisionOdometryUpdatesEnabled);
 
         m_drivetrain.setControl(m_request
                 .withVelocityX(0)
@@ -317,11 +331,12 @@ public class AutoPilotV2Command extends FinneyCommand {
      * </ul>
      */
     private void logAPOutputs(APResult out, Pose2d pose,
-            ChassisSpeeds robotSpeeds, ChassisSpeeds fieldSpeeds) {
+            ChassisSpeeds robotSpeeds, ChassisSpeeds fieldSpeeds, Rotation2d commandedTargetDirection) {
         double apVx = out.vx().baseUnitMagnitude();
         double apVy = out.vy().baseUnitMagnitude();
         double apSpeed = Math.hypot(apVx, apVy);
         double headingErr = out.targetAngle().minus(pose.getRotation()).getDegrees();
+        double headingCmdErr = commandedTargetDirection.minus(pose.getRotation()).getDegrees();
         double dist = pose.getTranslation().getDistance(m_target.getReference().getTranslation());
 
         // AP command outputs
@@ -329,10 +344,14 @@ public class AutoPilotV2Command extends FinneyCommand {
         SmartDashboard.putNumber(NT + "AP_vy_mps", apVy);
         SmartDashboard.putNumber(NT + "AP_speed_mps", apSpeed);
         SmartDashboard.putNumber(NT + "AP_targetAngle_deg", out.targetAngle().getDegrees());
+        SmartDashboard.putNumber(NT + "commandedTargetAngle_deg", commandedTargetDirection.getDegrees());
 
         // State
         SmartDashboard.putNumber(NT + "headingError_deg", headingErr);
+        SmartDashboard.putNumber(NT + "headingCommandError_deg", headingCmdErr);
+        SmartDashboard.putBoolean(NT + "headingDeadbandActive", Math.abs(headingErr) <= m_headingDeadbandDegrees);
         SmartDashboard.putNumber(NT + "distToTarget_m", dist);
+        SmartDashboard.putBoolean(NT + "visionSuppressedNearTarget", m_nearTargetVisionSuppressed);
 
         // Speed comparison: robot-relative vs field-relative
         SmartDashboard.putNumber(NT + "robotSpeed_vx", robotSpeeds.vxMetersPerSecond);
@@ -398,5 +417,22 @@ public class AutoPilotV2Command extends FinneyCommand {
                 fieldVel.getX(),
                 fieldVel.getY(),
                 robotSpeeds.omegaRadiansPerSecond);
+    }
+
+    private Rotation2d applyHeadingDeadband(Rotation2d targetAngle, Rotation2d currentAngle) {
+        double headingErrorDegrees = targetAngle.minus(currentAngle).getDegrees();
+        if (Math.abs(headingErrorDegrees) <= m_headingDeadbandDegrees) {
+            return currentAngle;
+        }
+        return targetAngle;
+    }
+
+    private void updateVisionSuppression(double distToTargetMeters) {
+        boolean shouldSuppressVision = FeatureSwitches.DISABLE_VISION_ODOM_NEAR_AUTOPILOT_TARGET
+                && distToTargetMeters <= m_beelineRadiusMeters;
+        if (shouldSuppressVision != m_nearTargetVisionSuppressed) {
+            m_nearTargetVisionSuppressed = shouldSuppressVision;
+            m_drivetrain.setVisionOdometryUpdatesEnabled(!shouldSuppressVision);
+        }
     }
 }

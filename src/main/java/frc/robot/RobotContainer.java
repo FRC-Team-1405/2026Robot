@@ -150,11 +150,11 @@ public class RobotContainer {
                 //
                 RumbleJoystick.setPeriodChangeWarningOccasion(operatorJoystick);
                 cmd = intake.runIntakeOut();
-                SmartDashboard.putData("Commands/RunIntakeOut", cmd);
+                // SmartDashboard.putData("Commands/RunIntakeOut", cmd);
                 operatorJoystick.povUp().onTrue(cmd);
 
                 cmd = intake.runIntakeIn();
-                SmartDashboard.putData("Commands/RunIntakeIn", cmd);
+                // SmartDashboard.putData("Commands/RunIntakeIn", cmd);
                 operatorJoystick.povDown().onTrue(cmd);
 
                 operatorJoystick.povRight().onTrue(new InstantCommand(() -> shooter.increaseDistanceForSpeed()));
@@ -281,27 +281,25 @@ public class RobotContainer {
                 driverJoystick.leftBumper().whileTrue(intake.runPickupIn());
 
                 // Shoot
-                // if (FeatureSwitches.BRAKE_WHILE_SHOOTING) {
-                // final Command shootAndBrakeCommand = Commands.parallel(
-                // AutoFire.teleop(shooter, indexer, hopper,
-                // () -> ShooterPreferences.INDEXER_VELOCITY),
-                // SwerveFeatures.brakeWhenStationaryOrDrive(drivetrain, moveMode,
-                // driverJoystick));
-                // SmartDashboard.putData("Commands/AutoFireWithBrakeAssist",
-                // shootAndBrakeCommand);
-                // driverJoystick.rightBumper().whileTrue(shootAndBrakeCommand);
-                // driverJoystick.rightBumper().onFalse(
-                // Commands.parallel(new InstantCommand(() -> shootAndBrakeCommand.end(true)),
-                // indexer.runStopIndexer()));
-                // } else {
-                // final Command shootCommand = AutoFire.teleop(shooter, indexer, hopper,
-                // () -> ShooterPreferences.INDEXER_VELOCITY);
-                // SmartDashboard.putData("Commands/AutoFire", shootCommand);
-                // driverJoystick.rightBumper().whileTrue(shootCommand);
-                // driverJoystick.rightBumper().onFalse(
-                // Commands.parallel(new InstantCommand(() -> shootCommand.end(true)),
-                // indexer.runStopIndexer()));
-                // }
+                if (FeatureSwitches.BRAKE_WHILE_SHOOTING) {
+                        // final Command shootAndBrakeCommand = Commands.parallel(
+                        // AutoFire.teleop(shooter, indexer, hopper,
+                        // () -> ShooterPreferences.INDEXER_VELOCITY),
+                        // SwerveFeatures.brakeWhenStationaryOrDrive(drivetrain, moveMode,
+                        // driverJoystick));
+                        // // SmartDashboard.putData("Commands/AutoFireWithBrakeAssist",
+                        // // shootAndBrakeCommand);
+                        // driverJoystick.rightBumper().whileTrue(shootAndBrakeCommand);
+                        // driverJoystick.rightBumper().onFalse(
+                        // Commands.parallel(new InstantCommand(() -> shootAndBrakeCommand.end(true)),
+                        // indexer.runStopIndexer()));
+                } else {
+                        // SmartDashboard.putData("Commands/AutoFire", shootCommand);
+                        driverJoystick.rightBumper().whileTrue(AutoFire.teleop(shooter, indexer, hopper,
+                                        () -> ShooterPreferences.INDEXER_VELOCITY));
+                        // driverJoystick.rightBumper().onFalse(
+                        // indexer.runStopIndexer());
+                }
 
                 //
                 // Shooter Joystick (DEBUG) Controls
@@ -320,8 +318,7 @@ public class RobotContainer {
                 shooterJoystick.rightBumper().onTrue(
                                 AutoFire.teleop(shooter, indexer, hopper,
                                                 () -> ShooterPreferences.INDEXER_VELOCITY));
-                shooterJoystick.rightBumper().onFalse(
-                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
+                shooterJoystick.rightBumper().onFalse(indexer.runStopIndexer());
         }
 
         private void configureBindings_CTReDefault() {

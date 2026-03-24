@@ -48,6 +48,7 @@ import frc.robot.lib.AllianceSymmetry;
  * https://v6.docs.ctr-electronics.com/en/stable/docs/tuner/tuner-swerve/index.html
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+    private boolean m_allowVisionOdometryUpdates = true;
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -319,6 +320,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
+        if (!m_allowVisionOdometryUpdates) {
+            return;
+        }
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
@@ -345,8 +349,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             Pose2d visionRobotPoseMeters,
             double timestampSeconds,
             Matrix<N3, N1> visionMeasurementStdDevs) {
+        if (!m_allowVisionOdometryUpdates) {
+            return;
+        }
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds),
                 visionMeasurementStdDevs);
+    }
+
+    public void setVisionOdometryUpdatesEnabled(boolean enabled) {
+        m_allowVisionOdometryUpdates = enabled;
+    }
+
+    public boolean areVisionOdometryUpdatesEnabled() {
+        return m_allowVisionOdometryUpdates;
     }
 
     /**
