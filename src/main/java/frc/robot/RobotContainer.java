@@ -80,8 +80,8 @@ public class RobotContainer {
         MoveMode moveMode = new MoveMode();
 
         public RobotContainer() {
-                // configureBindings();
-                configureBindings_CTReDefault();
+                configureBindings();
+                // configureBindings_CTReDefault();
 
                 AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());

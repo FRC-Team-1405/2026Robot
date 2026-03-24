@@ -91,8 +91,11 @@ public class CommandsForAutoPilot {
         // Bump Poses
         // Left Bump
         private static double BUMP_RIGHT_FIELD_SIDE = 6.0;
-
         private static double BUMP_LEFT_ALLIANCE_SIDE = 3.3;
+
+        // Values for our test field at home, TODO update to the real field values
+        private static double BUMP_CROSSING_ANGLE = 45;
+
         public static Supplier<Pose2d> leftBump_AllianceToFieldStart = () -> new Pose2d(
                         BUMP_LEFT_ALLIANCE_SIDE, 5.5,
                         Rotation2d.fromDegrees(270));
@@ -108,21 +111,26 @@ public class CommandsForAutoPilot {
                         Rotation2d.fromDegrees(180));
         // Right Bump
         public static Supplier<Pose2d> rightBump_AllianceToFieldStart = () -> new Pose2d(
-                        BUMP_LEFT_ALLIANCE_SIDE, 2.5,
-                        Rotation2d.fromDegrees(90));
+                        BUMP_LEFT_ALLIANCE_SIDE,
+                        2.5,
+                        Rotation2d.fromDegrees(BUMP_CROSSING_ANGLE));
         // TODO:Remove Dos
         public static Supplier<Pose2d> rightBump_AllianceToFieldStartDos = () -> new Pose2d(
-                        BUMP_LEFT_ALLIANCE_SIDE, 2.5,
+                        BUMP_LEFT_ALLIANCE_SIDE,
+                        2.5,
                         Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> rightBump_AllianceToFieldEnd = () -> new Pose2d(
-                        BUMP_RIGHT_FIELD_SIDE, 2.5,
-                        Rotation2d.fromDegrees(0));
+                        BUMP_RIGHT_FIELD_SIDE,
+                        2.5,
+                        Rotation2d.fromDegrees(BUMP_CROSSING_ANGLE).plus(Rotation2d.fromDegrees(90)));
 
         public static Supplier<Pose2d> rightBump_FieldToAllianceStart = () -> new Pose2d(
-                        BUMP_RIGHT_FIELD_SIDE, 2.5,
+                        BUMP_RIGHT_FIELD_SIDE,
+                        2.5,
                         Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> rightBump_FieldToAllianceEnd = () -> new Pose2d(
-                        BUMP_LEFT_ALLIANCE_SIDE, 2.5,
+                        BUMP_LEFT_ALLIANCE_SIDE,
+                        2.5,
                         Rotation2d.fromDegrees(0));
         // TODO: fix this
         // Shooter Poses
@@ -134,9 +142,12 @@ public class CommandsForAutoPilot {
         public static Supplier<Pose2d> RightHubShoot = () -> new Pose2d(3.069361, 3.034638, Rotation2d.fromDegrees(0));
         // Center Poses
         // y position to start center harvesting on the right side
-        private static double RIGHT_START_HARVEST_HORIZONTAL_POINT = 1;
+
+        // TEST VALUE, for test field, TODO replace with real field values (1 and 6?)
+        private static double RIGHT_START_HARVEST_HORIZONTAL_POINT = 2.5;
+        private static double RIGHT_END_HARVEST_HORIZONTAL_POINT = 5.5;
         // was 3 and 5.5
-        private static double RIGHT_END_HARVEST_HORIZONTAL_POINT = 6;
+
         private static double LEFT_START_HARVEST_HORIZONTAL_POINT = 7;
         // was 3 and 5.5
         private static double LEFT_END_HARVEST_HORIZONTAL_POINT = 2;

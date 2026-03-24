@@ -25,7 +25,7 @@ public class TunerConstants {
         // the
         // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
         private static final Slot0Configs steerGains = new Slot0Configs()
-                        .withKP(60).withKI(0).withKD(0.1)
+                        .withKP(40).withKI(0).withKD(0.1)
                         .withKS(0.15).withKV(0).withKA(0)
                         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
         // When using closed-loop control, the drive motor uses the control
@@ -100,7 +100,9 @@ public class TunerConstants {
 
         // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
         // This may need to be tuned to your individual robot
-        private static final double kCoupleRatio = 0;
+        private static final double kCoupleRatio = 3.5; // TODO add a publisher that gives you drive wheel turns by
+                                                        // converting from drive encoders. this will help you determine
+                                                        // this value.
 
         private static final double kDriveGearRatio = 3.7142857142857144; // WCP Swerve X2S/X2St, X3 21T - 3.71:1
         private static final double kSteerGearRatio = 25.9;

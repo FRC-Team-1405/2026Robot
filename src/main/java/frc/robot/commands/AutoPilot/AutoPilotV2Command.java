@@ -70,8 +70,8 @@ public class AutoPilotV2Command extends FinneyCommand {
 
     // --- AutoPilot components ---
     private static final APConstraints kDefaultConstraints = new APConstraints()
-            .withAcceleration(2.0)
-            .withVelocity(2.0)
+            .withAcceleration(8.0)
+            .withVelocity(4.0)
             .withJerk(10.0);
 
     private final APConstraints kConstraints;
@@ -105,8 +105,8 @@ public class AutoPilotV2Command extends FinneyCommand {
         private Optional<Rotation2d> entryAngle = Optional.empty();
         private boolean flipPoseForAlliance = false;
         private APConstraints constraints = kDefaultConstraints;
-        private double errorXYCentimeters = 2.0;
-        private double errorThetaDegrees = 0.5;
+        private double errorXYCentimeters = 4.0;
+        private double errorThetaDegrees = 2.0;
         private double beelineRadiusCentimeters = 16.0;
         private double headingKP = 2.0;
         private double headingKD = 0.0;
@@ -206,7 +206,7 @@ public class AutoPilotV2Command extends FinneyCommand {
         Pose2d currentPose = m_drivetrain.getState().Pose;
         double dist = currentPose.getTranslation().getDistance(m_target.getReference().getTranslation());
 
-        fLogger.log("INIT %s | target(%.2f,%.2f,%.1f°) current(%.2f,%.2f,%.1f°) dist=%.2fm",
+        fLogger.log("INIT %s | target(%.2f,%.2f,%.1fdeg) current(%.2f,%.2f,%.1fdeg) dist=%.2fm",
                 getName(),
                 m_target.getReference().getX(), m_target.getReference().getY(),
                 m_target.getReference().getRotation().getDegrees(),
@@ -224,7 +224,7 @@ public class AutoPilotV2Command extends FinneyCommand {
         ChassisSpeeds robotSpeeds = m_drivetrain.getState().Speeds;
 
         // --- 2. Convert robot-relative speeds → field-relative ---
-        // getState().Speeds is robot-relative.  AutoPilot plans in field coordinates,
+        // getState().Speeds is robot-relative. AutoPilot plans in field coordinates,
         // so feeding robot-relative speeds causes its motion profiler to see the
         // velocity in the wrong direction when the robot is rotated — a likely
         // contributor to the oscillation bug in the original command.
@@ -236,10 +236,12 @@ public class AutoPilotV2Command extends FinneyCommand {
 
         APResult out;
         if (fieldEntryAngle.isPresent()) {
-            out = kAutopilot.calculate(pose, fieldSpeeds,
+            out = kAutopilot.calculate(pose,
+                    robotSpeeds,
                     m_target.withEntryAngle(fieldEntryAngle.get()));
         } else {
-            out = kAutopilot.calculate(pose, fieldSpeeds,
+            out = kAutopilot.calculate(pose,
+                    robotSpeeds,
                     m_target.withoutEntryAngle());
         }
 
@@ -280,7 +282,7 @@ public class AutoPilotV2Command extends FinneyCommand {
                 .minus(finalPose.getRotation()).getDegrees();
 
         fLogger.log(
-                "END %s | interrupted=%s dist=%.3fm hdgErr=%.1f° final(%.2f,%.2f,%.1f°) target(%.2f,%.2f,%.1f°)",
+                "END %s | interrupted=%s dist=%.3fm hdgErr=%.1fdeg final(%.2f,%.2f,%.1fdeg) target(%.2f,%.2f,%.1fdeg)",
                 getName(), interrupted,
                 finalDist, finalHdgErr,
                 finalPose.getX(), finalPose.getY(), finalPose.getRotation().getDegrees(),
@@ -339,7 +341,7 @@ public class AutoPilotV2Command extends FinneyCommand {
         SmartDashboard.putNumber(NT + "fieldSpeed_vx", fieldSpeeds.vxMetersPerSecond);
         SmartDashboard.putNumber(NT + "fieldSpeed_vy", fieldSpeeds.vyMetersPerSecond);
 
-        fLogger.log("vx:%.3f vy:%.3f spd:%.3f hdg:%.1f° dist:%.3fm | rVx:%.3f rVy:%.3f fVx:%.3f fVy:%.3f",
+        fLogger.log("vx:%.3f vy:%.3f spd:%.3f hdg:%.1fdeg dist:%.3fm | rVx:%.3f rVy:%.3f fVx:%.3f fVy:%.3f",
                 apVx, apVy, apSpeed, headingErr, dist,
                 robotSpeeds.vxMetersPerSecond, robotSpeeds.vyMetersPerSecond,
                 fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond);

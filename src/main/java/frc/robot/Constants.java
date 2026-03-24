@@ -12,7 +12,6 @@ import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.AngularVelocity;
