@@ -20,16 +20,17 @@ public class AutoFire {
   }
 
   /**
-   * Teleop fire command. Holds the flywheel at the requested RPS and gates the
-   * indexer/hopper based on the flywheel's lock state every cycle. Designed for
-   * {@code whileTrue} — runs until cancelled by button release.
+   * Teleop fire command. Spins up the flywheel, waits for the first lock, then
+   * feeds the indexer continuously until cancelled by button release. The hopper
+   * is driven by the hopper-trigger (follows indexer state) so it is NOT
+   * required here — claiming it would conflict with the trigger's commands.
+   * Designed for {@code whileTrue}.
    */
   public static Command teleop(
       Shooter shooter,
       Indexer indexer,
-      Hopper hopper,
       Supplier<AngularVelocity> indexerVelocity) {
-    return new TeleopFireCommand(shooter, indexer, hopper, indexerVelocity);
+    return new TeleopFireCommand(shooter, indexer, indexerVelocity);
   }
 
   /**
@@ -52,25 +53,24 @@ public class AutoFire {
   }
 
   /**
-   * Continuous fire command for teleop use. A single command with a proper
-   * lifecycle — no sequential waits, no .repeatedly(), no extra scheduler
-   * overhead. Each execute() cycle checks the flywheel's lock state and toggles
-   * the indexer/hopper accordingly, giving sub-20ms reaction time.
+   * Continuous fire command for teleop use. Spins up the flywheel, waits for
+   * the first lock, then feeds the indexer continuously until the command is
+   * cancelled (button release). The hopper is managed by the hopper-trigger
+   * (follows indexer state) and is intentionally NOT required here to avoid
+   * subsystem conflicts with the trigger's commands.
    */
-  public static class TeleopFireCommand extends Command {
+  private static class TeleopFireCommand extends Command {
     private final Shooter shooter;
     private final Indexer indexer;
-    private final Hopper hopper;
     private final Supplier<AngularVelocity> indexerVelocity;
     private boolean feeding;
 
-    public TeleopFireCommand(Shooter shooter, Indexer indexer, Hopper hopper,
+    TeleopFireCommand(Shooter shooter, Indexer indexer,
         Supplier<AngularVelocity> indexerVelocity) {
       this.shooter = shooter;
       this.indexer = indexer;
-      this.hopper = hopper;
       this.indexerVelocity = indexerVelocity;
-      addRequirements(shooter, indexer, hopper);
+      addRequirements(shooter, indexer);
       setName("AutoFire_Teleop");
     }
 
@@ -78,26 +78,26 @@ public class AutoFire {
     public void initialize() {
       shooter.spinUp();
       feeding = false;
+      System.out.println("[AutoFire] initialize: spinning up");
     }
 
     @Override
     public void execute() {
-      if (shooter.isReadyToFire() && !feeding) {
+      if (!feeding && shooter.isReadyToFire()) {
         indexer.startFeeding(indexerVelocity);
-        hopper.startFeeding();
         feeding = true;
+        System.out.println("[AutoFire] locked - feeding started");
       } else if (!shooter.isReadyToFire() && feeding) {
         indexer.stopFeeding();
-        hopper.stopFeeding();
         feeding = false;
+        System.out.println("[AutoFire] unlocked - feeding stopped");
       }
     }
 
     @Override
     public void end(boolean interrupted) {
-      shooter.spinDown();
       indexer.stopFeeding();
-      hopper.stopFeeding();
+      System.out.println("[AutoFire] end: interrupted=" + interrupted);
     }
 
     @Override
