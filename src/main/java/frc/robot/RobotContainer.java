@@ -49,6 +49,7 @@ import frc.robot.subsystems.SwerveFeatures;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.commands.Shooter.AutoFire;
 
 public class RobotContainer {
         private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -294,9 +295,13 @@ public class RobotContainer {
                         // Commands.parallel(new InstantCommand(() -> shootAndBrakeCommand.end(true)),
                         // indexer.runStopIndexer()));
                 } else {
+                        final Command shootCommand = new AutoFire.TeleopFireCommand(shooter, indexer, hopper,
+                                        () -> ShooterPreferences.INDEXER_VELOCITY);
+                        final Command brakeCommand = drivetrain.applyRequest(() -> brake);
                         // SmartDashboard.putData("Commands/AutoFire", shootCommand);
-                        driverJoystick.rightBumper().whileTrue(AutoFire.teleop(shooter, indexer, hopper,
-                                        () -> ShooterPreferences.INDEXER_VELOCITY));
+                        driverJoystick.rightBumper()
+                                        .whileTrue(Commands.parallel(shootCommand,
+                                                        brakeCommand));
                         // driverJoystick.rightBumper().onFalse(
                         // indexer.runStopIndexer());
                 }
@@ -306,19 +311,21 @@ public class RobotContainer {
                 //
                 // A: spin up to whatever value is set in the Shooter/TestTargetRPS dashboard
                 // slider
-                shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
-                // B: stop shooter
-                shooterJoystick.b().onTrue(shooter.stopShooter());
-                // Preset speeds
-                shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
-                shooterJoystick.x().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
-                // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
-                // ShooterPreferences.LONG));
-                // Fire + stop
-                shooterJoystick.rightBumper().onTrue(
-                                AutoFire.teleop(shooter, indexer, hopper,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY));
-                shooterJoystick.rightBumper().onFalse(indexer.runStopIndexer());
+                // shooterJoystick.a().onTrue(shooter.runShooterAtTestRPS());
+                // // B: stop shooter
+                // shooterJoystick.b().onTrue(shooter.stopShooter());
+                // // Preset speeds
+                // shooterJoystick.y().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.SHORT));
+                // shooterJoystick.x().onTrue(shooter.runSetRequestedSpeed(() ->
+                // ShooterPreferences.MEDIUM));
+                // // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
+                // // ShooterPreferences.LONG));
+                // // Fire + stop
+                // shooterJoystick.rightBumper().onTrue(
+                // AutoFire.teleop(shooter, indexer, hopper,
+                // () -> ShooterPreferences.INDEXER_VELOCITY));
+                // shooterJoystick.rightBumper().onFalse(indexer.runStopIndexer());
         }
 
         private void configureBindings_CTReDefault() {

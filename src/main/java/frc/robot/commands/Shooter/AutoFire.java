@@ -57,14 +57,14 @@ public class AutoFire {
    * overhead. Each execute() cycle checks the flywheel's lock state and toggles
    * the indexer/hopper accordingly, giving sub-20ms reaction time.
    */
-  private static class TeleopFireCommand extends Command {
+  public static class TeleopFireCommand extends Command {
     private final Shooter shooter;
     private final Indexer indexer;
     private final Hopper hopper;
     private final Supplier<AngularVelocity> indexerVelocity;
     private boolean feeding;
 
-    TeleopFireCommand(Shooter shooter, Indexer indexer, Hopper hopper,
+    public TeleopFireCommand(Shooter shooter, Indexer indexer, Hopper hopper,
         Supplier<AngularVelocity> indexerVelocity) {
       this.shooter = shooter;
       this.indexer = indexer;
