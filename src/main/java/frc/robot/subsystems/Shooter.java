@@ -84,8 +84,8 @@ public class Shooter extends SubsystemBase {
     mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
     mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
 
-    mainMotorCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
-        .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
+    // mainMotorCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
+    // .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
 
     mainMotorCfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     mainMotorCfg.MotionMagic.MotionMagicAcceleration = ShooterPIDConfig.MOTION_MAGIC_ACCELERATION;
@@ -236,6 +236,9 @@ public class Shooter extends SubsystemBase {
     dynamicRPS = (floorSpeed.baseUnitMagnitude() * (ceilingDistance - distanceToHub.getAsDouble())
         + ceilingSpeed.baseUnitMagnitude() * (distanceToHub.getAsDouble() - floorDistance))
         / (ceilingDistance - floorDistance);
+    if (dynamicRPS >= ShooterPreferences.MAX.baseUnitMagnitude()) {
+      dynamicRPS = ShooterPreferences.MAX.baseUnitMagnitude();
+    }
     return dynamicRPS;
   }
 
@@ -376,7 +379,8 @@ public class Shooter extends SubsystemBase {
       // SmartDashboard.putNumber("Shooter/BallExitVelocityFPS", exitVelocityFPS);
 
       // Dynamice Shooter
-      SmartDashboard.putNumber("Shooter/DynamicRPS", )) //TODO ben needs to finish writing this
+      // SmartDashboard.putNumber("Shooter/DynamicRPS", ); //TODO ben needs to finish
+      // writing this
 
       // Follower sync
       SmartDashboard.putNumber("Shooter/Motor2RPSDelta", motor2RPSDelta);

@@ -38,7 +38,7 @@ public class Constants {
     }
 
     public static class ShooterPIDConfig {
-        public static final double KP = 0.3;
+        public static final double KP = 0.4;
         public static final double KI = 0.0;
         public static final double KD = 0.0;
         public static final double KV = 0.12;
@@ -73,17 +73,18 @@ public class Constants {
 
     public static class ShooterPreferences {
         // Shooter speeds
-        public static final AngularVelocity SHORT = RotationsPerSecond.of(30);
+        public static final AngularVelocity SHORT = RotationsPerSecond.of(38);
         public static final AngularVelocity MEDIUM = RotationsPerSecond.of(42);
         public static final AngularVelocity LONG = RotationsPerSecond.of(50);
         public static final AngularVelocity LUDICROUS_SPEED = RotationsPerSecond.of(75);
         public static final AngularVelocity DYNAMIC = RotationsPerSecond.of(20);
+        public static final AngularVelocity MAX = RotationsPerSecond.of(60);
 
         // Shooting distances
         // desired robot distances for each shooting speed
         public static Supplier<Double> SHORT_DISTANCE = () -> 1.4;
-        public static Supplier<Double> MEDIUM_DISTANCE = () -> 1.9542;// was 2.2082
-        public static Supplier<Double> LONG_DISTANCE = () -> 2.5;
+        public static Supplier<Double> MEDIUM_DISTANCE = () -> 1.9;// was 1.9542
+        public static Supplier<Double> LONG_DISTANCE = () -> 2.8;
 
         public static final HashMap<AngularVelocity, Supplier<Double>> SHOOTER_SPEED_TO_DISTANCE = new HashMap<>();
         static {
