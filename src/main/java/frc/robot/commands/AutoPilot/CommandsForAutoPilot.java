@@ -98,24 +98,26 @@ public class CommandsForAutoPilot {
         private static double BUMP_LEFT_ALLIANCE_SIDE = 3.3;
         public static Supplier<Pose2d> leftBump_AllianceToFieldStart = () -> new Pose2d(
                         BUMP_LEFT_ALLIANCE_SIDE, 5.5,
-                        Rotation2d.fromDegrees(0));
+                        Rotation2d.fromDegrees(315)); // was 0
         public static Supplier<Pose2d> leftBump_AllianceToFieldEnd = () -> new Pose2d(
                         BUMP_RIGHT_FIELD_SIDE, 5.5,
-                        Rotation2d.fromDegrees(0));
+                        Rotation2d.fromDegrees(225)); // was 0
 
         public static Supplier<Pose2d> leftBump_FieldToAllianceStart = () -> new Pose2d(
                         BUMP_RIGHT_FIELD_SIDE, 5.5,
-                        Rotation2d.fromDegrees(180));
+                        Rotation2d.fromDegrees(225)); // was 180
         public static Supplier<Pose2d> leftBump_FieldToAllianceEnd = () -> new Pose2d(
                         BUMP_LEFT_ALLIANCE_SIDE, 5.5,
-                        Rotation2d.fromDegrees(180));
+                        Rotation2d.fromDegrees(315)); // was 180
         // Right Bump
         public static Supplier<Pose2d> rightBump_AllianceToFieldStart = () -> new Pose2d(
-                        BUMP_LEFT_ALLIANCE_SIDE, 2.5,
+                        BUMP_LEFT_ALLIANCE_SIDE, 2.5, // was 2.5
                         Rotation2d.fromDegrees(45)); // rotation was 0
-
+        public static Supplier<Pose2d> rightBump_AllianceToFieldStartDos = () -> new Pose2d(
+                        BUMP_RIGHT_FIELD_SIDE, 2.5, // was 2.5
+                        Rotation2d.fromDegrees(90)); // rotation was 0
         public static Supplier<Pose2d> rightBump_AllianceToFieldEnd = () -> new Pose2d(
-                        BUMP_RIGHT_FIELD_SIDE, 2.5,
+                        BUMP_RIGHT_FIELD_SIDE, 2.5, // was 2.5
                         Rotation2d.fromDegrees(125)); // rotation was 0
 
         public static Supplier<Pose2d> rightBump_FieldToAllianceStart = () -> new Pose2d(
@@ -124,6 +126,9 @@ public class CommandsForAutoPilot {
         public static Supplier<Pose2d> rightBump_FieldToAllianceEnd = () -> new Pose2d(
                         BUMP_LEFT_ALLIANCE_SIDE, 2.5,
                         Rotation2d.fromDegrees(45)); // was 180
+        public static Supplier<Pose2d> rightBump_FieldToAllianceEndDos = () -> new Pose2d(
+                        BUMP_LEFT_ALLIANCE_SIDE, 2.5,
+                        Rotation2d.fromDegrees(90)); // was 180
         // TODO: fix this
         // Shooter Poses
         public static Supplier<Pose2d> FrontHubShoot = () -> new Pose2d(3.069361, 4.034638, Rotation2d.fromDegrees(0));
@@ -185,8 +190,6 @@ public class CommandsForAutoPilot {
         public static Supplier<Pose2d> blueCenter = () -> new Pose2d(2, 4, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> fourMeters = () -> new Pose2d(4, 0, Rotation2d.fromDegrees(0));
-        public static Supplier<Pose2d> preClimbPosition = () -> new Pose2d(2.5, 4, Rotation2d.fromDegrees(180));
-        public static Supplier<Pose2d> climbPosition = () -> new Pose2d(1.5, 4, Rotation2d.fromDegrees(180));
 
         public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber,
                         Intake intake,
@@ -231,14 +234,6 @@ public class CommandsForAutoPilot {
 
                 Supplier<Command> MoveTo_fourMeters = () -> new AutoPilotCommand.Builder(
                                 () -> fourMeters.get(), drivetrain, "MoveTo_fourMeters")
-                                .withFlipPoseForAlliance(true)
-                                .build();
-                Supplier<Command> MoveTo_preClimbPosition = () -> new AutoPilotCommand.Builder(
-                                () -> preClimbPosition.get(), drivetrain, "MoveTo_preClimbPosition")
-                                .withFlipPoseForAlliance(true)
-                                .build();
-                Supplier<Command> MoveTo_climbPosition = () -> new AutoPilotCommand.Builder(
-                                () -> climbPosition.get(), drivetrain, "MoveTo_climbPosition")
                                 .withFlipPoseForAlliance(true)
                                 .build();
                 // Shooter
@@ -437,6 +432,12 @@ public class CommandsForAutoPilot {
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(bumpConstraints)
                                 .build();
+                Supplier<Command> MoveTo_rightBump_AllianceToFieldStartDos = () -> new PidToPoseCommand.Builder(
+                                () -> rightBump_AllianceToFieldStartDos.get(), drivetrain,
+                                "MoveTo_rightBump_AllianceToFieldStartDos")
+                                .withFlipPoseForAlliance(true)
+                                // .withConstraints(bumpConstraints)
+                                .build();
 
                 // Supplier<Command> MoveTo_rightBump_AllianceToFieldEnd = () -> new
                 // AutoPilotCommand.Builder(
@@ -478,7 +479,12 @@ public class CommandsForAutoPilot {
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(testBumpConstraints)
                                 .build();
-
+                Supplier<Command> MoveTo_rightBump_FieldToAllianceEndDos = () -> new PidToPoseCommand.Builder(
+                                () -> rightBump_FieldToAllianceEndDos.get(), drivetrain,
+                                "MoveTo_rightBump_FieldToAllianceEndDos")
+                                .withFlipPoseForAlliance(true)
+                                // .withConstraints(testBumpConstraints)
+                                .build();
                 // SHOOTING
                 // TODO: Figure out why isn't working
                 Supplier<Command> _shoot = () -> Commands
@@ -550,13 +556,15 @@ public class CommandsForAutoPilot {
                                 // MoveTo_IntakeIN_FrontHubShoot.get(),
                                 // _shoot.get()
                                 // MoveTo_New_FrontHubShoot.get()
-                                // MoveTo_rightBump_FieldToAllianceStart.get(),
-                                // MoveTo_rightBump_FieldToAllianceEnd.get()
-                                // TODO: Add intaking stuff
-                                MoveTo_depot_BackFace_Start.get(),
-                                MoveTo_depot_BackFace_End.get(),
-                                MoveTo_depot_BackFace_Start.get(),
-                                MoveTo_New_FrontHubShoot.get());
+                                MoveTo_rightBump_FieldToAllianceStart.get(),
+                                MoveTo_rightBump_FieldToAllianceEndDos.get(),
+                                MoveTo_rightBump_FieldToAllianceEnd.get()
+                // TODO: Add intaking stuff
+                // MoveTo_depot_BackFace_Start.get(),
+                // MoveTo_depot_BackFace_End.get(),
+                // MoveTo_depot_BackFace_Start.get(),
+                // MoveTo_New_FrontHubShoot.get()
+                );
                 Command JUSTSHOOT = new SequentialCommandGroup(
                                 // MoveTo_blueCenter.get(),
                                 // MoveTo_ClosestShootingPosition_MEDIUM.get(),
@@ -574,8 +582,7 @@ public class CommandsForAutoPilot {
                                 MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 midShoot.get());
                 // Mini Autos
-                Command climbCommand = climber.runClimbUp().withName("Auto Climb Up");
-                SmartDashboard.putData(climbCommand);
+
                 // Depot
                 Command DepotFaceIn = new SequentialCommandGroup(
                                 MoveTo_leftOfDepotFaceIn.get(),
@@ -607,13 +614,6 @@ public class CommandsForAutoPilot {
                                 MoveTo_leftLoadInZone.get(),
                                 MoveTo_rightLoadInZone.get());
 
-                Command climb = new SequentialCommandGroup(
-                                MoveTo_preClimbPosition.get(),
-                                climbCommand,
-                                MoveTo_climbPosition.get(),
-                                climber.runClimbDown(),
-                                Commands.print("climbing"));
-
                 // Actual Full autos
                 Command LeftStartDepotScore = new SequentialCommandGroup(
                                 MoveTo_leftOfDepotFaceIn.get(),
@@ -631,10 +631,6 @@ public class CommandsForAutoPilot {
                                 MoveTo_depotFaceOut.get(),
                                 MoveTo_leftOfDepotFaceOut.get(),
                                 MoveTo_FrontHubShoot.get());
-                Command cmd = climber.runExtendClimber().withName("Auto Climb");
-                SmartDashboard.putData(cmd);
-                // Commands.parallel(MoveTo_fieldSideLeftBump.get(), cmd));
-                // Commands.print("climbing").andThen(Commands.waitSeconds(3))
 
                 Command CenterStartFeedingStationScore = new SequentialCommandGroup(
                                 // MoveTo_FrontHubShoot.get(),
@@ -663,6 +659,7 @@ public class CommandsForAutoPilot {
                 // TODO: Fix this
                 Command RightStartCenterHarvestInLeft = new SequentialCommandGroup(
                                 MoveTo_rightBump_AllianceToFieldStart.get(),
+                                MoveTo_rightBump_AllianceToFieldStartDos.get(),
                                 MoveTo_rightBump_AllianceToFieldEnd.get(),
                                 // MoveAndDeploy_centerRightIntakeStart.get(),
                                 // MoveToPickup_centerRightIntakeEnd.get(),
@@ -770,7 +767,6 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("blueCenterToDepot", blueCenterToDepot);
                 NamedCommands.registerCommand("TEST", TEST);
                 NamedCommands.registerCommand("DepotFaceIn", DepotFaceIn);
-                NamedCommands.registerCommand("climb", climb);
                 NamedCommands.registerCommand("JUSTSHOOT", JUSTSHOOT);
                 NamedCommands.registerCommand("LeftStart_JUSTSHOOT", LeftStart_JUSTSHOOT);
 
@@ -797,6 +793,6 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("RightQuad", RightQuad);
                 NamedCommands.registerCommand("LeftQuad", LeftQuad);
 
-                OVERRIDE_AUTO_COMMAND = TEST;
+                OVERRIDE_AUTO_COMMAND = RightStartCenterHarvestInLeft;
         }
 }

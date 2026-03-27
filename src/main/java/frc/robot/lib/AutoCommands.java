@@ -37,9 +37,6 @@ public class AutoCommands {
                 // this HAS to go after AutoPilotCommands
                 AutoCommands.configureAutos(autoChooser, drivetrain);
 
-                NamedCommands.registerCommand("Left - [My First Auto]",
-                                Commands.print("Running [My First Auto] from the LEFT"));
-
         }
 
         public static void configureAutos(SendableChooser<Command> chooser, CommandSwerveDrivetrain drivetrain) {
@@ -51,7 +48,6 @@ public class AutoCommands {
                 // NamedCommands.getCommand("blueCenterToDepot"));
                 // commandsToAddToChooser.put("DepotFaceIn",
                 // NamedCommands.getCommand("DepotFaceIn"));
-                // commandsToAddToChooser.put("climb", NamedCommands.getCommand("climb"));
 
                 commandsToAddToChooser.put("JUSTSHOOT", NamedCommands.getCommand("JUSTSHOOT"));
                 commandsToAddToChooser.put("LeftStart_JUSTSHOOT", NamedCommands.getCommand("LeftStart_JUSTSHOOT"));
