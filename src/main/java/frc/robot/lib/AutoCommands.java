@@ -44,8 +44,8 @@ public class AutoCommands {
 
                 commandsToAddToChooser.put("FrontHubShoot", NamedCommands.getCommand("FrontHubShoot"));
 
-                // commandsToAddToChooser.put("blueCenterToDepot",
-                // NamedCommands.getCommand("blueCenterToDepot"));
+                commandsToAddToChooser.put("blueCenterToDepot",
+                                NamedCommands.getCommand("blueCenterToDepot"));
                 // commandsToAddToChooser.put("DepotFaceIn",
                 // NamedCommands.getCommand("DepotFaceIn"));
 
