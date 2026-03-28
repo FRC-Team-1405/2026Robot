@@ -169,12 +169,12 @@ public class Constants {
         public static final double SERVO_LONG_PERCENTAGE;
 
         static {
-            Preferences.initDouble("Hood/Servo Full Range Seconds", 0.5);
-            SERVO_FULL_RANGE_SECONDS = Preferences.getDouble("Hood/Servo Full Range Seconds", 0.5);
+            Preferences.initDouble("Hood/Servo Full Range Seconds", 5.0);
+            SERVO_FULL_RANGE_SECONDS = Preferences.getDouble("Hood/Servo Full Range Seconds", 5.0);
 
             // Positions are a percentage of a full range of motion
-            Preferences.initDouble("Hood/Servo Short Position", 0.3);
-            SERVO_SHORT_PERCENTAGE = Preferences.getDouble("Hood/Servo Short Position", 0.3);
+            Preferences.initDouble("Hood/Servo Short Position", 0.2);
+            SERVO_SHORT_PERCENTAGE = Preferences.getDouble("Hood/Servo Short Position", 0.2);
 
             Preferences.initDouble("Hood/Servo Medium Position", 0.6);
             SERVO_MEDIUM_PERCENTAGE = Preferences.getDouble("Hood/Servo Medium Position", 0.6);

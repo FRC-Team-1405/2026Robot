@@ -37,7 +37,6 @@ import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.PointAtTarget;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
-import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
@@ -182,12 +181,11 @@ public class RobotContainer {
                 operatorJoystick.povRight().onTrue(new InstantCommand(() -> shooter.increaseDistanceForSpeed()));
                 operatorJoystick.povLeft().onTrue(new InstantCommand(() -> shooter.descreaseDistanceForSpeed()));
 
-                // operatorJoystick.y().onTrue(new SetHoodPosition(hood, HoodAngles.SHORT));
+                operatorJoystick.y().onTrue(new SetHoodPosition(hood, HoodAngles.SHORT));
                 operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));
                 operatorJoystick.a().onTrue(new SetHoodPosition(hood, HoodAngles.LONG));
 
-                // operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() ->
-                // ShooterPreferences.SHORT));
+                operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
                 operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
                 operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
                 operatorJoystick.rightBumper().onTrue(
