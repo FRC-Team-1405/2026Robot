@@ -482,7 +482,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // "DriveToPose").withTolerance(2)
         // .withFlipPoseForAlliance(flipPoseForRedAlliance).build());
         return new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose").withTolerance(2)
-                .withFlipPoseForAlliance(flipPoseForRedAlliance).build();
+                .withFlipPoseForAlliance(flipPoseForRedAlliance).withTolerance(0.5).build();
     }
 
     public void publishDistanceToHub() {
