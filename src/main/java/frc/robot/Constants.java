@@ -73,10 +73,25 @@ public class Constants {
 
     public static class ShooterPreferences {
         // Shooter speeds
-        public static final AngularVelocity SHORT = RotationsPerSecond.of(35);
-        public static final AngularVelocity INTERMEDIATE = RotationsPerSecond.of(20);
-        public static final AngularVelocity MEDIUM = RotationsPerSecond.of(42);
-        public static final AngularVelocity LONG = RotationsPerSecond.of(50);
+        public static final AngularVelocity SHORT;
+        public static final AngularVelocity INTERMEDIATE;
+        public static final AngularVelocity MEDIUM;
+        public static final AngularVelocity LONG;
+
+        static {
+            Preferences.initDouble("ShooterVelocities/Short", 38.0);
+            SHORT = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Short", 38.0));
+
+            // Positions are a percentage of a full range of motion
+            Preferences.initDouble("ShooterVelocities/Intermediate", 20.0);
+            INTERMEDIATE = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Intermediate", 20.0));
+
+            Preferences.initDouble("ShooterVelocities/Medium", 42.0);
+            MEDIUM = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Medium", 42.0));
+
+            Preferences.initDouble("ShooterVelocities/Long", 75.0);
+            LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 75.0));
+        }
 
         // Shooting distances
         // desired robot distances for each shooting speed
@@ -165,25 +180,29 @@ public class Constants {
 
     public static class HoodPreferences {
 
-        public static final double SERVO_FULL_RANGE_SECONDS;
-        public static final double SERVO_SHORT_PERCENTAGE;
-        public static final double SERVO_MEDIUM_PERCENTAGE;
-        public static final double SERVO_LONG_PERCENTAGE;
+        public static final double SERVO_FULL_RANGE_SECONDS = 5.0;
+        public static final double SERVO_SHORT_PERCENTAGE = 0.25;
+        public static final double SERVO_MEDIUM_PERCENTAGE = 0.3;
+        public static final double SERVO_LONG_PERCENTAGE = 0.3;
 
-        static {
-            Preferences.initDouble("Hood/Servo Full Range Seconds", 5.0);
-            SERVO_FULL_RANGE_SECONDS = Preferences.getDouble("Hood/Servo Full Range Seconds", 5.0);
+        // static {
+        // Preferences.initDouble("Hood/Servo Full Range Seconds", 5.0);
+        // SERVO_FULL_RANGE_SECONDS = Preferences.getDouble("Hood/Servo Full Range
+        // Seconds", 5.0);
 
-            // Positions are a percentage of a full range of motion
-            Preferences.initDouble("Hood/Servo Short Position", 0.2);
-            SERVO_SHORT_PERCENTAGE = Preferences.getDouble("Hood/Servo Short Position", 0.2);
+        // // Positions are a percentage of a full range of motion
+        // Preferences.initDouble("Hood/Servo Short Position", 0.1);
+        // SERVO_SHORT_PERCENTAGE = Preferences.getDouble("Hood/Servo Short Position",
+        // 0.1);
 
-            Preferences.initDouble("Hood/Servo Medium Position", 0.6);
-            SERVO_MEDIUM_PERCENTAGE = Preferences.getDouble("Hood/Servo Medium Position", 0.6);
+        // Preferences.initDouble("Hood/Servo Medium Position", 0.2);
+        // SERVO_MEDIUM_PERCENTAGE = Preferences.getDouble("Hood/Servo Medium Position",
+        // 0.2);
 
-            Preferences.initDouble("Hood/Servo Long Position", 1.0);
-            SERVO_LONG_PERCENTAGE = Preferences.getDouble("Hood/Servo Long Position", 1.0);
-        }
+        // Preferences.initDouble("Hood/Servo Long Position", 0.5);
+        // SERVO_LONG_PERCENTAGE = Preferences.getDouble("Hood/Servo Long Position",
+        // 0.5);
+        // }
 
         public enum HoodAngles {
             ZERO(0),

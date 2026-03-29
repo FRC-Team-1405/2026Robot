@@ -22,8 +22,10 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
+import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.DriveToHubDistance;
+import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.PidToPose.PidToPoseCommand;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
@@ -35,6 +37,7 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.AdjustableHood;
 
 public class CommandsForAutoPilot {
         // TODO: integrate shooting positions dropdown into all autos, include the shoot
@@ -199,7 +202,8 @@ public class CommandsForAutoPilot {
                         Intake intake,
                         Hopper hopper,
                         Indexer indexer,
-                        Shooter shooter) {
+                        Shooter shooter,
+                        AdjustableHood hood) {
                 /* Commands */
                 // Uses command suppliers instead of commands so that we can reuse the same
                 // command in an autonomous
@@ -563,8 +567,10 @@ public class CommandsForAutoPilot {
                 Command TEST = new SequentialCommandGroup(
                                 // MoveTo_allianceCenter.get(),
                                 MoveTo_IntakeIN_FrontHubShoot.get(),
-                                shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM),
+                                shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT),
+                                new SetHoodPosition(hood, HoodAngles.SHORT),
                                 new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
+
                 // Commands.waitSeconds(0.5),
                 // MoveTo_allianceCenter.get(),
                 // MoveTo_IntakeOUT_FrontHubShoot.get(),
@@ -581,9 +587,9 @@ public class CommandsForAutoPilot {
                                 MoveTo_FrontHubShoot.get(),
                                 intake.runIntakeOut(),
                                 // intake.runPickupIn().withTimeout(0.5),
-                                intake.runIntakeCenter(),
                                 Commands.parallel(MoveTo_IntakeIN_FrontHubShoot.get(),
-                                                intake.runPickupIn().withTimeout(0.5)),
+                                                intake.runPickupIn().withTimeout(3.0)),
+                                intake.runIntakeCenter(),
                                 // MoveTo_depot_BackFace_End.get(),
                                 MoveTo_IntakeOUT_FrontHubShoot.get()
 
@@ -810,6 +816,6 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("RightQuad", RightQuad);
                 NamedCommands.registerCommand("LeftQuad", LeftQuad);
 
-                OVERRIDE_AUTO_COMMAND = TEST;
+                OVERRIDE_AUTO_COMMAND = JUSTSHOOT;
         }
 }
