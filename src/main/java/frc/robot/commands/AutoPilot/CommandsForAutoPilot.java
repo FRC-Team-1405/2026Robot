@@ -77,7 +77,8 @@ public class CommandsForAutoPilot {
         // https://frcdocs.wpi.edu/en/latest/docs/software/advanced-controls/geometry/pose.html#rotation
         public static final Rotation2d CW_30deg = Rotation2d.fromDegrees(-30);
         public static final Rotation2d CCW_30deg = Rotation2d.fromDegrees(30);
-
+        private static double BUMP_RIGHT_FIELD_SIDE = 6.0;
+        private static double BUMP_LEFT_ALLIANCE_SIDE = 3.3;
         // Poses
         // off blue center only used for Right Start Depot Score
 
@@ -90,15 +91,17 @@ public class CommandsForAutoPilot {
                                                                                                             // 6.5
 
         // #region START Poses
-        public static Supplier<Pose2d> startRightFaceIn = () -> new Pose2d(3.55, 0.37, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> startRightFaceIn = () -> new Pose2d(BUMP_LEFT_ALLIANCE_SIDE, 5,
+                        Rotation2d.fromDegrees(0)); // was3.55,
+        // 0.37,
+        // Rotation2d.fromDegrees(90)
         public static Supplier<Pose2d> startLeftFaceIn = () -> new Pose2d(3.55, 7.65, Rotation2d.fromDegrees(270));
         public static Supplier<Pose2d> startRightFaceFront = () -> new Pose2d(3.55, 0.37, Rotation2d.fromDegrees(0));
         // #endregion
 
         // #region BUMP Poses
         // Left Bump
-        private static double BUMP_RIGHT_FIELD_SIDE = 6.0;
-        private static double BUMP_LEFT_ALLIANCE_SIDE = 3.3;
+
         public static Supplier<Pose2d> leftBump_AllianceToFieldStart = () -> new Pose2d(
                         BUMP_LEFT_ALLIANCE_SIDE, 5.5,
                         Rotation2d.fromDegrees(315)); // was 0
@@ -180,10 +183,13 @@ public class CommandsForAutoPilot {
         public static Supplier<Pose2d> rightOfDepotFaceIn = () -> new Pose2d(0.50, 5.5, Rotation2d.fromDegrees(270));
         public static Supplier<Pose2d> depotFaceOut = () -> new Pose2d(0.50, 6.5, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> leftOfDepotFaceOut = () -> new Pose2d(0.50, 7, Rotation2d.fromDegrees(90));
-        public static Supplier<Pose2d> midOfDepotFaceOut = () -> new Pose2d(0.50, 6, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> rightOfDepotFaceOut = () -> new Pose2d(0.50, 5.5, Rotation2d.fromDegrees(90));
-        public static Supplier<Pose2d> depot_BackFace_Start = () -> new Pose2d(1, 6, Rotation2d.fromDegrees(180));
-        public static Supplier<Pose2d> depot_BackFace_End = () -> new Pose2d(0.50, 6, Rotation2d.fromDegrees(180));
+
+        public static Supplier<Pose2d> depot_BackFace_Start = () -> new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> depot_BackFace_End = () -> new Pose2d(0.75, 5.5, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> depot_BackFace_End_Dos = () -> new Pose2d(0.50, 5.5,
+                        Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> midOfDepotFaceOut = () -> new Pose2d(0.50, 5.75, Rotation2d.fromDegrees(180));
 
         public static Supplier<Pose2d> towerDodge_Start = () -> new Pose2d(2, 4.85, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> towerDodge_End = () -> new Pose2d(0.40, 4.85, Rotation2d.fromDegrees(90));
@@ -389,7 +395,7 @@ public class CommandsForAutoPilot {
                                 () -> leftOfDepotFaceOut.get(), drivetrain, "MoveTo_leftOfDepotFaceOut")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_midOfDepotFaceOut = () -> new AutoPilotCommand.Builder(
+                Supplier<Command> MoveTo_midOfDepotFaceOut = () -> new PidToPoseCommand.Builder(
                                 () -> midOfDepotFaceOut.get(), drivetrain, "MoveTo_midOfDepotFaceOut")
                                 .withFlipPoseForAlliance(true)
                                 .build();
@@ -403,6 +409,10 @@ public class CommandsForAutoPilot {
                                 .build();
                 Supplier<Command> MoveTo_depot_BackFace_End = () -> new PidToPoseCommand.Builder(
                                 () -> depot_BackFace_End.get(), drivetrain, "MoveTo_depot_BackFace_End")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+                Supplier<Command> MoveTo_depot_BackFace_End_Dos = () -> new PidToPoseCommand.Builder(
+                                () -> depot_BackFace_End_Dos.get(), drivetrain, "MoveTo_depot_BackFace_End_Dos")
                                 .withFlipPoseForAlliance(true)
                                 .build();
                 Supplier<Command> MoveTo_towerDodge_Start = () -> new PidToPoseCommand.Builder(
@@ -493,6 +503,11 @@ public class CommandsForAutoPilot {
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(testBumpConstraints)
                                 .build();
+                Supplier<Command> MoveTo_startRightFaceIn = () -> new PidToPoseCommand.Builder(
+                                () -> startRightFaceIn.get(), drivetrain,
+                                "MoveTo_startRightFaceIn")
+                                .withFlipPoseForAlliance(true)
+                                .build();
                 // SHOOTING
                 // TODO: Figure out why isn't working
                 Supplier<Command> _shoot = () -> Commands
@@ -554,33 +569,54 @@ public class CommandsForAutoPilot {
                                 MoveTo_FrontHubShoot.get(),
                                 midShoot.get());
                 Command blueCenterToDepot = new SequentialCommandGroup(
+                                // Commands.parallel(MoveTo_leftBump_AllianceToFieldStart.get(),
+                                // intake.runIntakeOut()),
+
+                                Commands.parallel(intake.runIntakeOut(),
+                                                MoveTo_leftBump_AllianceToFieldStart.get()),
                                 MoveTo_depot_BackFace_Start.get(),
-                                intake.runIntakeOut(),
-                                // intake.runPickupIn().withTimeout(0.5),
-                                intake.runIntakeCenter(),
-                                Commands.parallel(MoveTo_depot_BackFace_End.get(),
-                                                intake.runPickupIn().withTimeout(0.5)),
+                                Commands.parallel(intake.runPickupIn().withTimeout(5.0),
+                                                // intake.runPickupIn(),
+                                                // Commands.deadline(intake.runPickupIn(),
+                                                // MoveTo_depot_BackFace_End.get(),
+                                                // MoveTo_midOfDepotFaceOut.get()),
+                                                // intake.runPickupIn().alongWith(
+                                                // Commands.sequence(
+                                                // MoveTo_midOfDepotFaceOut.get(),
+                                                // MoveTo_depot_BackFace_Start.get()))
+                                                // .finallyDo(() -> intake.runPickupStop()),
+                                                Commands.sequence(MoveTo_depot_BackFace_End.get(),
+                                                                MoveTo_depot_BackFace_End_Dos.get(),
+                                                                MoveTo_midOfDepotFaceOu.get())),
+
+                                MoveTo_depot_BackFace_Start.get(),
+                                // Commands.parallel(MoveTo_depot_BackFace_End.get(),
+                                // intake.runPickupIn().withTimeout(0.5)),
                                 // MoveTo_depot_BackFace_End.get(),
-                                MoveTo_depot_BackFace_Start.get(),
+                                // MoveTo_midOfDepotFaceOut.get(),
+
+                                // intake.runPickupStop(),
                                 MoveTo_New_FrontHubShoot.get());
 
                 Command TEST = new SequentialCommandGroup(
                                 // MoveTo_allianceCenter.get(),
-                                MoveTo_IntakeIN_FrontHubShoot.get(),
-                                shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT),
-                                new SetHoodPosition(hood, HoodAngles.SHORT),
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY)
+                                // MoveTo_IntakeIN_FrontHubShoot.get(),
+                                // shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT),
+                                // new SetHoodPosition(hood, HoodAngles.SHORT),
+                                // new AutoFire(shooter, indexer, hopper, () ->
+                                // ShooterPreferences.INDEXER_VELOCITY)
 
-                // Commands.waitSeconds(0.5),
-                // MoveTo_allianceCenter.get(),
-                // MoveTo_IntakeOUT_FrontHubShoot.get(),
-                // intake.runIntakeOut()
-                // TODO: Add intaking stuff
-                // MoveTo_depot_BackFace_Start.get(),
-                // MoveTo_depot_BackFace_End.get(),
-                // MoveTo_depot_BackFace_Start.get(),
-                // MoveTo_New_FrontHubShoot.get()
-                );
+                                // Commands.waitSeconds(0.5),
+                                // MoveTo_allianceCenter.get(),
+                                // MoveTo_IntakeOUT_FrontHubShoot.get(),
+                                // intake.runIntakeOut()
+                                // TODO: Add intaking stuff
+                                MoveTo_depot_BackFace_Start.get(),
+                                intake.runIntakeOut(),
+                                MoveTo_depot_BackFace_End.get(),
+
+                                MoveTo_depot_BackFace_Start.get(),
+                                MoveTo_New_FrontHubShoot.get());
                 Command JUSTSHOOT = new SequentialCommandGroup(
                                 // MoveTo_allianceCenter.get(),
                                 // MoveTo_ClosestShootingPosition_MEDIUM.get(),
@@ -816,6 +852,6 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("RightQuad", RightQuad);
                 NamedCommands.registerCommand("LeftQuad", LeftQuad);
 
-                OVERRIDE_AUTO_COMMAND = JUSTSHOOT;
+                OVERRIDE_AUTO_COMMAND = blueCenterToDepot;
         }
 }
