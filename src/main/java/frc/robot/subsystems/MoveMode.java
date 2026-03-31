@@ -115,8 +115,8 @@ public class MoveMode {
                     // from
                     // the bump toward the alliance wall so the robot crosses backwards.
                     bumpTargetRotation = AllianceSymmetry.isRed()
-                            ? Rotation2d.kZero
-                            : Rotation2d.k180deg;
+                            ? Rotation2d.k180deg
+                            : Rotation2d.kZero;
                 } else {
                     // Neutral zone side: face 180 deg (blue) or 0 deg (red) — again, backwards into
                     // bump.

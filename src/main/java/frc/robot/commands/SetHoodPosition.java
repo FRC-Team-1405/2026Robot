@@ -45,7 +45,9 @@ public class SetHoodPosition extends Command {
 
   @Override
   public void initialize() {
-    subsystem.setServo(targetPosition);
+    subsystem.setServo(() -> {
+      return targetPosition;
+    });
     startTime = Timer.getFPGATimestamp();
 
     if (hoodAngle != null) {
