@@ -34,7 +34,8 @@ public class PhysicsSim_SJC {
     }
 
     /**
-     * Adds a TalonFX controller with a modeled load (gravity + viscous).
+     * Adds a TalonFX controller with a modeled load (gravity + viscous). The gear
+     * ratio is output to input.
      */
     public void addTalonFX(TalonFX talonFX, final double rotorInertia, final double loadMassKg, final double armMeters,
             final double viscousCoeff, final int numberOfMotors, final double gearRatio) {
