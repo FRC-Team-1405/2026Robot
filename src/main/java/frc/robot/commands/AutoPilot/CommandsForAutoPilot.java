@@ -587,7 +587,7 @@ public class CommandsForAutoPilot {
                                                 // .finallyDo(() -> intake.runPickupStop()),
                                                 Commands.sequence(MoveTo_depot_BackFace_End.get(),
                                                                 MoveTo_depot_BackFace_End_Dos.get(),
-                                                                MoveTo_midOfDepotFaceOu.get())),
+                                                                MoveTo_midOfDepotFaceOut.get())),
 
                                 MoveTo_depot_BackFace_Start.get(),
                                 // Commands.parallel(MoveTo_depot_BackFace_End.get(),

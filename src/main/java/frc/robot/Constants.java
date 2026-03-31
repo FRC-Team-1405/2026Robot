@@ -120,7 +120,7 @@ public class Constants {
         static {
             // Indexer Velocities
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 35);
-            INDEXER_VELOCITY = RotationsPerSecond.of(30);
+            INDEXER_VELOCITY = RotationsPerSecond.of(50);
 
             Preferences.initDouble("ShooterAccuracy/Tight", 3);
             TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 3);
@@ -259,7 +259,8 @@ public class Constants {
 
         static {
             Preferences.initDouble("Hopper/Forward", 5.0);
-            HOPPER_FORWARD_SPEED = RotationsPerSecond.of(30);
+            HOPPER_FORWARD_SPEED = RotationsPerSecond.of(50); // TODO add a hopper forward speed for picking up and for
+                                                              // shooting. shooting=50 picking up=30
             Preferences.initDouble("Hopper/Reverse", -1.0);
             HOPPER_REVERSE_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Reverse", -1.0));
 
