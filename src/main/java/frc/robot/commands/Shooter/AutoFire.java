@@ -7,11 +7,14 @@ package frc.robot.commands.Shooter;
 import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
 public class AutoFire {
@@ -29,8 +32,8 @@ public class AutoFire {
   public static Command teleop(
       Shooter shooter,
       Indexer indexer,
-      Supplier<AngularVelocity> indexerVelocity) {
-    return new TeleopFireCommand(shooter, indexer, indexerVelocity);
+      Supplier<AngularVelocity> indexerVelocity, Intake intake) {
+    return new TeleopFireCommand(shooter, indexer, indexerVelocity, intake);
   }
 
   /**
@@ -62,8 +65,10 @@ public class AutoFire {
   private static class TeleopFireCommand extends Command {
     private final Shooter shooter;
     private final Indexer indexer;
+    private Intake intake = null;
     private final Supplier<AngularVelocity> indexerVelocity;
     private boolean feeding;
+    private double shooterStartTimestamp = 0.0;
 
     TeleopFireCommand(Shooter shooter, Indexer indexer,
         Supplier<AngularVelocity> indexerVelocity) {
@@ -74,10 +79,17 @@ public class AutoFire {
       setName("AutoFire_Teleop");
     }
 
+    TeleopFireCommand(Shooter shooter, Indexer indexer,
+        Supplier<AngularVelocity> indexerVelocity, Intake intake) {
+      this(shooter, indexer, indexerVelocity);
+      this.intake = intake;
+    }
+
     @Override
     public void initialize() {
       shooter.spinUp();
       feeding = false;
+      shooterStartTimestamp = Timer.getFPGATimestamp();
       System.out.println("[AutoFire] initialize: spinning up");
     }
 
@@ -92,6 +104,14 @@ public class AutoFire {
         feeding = false;
         System.out.println("[AutoFire] unlocked - feeding stopped");
       }
+
+      if (this.intake != null) {
+        double currentTimeShooting = Timer.getFPGATimestamp() - shooterStartTimestamp;
+        if (currentTimeShooting > 3) {
+          CommandScheduler.getInstance().schedule(intake.runIntakeCenter());
+        }
+      }
+
     }
 
     @Override

@@ -283,10 +283,17 @@ public class RobotContainer {
                 // Shoot — continuous auto-fire while held, with drivetrain brake.
                 // Hopper is driven by hopperTrigger (follows indexer state).
                 final Command shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY);
-                final Command brakeCommand = drivetrain.applyRequest(() -> brake);
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake);
+
+                // when you fix the brake mode not allowing driver to manually adjust while
+                // shooting bug,
+                // uncomment this and add brakeCommand back to the commands.parrallel
+                // final Command brakeCommand = drivetrain.applyRequest(() -> brake);
+
+                // TODO allow driver to override brake mode while shooting so they can manually
+                // adjust
                 driverJoystick.rightBumper()
-                                .whileTrue(Commands.parallel(shootCommand, brakeCommand));
+                                .whileTrue(Commands.parallel(shootCommand, Commands.none()));
 
                 //
                 // Shooter Joystick (DEBUG) Controls

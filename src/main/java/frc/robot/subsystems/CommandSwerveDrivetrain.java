@@ -500,6 +500,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 .withFlipPoseForAlliance(flipPoseForRedAlliance).withTolerance(0.5).build();
     }
 
+    public Command driveToPoseAP(Supplier<Optional<Pose2d>> targetPoseSupplier, boolean flipPoseForRedAlliance) {
+        Supplier<Pose2d> poseSupplier = () -> (targetPoseSupplier.get().get());// TODO pass the real supplier in so it
+                                                                               // can constantly update its position,
+                                                                               // based on user input
+        return new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose")
+                .withFlipPoseForAlliance(flipPoseForRedAlliance).withTolerance(0.5).withThetaTolerance(1.0).build();
+    }
+
     public void publishDistanceToHub() {
         SmartDashboard.putNumber(SWERVE_DRIVE + "DistanceToHub",
                 m_swerveFeatures.getDistanceToHub(this, FieldConstants.ALLIANCE_HUB_POSITION));
