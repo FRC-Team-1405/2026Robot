@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
+import frc.robot.commands.BrakeWithJoystickOverride;
 import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
@@ -193,21 +194,9 @@ public class RobotContainer {
                 // // Drivetrain will execute this command periodically
                 // cmd);
 
-                drivetrain.setDefaultCommand(
-                                // Drivetrain will execute this command periodically
-                                drivetrain.applyRequest(() -> SwerveFeatures.drive
-                                                .withVelocityX(SwerveFeatures.MaxSpeed
-                                                                * moveMode.selectSpeedMode(driverJoystick::getLeftY,
-                                                                                true)
-                                                                                .getAsDouble())
-                                                .withVelocityY(SwerveFeatures.MaxSpeed
-                                                                * moveMode.selectSpeedMode(
-                                                                                driverJoystick::getLeftX, false)
-                                                                                .getAsDouble())
-                                                .withRotationalRate(
-                                                                moveMode.selectRotationMode(driverJoystick, drivetrain,
-                                                                                SwerveFeatures.MaxAngularRate)
-                                                                                .getAsDouble())));
+                Command driveCommand = SwerveFeatures.teleopDriveCommand(drivetrain, moveMode, driverJoystick);
+                driveCommand.setName("DefaultDriveCommand");
+                drivetrain.setDefaultCommand(driveCommand);
 
                 // Zeroize/reset the field-centric heading on start and back press.
                 driverJoystick.start().and(driverJoystick.back()).onTrue(
@@ -291,12 +280,17 @@ public class RobotContainer {
                 // when you fix the brake mode not allowing driver to manually adjust while
                 // shooting bug,
                 // uncomment this and add brakeCommand back to the commands.parrallel
-                // final Command brakeCommand = drivetrain.applyRequest(() -> brake);
+                final Command brakeCommand = new BrakeWithJoystickOverride(drivetrain, moveMode, driverJoystick);
+                brakeCommand.addRequirements(drivetrain);
+                brakeCommand.setName("brakeCommand");
+
+                final Command shootCommandWithBrake = Commands.parallel(shootCommand, brakeCommand);
+                shootCommandWithBrake.setName("shootCommandWithBrake");
 
                 // TODO allow driver to override brake mode while shooting so they can manually
                 // adjust
                 driverJoystick.rightBumper()
-                                .whileTrue(Commands.parallel(shootCommand, Commands.none()));
+                                .whileTrue(shootCommandWithBrake);
 
                 //
                 // Shooter Joystick (DEBUG) Controls

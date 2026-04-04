@@ -139,7 +139,8 @@ public class SwerveFeatures {
         // publishRobotAcceleration();
         // Publish command NAME only — do NOT use putData with a live Command object.
         // putData creates a bidirectional .running property that can cancel the command
-        // when the NT entry retains a stale value from the previous command at this key.
+        // when the NT entry retains a stale value from the previous command at this
+        // key.
         if (m_drivetrain != null && m_drivetrain.getCurrentCommand() != null) {
             SmartDashboard.putString("Commands/SwerveDriveCommand", m_drivetrain.getCurrentCommand().getName());
         }
@@ -148,6 +149,10 @@ public class SwerveFeatures {
     public static Command teleopDriveCommand(CommandSwerveDrivetrain drivetrain, MoveMode moveMode,
             final CommandXboxController joystick) {
         return drivetrain.applyRequest(() -> teleopDriveRequest(drivetrain, moveMode, joystick));
+    }
+
+    public static Command brakeCommand(CommandSwerveDrivetrain drivetrain) {
+        return drivetrain.applyRequest(() -> brake);
     }
 
     /**
@@ -436,7 +441,7 @@ public class SwerveFeatures {
         return velocity < stationaryThreshold && angularVelocity < stationaryThreshold;
     }
 
-    private static SwerveRequest.FieldCentric teleopDriveRequest(CommandSwerveDrivetrain drivetrain, MoveMode moveMode,
+    public static SwerveRequest.FieldCentric teleopDriveRequest(CommandSwerveDrivetrain drivetrain, MoveMode moveMode,
             final CommandXboxController joystick) {
         return drive
                 .withVelocityX(MaxSpeed
