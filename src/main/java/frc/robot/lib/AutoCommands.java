@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
+import frc.robot.commands.AutoPilot.CommandsForAutos;
 import frc.robot.commands.PidToPose.PidToPoseCommands;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
@@ -35,7 +35,7 @@ public class AutoCommands {
                 SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
 
                 PidToPoseCommands.registerCommands(drivetrain);
-                CommandsForAutoPilot.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
+                CommandsForAutos.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
                 // this HAS to go after AutoPilotCommands
                 AutoCommands.configureAutos(autoChooser, drivetrain);
 
@@ -66,8 +66,8 @@ public class AutoCommands {
 
                 // commandsToAddToChooser.put("ShootFromDepot",
                 // NamedCommands.getCommand("ShootFromDepot"));
-                // commandsToAddToChooser.put("CenterHarvest",
-                // NamedCommands.getCommand("CenterHarvest"));
+                commandsToAddToChooser.put("CenterHarvest",
+                                NamedCommands.getCommand("CenterHarvest"));
                 // commandsToAddToChooser.put("LeftStartDepotScore",
                 // NamedCommands.getCommand("LeftStartDepotScore"));
                 // commandsToAddToChooser.put("RightStartDepotScore",
@@ -119,12 +119,12 @@ public class AutoCommands {
         public static SendableChooser<Supplier<Pose2d>> shootingPositions = new SendableChooser<>();
 
         public static void initShootPositions() {
-                shootingPositions.addOption("FrontHub", CommandsForAutoPilot.FrontHubShoot);
-                shootingPositions.addOption("IntakeIN_FrontHub", CommandsForAutoPilot.IntakeIN_FrontHubShoot);
-                shootingPositions.addOption("IntakeOUT_FrontHub", CommandsForAutoPilot.IntakeOUT_FrontHubShoot);
-                shootingPositions.addOption("RightHub", CommandsForAutoPilot.RightHubShoot);
+                shootingPositions.addOption("FrontHub", CommandsForAutos.FrontHubShoot);
+                shootingPositions.addOption("IntakeIN_FrontHub", CommandsForAutos.IntakeIN_FrontHubShoot);
+                shootingPositions.addOption("IntakeOUT_FrontHub", CommandsForAutos.IntakeOUT_FrontHubShoot);
+                shootingPositions.addOption("RightHub", CommandsForAutos.RightHubShoot);
 
-                shootingPositions.setDefaultOption("FrontHub", CommandsForAutoPilot.FrontHubShoot);
+                shootingPositions.setDefaultOption("FrontHub", CommandsForAutos.FrontHubShoot);
                 SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + " Shooting Position", shootingPositions);
         }
 
@@ -140,8 +140,8 @@ public class AutoCommands {
                 if (DriverStation.isFMSAttached()
                                 || SmartDashboard.getBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false)) {
                         SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
-                        if (CommandsForAutoPilot.OVERRIDE_AUTO_COMMAND != null) {
-                                return CommandsForAutoPilot.OVERRIDE_AUTO_COMMAND;
+                        if (CommandsForAutos.OVERRIDE_AUTO_COMMAND != null) {
+                                return CommandsForAutos.OVERRIDE_AUTO_COMMAND;
                         }
                         return autoChooser.getSelected();
                 } else {
