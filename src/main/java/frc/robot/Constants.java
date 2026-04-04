@@ -121,12 +121,9 @@ public class Constants {
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 35);
             INDEXER_VELOCITY = RotationsPerSecond.of(50);
 
-            Preferences.initDouble("ShooterAccuracy/Tight", 3);
-            TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 3);
-            Preferences.initDouble("ShooterAccuracy/Wide", 5);
-            WIDE = Preferences.getDouble("ShooterAccuracy/Wide", 5);
-            Preferences.initInt("ShooterAccuracy/StableCount", 5);
-            STABLE_COUNT = Preferences.getInt("ShooterAccuracy/StableCount", 5);
+            TIGHT = 3;
+            WIDE = 5;
+            STABLE_COUNT = 5;
         }
     }
 

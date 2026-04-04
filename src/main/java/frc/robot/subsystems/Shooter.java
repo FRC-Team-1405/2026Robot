@@ -21,6 +21,8 @@ import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -84,13 +86,29 @@ public class Shooter extends SubsystemBase {
   private void setupMotors() {
     // Leader Motor
     TalonFXConfiguration mainMotorCfg = new TalonFXConfiguration();
-
-    mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
-    mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
-    mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
-    mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
-    mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
-
+    if (!RobotBase.isSimulation()) {
+      // real robot
+      mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
+      mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
+      mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
+      mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
+      mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
+    } else {
+      if (FeatureSwitches.CUSTOM_SIMULATION_SHOOTER_PIDS) {
+        // simulation
+        mainMotorCfg.Slot0.kP = 0.2;
+        mainMotorCfg.Slot0.kI = 0.0;
+        mainMotorCfg.Slot0.kD = 0.0;
+        mainMotorCfg.Slot0.kV = 0.1;
+        mainMotorCfg.Slot0.kS = 0.15;
+      } else {
+        mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
+        mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
+        mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
+        mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
+        mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
+      }
+    }
     mainMotorCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
         .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
 
