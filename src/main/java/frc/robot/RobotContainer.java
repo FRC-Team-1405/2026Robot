@@ -30,6 +30,9 @@ import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
+import frc.robot.commands.AutoPilot.CommandsForAutos;
+import frc.robot.commands.Autos.AutoPoses;
+import frc.robot.commands.Autos.Full_Autos;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
@@ -78,6 +81,8 @@ public class RobotContainer {
         public final Intake intake = new Intake();
         private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
         MoveMode moveMode = new MoveMode();
+        public final CommandsForAutos commandsForAutos = new CommandsForAutos();
+        public final Full_Autos full_Autos = new Full_Autos(commandsForAutos);
 
         public RobotContainer() {
                 configureBindings();
