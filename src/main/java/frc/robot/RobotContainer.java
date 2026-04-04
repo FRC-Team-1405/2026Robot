@@ -16,6 +16,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -70,7 +72,7 @@ public class RobotContainer {
         List<StructPublisher<Pose2d>> cameraEstimatedPosesPublisher = Arrays.asList(cameraEstimatedPosePublisher1,
                         cameraEstimatedPosePublisher2);
 
-        public Shooter shooter = new Shooter();
+        public Shooter shooter = new Shooter(operatorJoystick);
         public Indexer indexer = new Indexer();
         public final Climber climber = new Climber();
         public final AdjustableHood hood = new AdjustableHood();
@@ -149,10 +151,11 @@ public class RobotContainer {
                 // Operator Controls
                 //
                 RumbleJoystick.setPeriodChangeWarningOccasion(operatorJoystick);
+                driverJoystick.b().onTrue(new RumbleJoystick(driverJoystick, RumbleType.kBothRumble, 0.5, 1.0));
+
                 cmd = intake.runIntakeOut();
                 // SmartDashboard.putData("Commands/RunIntakeOut", cmd);
                 operatorJoystick.povUp().onTrue(cmd);
-
                 cmd = intake.runIntakeIn();
                 // SmartDashboard.putData("Commands/RunIntakeIn", cmd);
                 operatorJoystick.povDown().onTrue(cmd);
