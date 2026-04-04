@@ -179,6 +179,7 @@ public class CommandsForAutoPilot {
         public static Supplier<Pose2d> leftOfDepotFaceOut = () -> new Pose2d(0.50, 7, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> midOfDepotFaceOut = () -> new Pose2d(0.50, 6, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> rightOfDepotFaceOut = () -> new Pose2d(0.50, 5.5, Rotation2d.fromDegrees(90));
+
         public static Supplier<Pose2d> depot_BackFace_Start = () -> new Pose2d(1, 6, Rotation2d.fromDegrees(180));
         public static Supplier<Pose2d> depot_BackFace_End = () -> new Pose2d(0.50, 6, Rotation2d.fromDegrees(180));
 
@@ -234,6 +235,7 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MoveTo_fourMeters = () -> new AutoPilotCommand.Builder(
                                 () -> fourMeters.get(), drivetrain, "MoveTo_fourMeters")
                                 .withFlipPoseForAlliance(true)
+                                .withConstraints(fullFieldConstraints)
                                 .build();
                 // #endregion
 
@@ -289,7 +291,7 @@ public class CommandsForAutoPilot {
                 Supplier<Command> MoveTo_centerLeftIntakeEnd = () -> new PidToPoseCommand.Builder(
                                 () -> centerLeftIntakeEnd.get(), drivetrain, "MoveTo_centerRightIntakeEnd")
                                 .withFlipPoseForAlliance(true)
-                                // .withConstraints(centerHarvestConstraint)
+                               // .withConstraints(centerHarvestConstraint)
                                 .build();
 
                 Supplier<Command> MoveAndDeploy_centerRightIntakeStart = () -> Commands.parallel(
@@ -767,15 +769,18 @@ public class CommandsForAutoPilot {
                                 MoveTo_allianceCenter.get(),
                                 MoveTo_FrontHubShoot.get());
 
+                Command fourMeters = new SequentialCommandGroup(
+                                intake.runIntakeOut(),
+                                Commands.parallel(MoveTo_fourMeters.get(), intake.runPickupIn()),
+                                intake.runPickupStop()
+                );
                 Command TheShowboater = new SequentialCommandGroup(
-                                MoveTo_leftOfDepotFaceIn.get(),
-                                MoveTo_depotFaceIn.get(),
+                                MoveTo_depot_BackFace_Start.get(),
+                                MoveTo_depot_BackFace_End.get(),
                                 MoveTo_midOfDepotFaceIn.get(),
                                 MoveTo_rightOfDepotFaceIn.get(),
-                                MoveTo_FrontHubShoot.get(),
-                                MoveTo_feedingStation.get(),
-                                Commands.waitSeconds(Constants.AutonomousPreferences.WAIT_TIME),
-                                MoveTo_FrontHubShoot.get());
+                                MoveTo_New_FrontHubShoot.get()
+                                );
 
                 /* Register Commands */ // any auto added here needs to be registered in AutoCommands to show up on
                                         // Elastic
@@ -809,7 +814,8 @@ public class CommandsForAutoPilot {
                 NamedCommands.registerCommand("TheShowboater", TheShowboater);
                 NamedCommands.registerCommand("RightQuad", RightQuad);
                 NamedCommands.registerCommand("LeftQuad", LeftQuad);
+                NamedCommands.registerCommand("fourMeters", fourMeters);
 
-                OVERRIDE_AUTO_COMMAND = TEST;
+                OVERRIDE_AUTO_COMMAND = fourMeters;
         }
 }
