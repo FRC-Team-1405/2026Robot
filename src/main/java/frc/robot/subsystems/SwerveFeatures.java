@@ -1,6 +1,13 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import java.util.function.Supplier;
+
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,6 +21,12 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.generated.TunerConstants;
 import frc.robot.lib.FinneyLogger;
 
 /**
@@ -23,7 +36,23 @@ import frc.robot.lib.FinneyLogger;
 public class SwerveFeatures {
     FinneyLogger fLogger = new FinneyLogger("SwerveFeatures");
 
+    private static double DEADBAND = 0.1; // Deadband for joystick input detection
+
     private final CommandSwerveDrivetrain m_drivetrain;
+
+    public static double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
+                                                                                              // top
+    // speed
+    public static double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per
+                                                                                            // second
+    // max angular velocity
+
+    /* Setting up bindings for necessary control of the swerve drive platform */
+    public static final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+    public static final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    public static final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     /* Mechanism2d for visualizing aim angles */
     private final Mechanism2d m_aimMechanism = new Mechanism2d(3, 3);
@@ -108,6 +137,17 @@ public class SwerveFeatures {
 
         publishRobotVelocity();
         // publishRobotAcceleration();
+        // Publish command NAME only — do NOT use putData with a live Command object.
+        // putData creates a bidirectional .running property that can cancel the command
+        // when the NT entry retains a stale value from the previous command at this key.
+        if (m_drivetrain != null && m_drivetrain.getCurrentCommand() != null) {
+            SmartDashboard.putString("Commands/SwerveDriveCommand", m_drivetrain.getCurrentCommand().getName());
+        }
+    }
+
+    public static Command teleopDriveCommand(CommandSwerveDrivetrain drivetrain, MoveMode moveMode,
+            final CommandXboxController joystick) {
+        return drivetrain.applyRequest(() -> teleopDriveRequest(drivetrain, moveMode, joystick));
     }
 
     /**
@@ -317,15 +357,24 @@ public class SwerveFeatures {
         return distance / 5.0;
     }
 
+    public static double getRobotVelocity(CommandSwerveDrivetrain drivetrain) {
+        ChassisSpeeds currentSpeeds = drivetrain.getState().Speeds;
+        return Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+    }
+
+    public static double getRobotAngularVelocity(CommandSwerveDrivetrain drivetrain) {
+        ChassisSpeeds currentSpeeds = drivetrain.getState().Speeds;
+        return currentSpeeds.omegaRadiansPerSecond;
+    }
+
     /**
      * Calculate and publish the robot's overall translational velocity (m/s) to
      * SmartDashboard under the "SwerveDrive/" namespace.
      */
     public void publishRobotVelocity() {
         try {
-            ChassisSpeeds currentSpeeds = m_drivetrain.getState().Speeds;
-            double speed = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
-            SmartDashboard.putNumber("SwerveDrive/Velocity", speed);
+            SmartDashboard.putNumber("SwerveDrive/Velocity", getRobotVelocity(m_drivetrain));
+            SmartDashboard.putNumber("SwerveDrive/AngularVelocity", getRobotAngularVelocity(m_drivetrain));
         } catch (Exception ex) {
             // In case drivetrain state is not available yet, avoid crashing
             fLogger.log("publishRobotVelocity: failed to read drivetrain state: %s", ex.getMessage());
@@ -373,5 +422,55 @@ public class SwerveFeatures {
 
     public double getDistancePoses(Pose2d firstPose, Pose2d secondPose) {
         return firstPose.getTranslation().getDistance(secondPose.getTranslation());
+    }
+
+    public static Trigger isStationary(CommandSwerveDrivetrain drivetrain) {
+        return new Trigger(() -> isStationaryNow(drivetrain));
+    }
+
+    public static boolean isStationaryNow(CommandSwerveDrivetrain drivetrain) {
+        double stationaryThreshold = 0.1; // m/s
+
+        double velocity = getRobotVelocity(drivetrain);
+        double angularVelocity = getRobotAngularVelocity(drivetrain);
+        return velocity < stationaryThreshold && angularVelocity < stationaryThreshold;
+    }
+
+    private static SwerveRequest.FieldCentric teleopDriveRequest(CommandSwerveDrivetrain drivetrain, MoveMode moveMode,
+            final CommandXboxController joystick) {
+        return drive
+                .withVelocityX(MaxSpeed
+                        * moveMode.selectSpeedMode(joystick::getLeftY, true)
+                                .getAsDouble())
+                .withVelocityY(MaxSpeed
+                        * moveMode.selectSpeedMode(joystick::getLeftX, false)
+                                .getAsDouble())
+                .withRotationalRate(
+                        moveMode.selectRotationMode(joystick, drivetrain, MaxAngularRate).getAsDouble());
+    }
+
+    public static Command brakeWhenStationaryOrDrive(CommandSwerveDrivetrain drivetrain, MoveMode moveMode,
+            final CommandXboxController joystick) {
+        return Commands.run(
+                () -> drivetrain.setControl(
+                        isStationaryNow(drivetrain) && !hasJoystickInputNow(joystick)
+                                ? brake
+                                : teleopDriveRequest(drivetrain, moveMode, joystick)),
+                drivetrain);
+    }
+
+    /**
+     * Returns a Trigger that is true when any drive axis on the joystick exceeds
+     * the deadband threshold (left X/Y for translation, right X for rotation).
+     * Used to exit brake mode when the driver resumes input during AutoFire.
+     */
+    public static Trigger hasJoystickInput(CommandXboxController joystick) {
+        return new Trigger(() -> hasJoystickInputNow(joystick));
+    }
+
+    public static boolean hasJoystickInputNow(CommandXboxController joystick) {
+        return Math.abs(joystick.getLeftX()) > DEADBAND ||
+                Math.abs(joystick.getLeftY()) > DEADBAND ||
+                Math.abs(joystick.getRightX()) > DEADBAND;
     }
 }

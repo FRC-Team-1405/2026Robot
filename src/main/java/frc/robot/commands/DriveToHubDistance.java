@@ -54,7 +54,7 @@ public class DriveToHubDistance extends Command {
 
         targetPose = new Pose2d(targetTranslation, targetRotation);
 
-        driveToPoseCommand = Commands.defer(() -> drivetrain.driveToPose(() -> Optional.of(targetPose), false),
+        driveToPoseCommand = Commands.defer(() -> drivetrain.driveToPoseAP(() -> Optional.of(targetPose), false),
                 Set.of(drivetrain));
         driveToPoseCommand.initialize();
         // CommandScheduler.getInstance().schedule(driveToPoseCommand);

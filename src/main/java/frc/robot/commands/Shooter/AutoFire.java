@@ -4,40 +4,125 @@
 
 package frc.robot.commands.Shooter;
 
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.subsystems.Hopper;
-import frc.robot.subsystems.Indexer;
-import frc.robot.subsystems.Shooter;
-
 import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.subsystems.Hopper;
+import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 
-// NOTE: Consider using this command inline, rather than writing a subclass. For
-// more
-// information, see: 
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class AutoFire extends SequentialCommandGroup {
-  /** Creates a new AutoFire. */
-  public AutoFire(Shooter shooterSubsytem, Indexer indexerSubsystem, Hopper hopper,
+public class AutoFire {
+
+  private AutoFire() {
+  }
+
+  /**
+   * Teleop fire command. Spins up the flywheel, waits for the first lock, then
+   * feeds the indexer continuously until cancelled by button release. The hopper
+   * is driven by the hopper-trigger (follows indexer state) so it is NOT
+   * required here — claiming it would conflict with the trigger's commands.
+   * Designed for {@code whileTrue}.
+   */
+  public static Command teleop(
+      Shooter shooter,
+      Indexer indexer,
+      Supplier<AngularVelocity> indexerVelocity, Intake intake) {
+    return new TeleopFireCommand(shooter, indexer, indexerVelocity, intake);
+  }
+
+  /**
+   * Autonomous single-shot fire sequence. Spins up, waits for lock, fires one
+   * ball, then stops.
+   */
+  // TODO change this to a time based shooting sequence
+  public static Command autonomous(
+      Shooter shooter,
+      Indexer indexer,
+      Hopper hopper,
       Supplier<AngularVelocity> indexerVelocity) {
-
-    addCommands(
-        shooterSubsytem.runShooter(),
-        Commands.waitUntil(() -> {
-          return shooterSubsytem.isReadyToFire();
-        }),
-        indexerSubsystem.runIndexer(indexerVelocity),
-        Commands.waitUntil(() -> {
-          if (!shooterSubsytem.isReadyToFire()) {
-            System.out.println("stop");
-          }
-          return !shooterSubsytem.isReadyToFire();
-        }),
-        indexerSubsystem.runStopIndexer(),
+    return new SequentialCommandGroup(
+        shooter.runShooter(),
+        Commands.waitUntil(shooter::isReadyToFire),
+        indexer.runIndexer(indexerVelocity),
+        Commands.waitUntil(() -> !shooter.isReadyToFire()),
+        indexer.runStopIndexer(),
         hopper.runStopHopper());
+  }
 
-  };
+  /**
+   * Continuous fire command for teleop use. Spins up the flywheel, waits for
+   * the first lock, then feeds the indexer continuously until the command is
+   * cancelled (button release). The hopper is managed by the hopper-trigger
+   * (follows indexer state) and is intentionally NOT required here to avoid
+   * subsystem conflicts with the trigger's commands.
+   */
+  private static class TeleopFireCommand extends Command {
+    private final Shooter shooter;
+    private final Indexer indexer;
+    private Intake intake = null;
+    private final Supplier<AngularVelocity> indexerVelocity;
+    private boolean feeding;
+    private double shooterStartTimestamp = 0.0;
+
+    TeleopFireCommand(Shooter shooter, Indexer indexer,
+        Supplier<AngularVelocity> indexerVelocity) {
+      this.shooter = shooter;
+      this.indexer = indexer;
+      this.indexerVelocity = indexerVelocity;
+      addRequirements(shooter, indexer);
+      setName("AutoFire_Teleop");
+    }
+
+    TeleopFireCommand(Shooter shooter, Indexer indexer,
+        Supplier<AngularVelocity> indexerVelocity, Intake intake) {
+      this(shooter, indexer, indexerVelocity);
+      this.intake = intake;
+    }
+
+    @Override
+    public void initialize() {
+      shooter.spinUp();
+      feeding = false;
+      shooterStartTimestamp = Timer.getFPGATimestamp();
+      System.out.println("[AutoFire] initialize: spinning up");
+    }
+
+    @Override
+    public void execute() {
+      if (!feeding && shooter.isReadyToFire()) {
+        indexer.startFeeding(indexerVelocity);
+        feeding = true;
+        System.out.println("[AutoFire] locked - feeding started");
+      } else if (!shooter.isReadyToFire() && feeding) {
+        indexer.stopFeeding();
+        feeding = false;
+        System.out.println("[AutoFire] unlocked - feeding stopped");
+      }
+
+      if (this.intake != null) {
+        double currentTimeShooting = Timer.getFPGATimestamp() - shooterStartTimestamp;
+        if (currentTimeShooting > 3) {
+          CommandScheduler.getInstance().schedule(intake.runIntakeCenter());
+        }
+      }
+
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+      indexer.stopFeeding();
+      System.out.println("[AutoFire] end: interrupted=" + interrupted);
+    }
+
+    @Override
+    public boolean isFinished() {
+      return false;
+    }
+  }
 }

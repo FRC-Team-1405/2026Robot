@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.AutoPilot.CommandsForAutoPilot;
 import frc.robot.commands.PidToPose.PidToPoseCommands;
+import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Hopper;
@@ -28,12 +29,13 @@ public class AutoCommands {
         public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber, Intake intake,
                         Hopper hopper,
                         Indexer indexer,
-                        Shooter shooter) {
+                        Shooter shooter,
+                        AdjustableHood hood) {
                 SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
                 SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
 
                 PidToPoseCommands.registerCommands(drivetrain);
-                CommandsForAutoPilot.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter);
+                CommandsForAutoPilot.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
                 // this HAS to go after AutoPilotCommands
                 AutoCommands.configureAutos(autoChooser, drivetrain);
 

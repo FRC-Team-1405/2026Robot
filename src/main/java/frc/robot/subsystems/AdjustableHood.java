@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,8 +16,8 @@ import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.commands.SetHoodPosition;
 
 public class AdjustableHood extends SubsystemBase {
-  private final Servo servo1 = new Servo(0);
-  private final Servo servo2 = new Servo(1);
+  private final Servo servo1 = new Servo(4);
+  private final Servo servo2 = new Servo(5);
   private double target = 0.0;
 
   private HoodAngles currentHoodPosition = HoodAngles.ZERO;
@@ -25,6 +27,14 @@ public class AdjustableHood extends SubsystemBase {
    * Hood that adjusts angle using a servo.
    */
   public AdjustableHood() {
+    double pos = 0.0;
+    servo1.setBoundsMicroseconds(2000, 1000, 1500, 1200, 1000);
+    servo2.setBoundsMicroseconds(2000, 1000, 1500, 1200, 1000);
+    SmartDashboard.putNumber("Hood/pos", pos);
+
+    Command cmd = this.runSet(() -> SmartDashboard.getNumber("Hood/pos", pos)).withName("SetPosition")
+        .ignoringDisable(true);
+    SmartDashboard.putData("Hood/setPos", cmd);
 
   }
 
@@ -34,11 +44,11 @@ public class AdjustableHood extends SubsystemBase {
   }
 
   // private function to set servo position (double)
-  public void setServo(double position) {
-    target = position;
+  public void setServo(DoubleSupplier position) {
+    target = position.getAsDouble();
     SmartDashboard.putNumber("Hood/Hood Target", target);
-    servo1.set(position);
-    servo2.set(position);
+    servo1.set(target);
+    servo2.set(target);
   }
 
   public void stopServo() {
@@ -59,9 +69,9 @@ public class AdjustableHood extends SubsystemBase {
    * @param position
    * @return
    */
-  public Command runSet(double position) {
+  public Command runSet(DoubleSupplier position) {
     return runOnce(() -> setServo(position))
-        .andThen(Commands.waitSeconds(position * Constants.HoodPreferences.SERVO_FULL_RANGE_SECONDS));
+        .andThen(Commands.waitSeconds(position.getAsDouble() * Constants.HoodPreferences.SERVO_FULL_RANGE_SECONDS));
   }
 
   public Command rotateHoodPosition() {
@@ -81,5 +91,6 @@ public class AdjustableHood extends SubsystemBase {
       default:
         return Commands.none();
     }
+
   }
 }
