@@ -21,7 +21,7 @@ import frc.robot.subsystems.Shooter;
 
 public class AutoFire {
 
-  private static double INDEXER_ROTATION_THRESHOLD = 300.0;
+  private static double INDEXER_ROTATION_THRESHOLD = 150.0;
 
   private AutoFire() {
   }
@@ -116,6 +116,7 @@ public class AutoFire {
 
       // retract intake after 3 seconds
       if (this.intake != null) {
+        System.out.println("A");
         if (FeatureSwitches.RETRACT_INTAKE_WITH_TIME) {
           double currentTimeShooting = Timer.getFPGATimestamp() - shooterStartTimestamp;
           if (currentTimeShooting > 3) {
@@ -124,6 +125,7 @@ public class AutoFire {
         }
 
         if (FeatureSwitches.RETRACT_INTAKE_USING_INDEXER_ROTATIONS) {
+          System.out.println("B");
           // current rotations minus rotation in beginning
           double currentRotations = indexer.getRotations() - startRotation;
           SmartDashboard.putNumber("AutoFire/IndexerRotations", currentRotations);

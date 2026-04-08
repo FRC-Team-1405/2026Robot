@@ -377,6 +377,7 @@ public class Intake extends SubsystemBase {
       SmartDashboard.putNumber("Intake/PickupStatorCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupSupplyCurrent", pickupMotor.getSupplyCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupVelocity", pickupMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/PickupError", pickupMotor.getClosedLoopError().getValueAsDouble());
       SmartDashboard.putBoolean("Intake/IsDeployed", isIntakeDeployed);
       SmartDashboard.putBoolean("Intake/IsPickupActive", isPickupActive);
       SmartDashboard.putBoolean("Intake/AtTarget", isAtTarget());
