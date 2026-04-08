@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.SwerveFeatures;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class PointAtTarget extends Command {
@@ -43,7 +44,7 @@ public class PointAtTarget extends Command {
     System.out.printf("PID error: %.3f, target: %.3f, current: %.3f, rateToRotate: %.3f\n",
         rotationController.getError(),
         rotationController.getSetpoint(), currentAngle, rateToRotate);
-    drivetrain.applyRequest(() -> RobotContainer.drive.withRotationalRate(rateToRotate));
+    drivetrain.applyRequest(() -> SwerveFeatures.drive.withRotationalRate(rateToRotate));
   }
 
   // Called once the command ends or is interrupted.

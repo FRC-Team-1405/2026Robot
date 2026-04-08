@@ -49,7 +49,9 @@ public class RumbleJoystick extends SequentialCommandGroup {
 
   private Command runRumbleStart(CommandXboxController joystick, RumbleType rumbleType, double rumbleStrength) {
     return Commands.runOnce(() -> {
-      joystick.setRumble(rumbleType, rumbleStrength);
+      if (joystick != null) {
+        joystick.setRumble(rumbleType, rumbleStrength);
+      }
     });
   }
 

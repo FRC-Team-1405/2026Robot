@@ -7,12 +7,14 @@ package frc.robot.subsystems;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -72,6 +74,17 @@ public class Indexer extends SubsystemBase {
         fLogger.log("Indexer motor configured");
     }
 
+    public double getRotations() {
+        indexer_motorSimMech.update(indexerMotor.getPosition(), indexerMotor.getVelocity());
+
+        StatusSignal<Angle> statusSignalRotation = indexerMotor.getRotorPosition();
+        statusSignalRotation.getValueAsDouble();
+
+        double rotations = statusSignalRotation.getValueAsDouble();
+
+        return rotations;
+    }
+
     // ── Periodic ─────────────────────────────────────────────────────────────
 
     @Override
@@ -82,8 +95,6 @@ public class Indexer extends SubsystemBase {
             SmartDashboard.putNumber("Indexer/PIDError", indexerMotor.getClosedLoopError().getValueAsDouble());
             SmartDashboard.putBoolean("Indexer/IsActive", isIndexerActive);
         }
-
-        indexer_motorSimMech.update(indexerMotor.getPosition(), indexerMotor.getVelocity());
     }
 
     // ── Simulation ───────────────────────────────────────────────────────────
@@ -91,8 +102,8 @@ public class Indexer extends SubsystemBase {
     public void simulationInit() {
         // Indexer roller: low inertia, light load, direct drive
         PhysicsSim_SJC.getInstance().addTalonFX(indexerMotor,
-                /*rotorInertia=*/0.001, /*loadMassKg=*/0.05, /*armMeters=*/0.05,
-                /*viscousCoeff=*/0.01, /*numberOfMotors=*/1, /*gearRatio=*/1.0);
+                /* rotorInertia= */0.001, /* loadMassKg= */0.05, /* armMeters= */0.05,
+                /* viscousCoeff= */0.01, /* numberOfMotors= */1, /* gearRatio= */1.0);
     }
 
     @Override
@@ -118,6 +129,16 @@ public class Indexer extends SubsystemBase {
         isIndexerActive = false;
         indexerMotor.setControl(m_Brake);
         fLogger.log("Indexer stopped");
+    }
+
+    /** Start feeding balls at the given speed. For use by external commands. */
+    public void startFeeding(Supplier<AngularVelocity> speed) {
+        setIndexerSpeed(speed);
+    }
+
+    /** Stop feeding balls. For use by external commands. */
+    public void stopFeeding() {
+        indexerStop();
     }
 
     // ── Public Commands ──────────────────────────────────────────────────────

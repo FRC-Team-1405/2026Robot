@@ -115,6 +115,16 @@ public class Hopper extends SubsystemBase {
     fLogger.log("Stop Hopper");
   }
 
+  /** Start feeding balls forward. For use by external commands. */
+  public void startFeeding() {
+    forwardHopper();
+  }
+
+  /** Stop feeding balls. For use by external commands. */
+  public void stopFeeding() {
+    stopHopper();
+  }
+
   // ── Public Commands ──────────────────────────────────────────────────────
 
   public Command runForwardHopper() {

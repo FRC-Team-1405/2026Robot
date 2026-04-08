@@ -5,7 +5,9 @@ import static edu.wpi.first.units.Units.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
@@ -20,12 +22,17 @@ import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterPhysicalProperties;
 import frc.robot.Constants.ShooterPIDConfig;
@@ -33,6 +40,7 @@ import frc.robot.Constants.ShooterPreferences;
 import frc.robot.constants.FeatureSwitches;
 import frc.robot.lib.FinneyLogger;
 import frc.robot.lib.MotorSim.MotorSim_Mech;
+import frc.robot.commands.RumbleJoystick;
 
 public class Shooter extends SubsystemBase {
   private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName(),
@@ -44,6 +52,12 @@ public class Shooter extends SubsystemBase {
 
   private final MotionMagicVelocityVoltage velocityVoltage = new MotionMagicVelocityVoltage(0).withSlot(0);
   private final NeutralOut brake = new NeutralOut();
+
+  // Cached status signals — refreshed atomically each periodic() tick.
+  // Declared here so we can set update frequencies once during setup and avoid
+  // repeated CAN getter overhead (and duplicate reads) in the hot path.
+  private final StatusSignal<Double> m_closedLoopError = shooterMotor1.getClosedLoopError();
+  private final StatusSignal<Double> m_closedLoopReference = shooterMotor1.getClosedLoopReference();
 
   private final MotorSim_Mech shooterMotorSimMech = new MotorSim_Mech("Shooter/Mech2d");
 
@@ -68,24 +82,48 @@ public class Shooter extends SubsystemBase {
   private boolean locked = false;
   private boolean wasLocked = false;
 
+  private CommandXboxController operatorJoystick;
+
+  public Command vibrate;
+
   private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.LONG;
 
   public boolean isReadyToFire() {
     return locked;
   }
 
+  public boolean isShooterSpinning() {
+    return shooterMotor1.getVelocity().getValueAsDouble() >= 0.5;
+  }
+
   private void setupMotors() {
     // Leader Motor
     TalonFXConfiguration mainMotorCfg = new TalonFXConfiguration();
-
-    mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
-    mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
-    mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
-    mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
-    mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
-
-    // mainMotorCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
-    // .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
+    if (!RobotBase.isSimulation()) {
+      // real robot
+      mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
+      mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
+      mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
+      mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
+      mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
+    } else {
+      if (FeatureSwitches.CUSTOM_SIMULATION_SHOOTER_PIDS) {
+        // simulation
+        mainMotorCfg.Slot0.kP = 0.2;
+        mainMotorCfg.Slot0.kI = 0.0;
+        mainMotorCfg.Slot0.kD = 0.0;
+        mainMotorCfg.Slot0.kV = 0.1;
+        mainMotorCfg.Slot0.kS = 0.15;
+      } else {
+        mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
+        mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
+        mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
+        mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
+        mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
+      }
+    }
+    mainMotorCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
+        .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
 
     mainMotorCfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     mainMotorCfg.MotionMagic.MotionMagicAcceleration = ShooterPIDConfig.MOTION_MAGIC_ACCELERATION;
@@ -130,16 +168,24 @@ public class Shooter extends SubsystemBase {
       configAlert.set(true);
       shooterMotor3.setControl(brake);
     }
+
+    // Increase update frequency on the signals used by the lock check so the
+    // periodic() poll sees data that is at most ~10 ms old (vs the default 20 ms).
+    m_closedLoopError.setUpdateFrequency(100);
+    m_closedLoopReference.setUpdateFrequency(100);
+    shooterMotor1.getVelocity().setUpdateFrequency(100);
   }
 
   /** Creates a new Shooter. */
-  public Shooter() {
+  public Shooter(CommandXboxController operatorJoystick) {
+    this.operatorJoystick = operatorJoystick;
     setupMotors();
     simulationInit();
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     SmartDashboard.putNumber("Shooter/TestTargetRPS", 10.0);
     shooterStop();
+    vibrate = new RumbleJoystick(operatorJoystick, RumbleType.kBothRumble, 0.5, 1.0);
   }
 
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
@@ -155,6 +201,16 @@ public class Shooter extends SubsystemBase {
     shooterTarget = 0.0;
     shooterMotor1.setControl(brake);
     fLogger.log("shooterStop called");
+  }
+
+  /** Spin up the flywheel to the currently requested speed. */
+  public void spinUp() {
+    setShooterSpeed(requestedSpeed);
+  }
+
+  /** Stop the flywheel motors. */
+  public void spinDown() {
+    shooterStop();
   }
 
   /**
@@ -234,7 +290,7 @@ public class Shooter extends SubsystemBase {
       AngularVelocity ceilingSpeed, DoubleSupplier distanceToHub) {
     double dynamicRPS;
     dynamicRPS = (floorSpeed.baseUnitMagnitude() * (ceilingDistance - distanceToHub.getAsDouble())
-        + ceilingSpeed.baseUnitMagnitude() * (distanceToHub.getAsDouble() - floorDistance))
+        + (ceilingSpeed.baseUnitMagnitude() * (distanceToHub.getAsDouble() - floorDistance)))
         / (ceilingDistance - floorDistance);
     if (dynamicRPS >= ShooterPreferences.MAX.baseUnitMagnitude()) {
       dynamicRPS = ShooterPreferences.MAX.baseUnitMagnitude();
@@ -277,6 +333,7 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+
     // --- Velocities (cache to avoid redundant CAN calls) ---
     double motor1RPS = shooterMotor1.getVelocity().getValueAsDouble();
     double motor2RPS = shooterMotor2.getVelocity().getValueAsDouble();
@@ -305,9 +362,12 @@ public class Shooter extends SubsystemBase {
     double motor3Temp = shooterMotor3.getDeviceTemp().getValueAsDouble();
 
     // --- Closed loop diagnostics ---
-    double averageError = filter.calculate(shooterMotor1.getClosedLoopError().getValueAsDouble());
-    double error = shooterMotor1.getClosedLoopError().getValueAsDouble();
-    double target = shooterMotor1.getClosedLoopReference().getValueAsDouble();
+    // Atomically refresh the lock-critical signals (100 Hz on CAN) so both reads
+    // share the same timestamp and we avoid a duplicate CAN getter call.
+    BaseStatusSignal.refreshAll(m_closedLoopError, m_closedLoopReference);
+    double error = m_closedLoopError.getValueAsDouble();
+    double averageError = filter.calculate(error);
+    double target = m_closedLoopReference.getValueAsDouble();
     double range = locked ? ShooterPreferences.WIDE : ShooterPreferences.TIGHT;
 
     // --- Rolling std dev: sqrt(E[x^2] - E[x]^2) ---
@@ -428,6 +488,10 @@ public class Shooter extends SubsystemBase {
       // Shooter Distance
       SmartDashboard.putNumber("Shooter/Requested Speed", requestedSpeed.get().in(RotationsPerSecond));
       SmartDashboard.putNumber("Shooter/Desired Distance", getDistanceFromSpeed().get());
+
+      if (isShooterSpinning()) {
+        CommandScheduler.getInstance().schedule(vibrate);
+      }
     }
   }
 

@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.therekrab.autopilot.APConstraints;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.LinearFilter;
@@ -229,10 +230,10 @@ public class PidToPoseCommand extends FinneyCommand {
                         return this;
                 }
 
-                public Builder withConstraints(TrapezoidProfile.Constraints drivingContraints) {
-                        this.drivingContraints = drivingContraints;
-                        return this;
-                }
+                // public Builder withConstraints(APConstraints fullfieldconstraints) {
+                // this.drivingContraints = fullfieldconstraints;
+                // return this;
+                // }
 
                 public Builder withWaitSeconds(double waitSeconds) {
                         this.waitSeconds = waitSeconds;
