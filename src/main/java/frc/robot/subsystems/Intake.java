@@ -223,6 +223,9 @@ public class Intake extends SubsystemBase {
   // ── Low-Level Motor Actions ──────────────────────────────────────────────
 
   private void setIntakePosition(double position) {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return;
+    }
     intakeMotor.setControl(intakePositionRequest.withPosition(position));
     intakePositionTarget = position;
     settleCount = 0;
@@ -230,11 +233,17 @@ public class Intake extends SubsystemBase {
   }
 
   private void setPickupVelocity(double velocity) {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return;
+    }
     pickupMotor.setControl(pickupVelocityRequest.withVelocity(velocity));
     isPickupActive = true;
   }
 
   private void stopPickupMotor() {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return;
+    }
     pickupMotor.setControl(neutralRequest);
     isPickupActive = false;
   }

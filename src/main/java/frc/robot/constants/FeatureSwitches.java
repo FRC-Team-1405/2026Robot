@@ -13,4 +13,7 @@ public class FeatureSwitches {
     public static final boolean RETRACT_INTAKE_WITH_TIME = false;
     public static final boolean CUSTOM_SIMULATION_SHOOTER_PIDS = false;
     public static final boolean DEPLOY_INTAKE_WHEN_STOPPING_SHOOTER = false;
+
+    // Mechanical protections
+    public static final boolean INTAKE_SAFTEY_MODE_NO_DEPLOY = true;
 }
