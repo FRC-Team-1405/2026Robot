@@ -295,9 +295,7 @@ public class CommandsForAutos {
                                 // .withConstraints(centerHarvestConstraint)
                                 .build();
 
-                Supplier<Command> MoveAndDeploy_centerLeftIntakeStart = () -> Commands.parallel(
-                                MoveTo_centerLeftIntakeStart.get(),
-                                intake.runIntakeOut());
+                
                 Supplier<Command> MoveAndDeploy_allianceCenter = () -> Commands.parallel(
                                 MoveTo_allianceCenter.get(),
                                 intake.runIntakeOut());
@@ -316,11 +314,7 @@ public class CommandsForAutos {
                                 () -> quadRight.get(), drivetrain, "MoveTo_quadRight")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveToPickup_quadLeft = () -> Commands
-                                .deadline(MoveTo_quadLeft.get(), intake.runPickupIn());
 
-                Supplier<Command> MoveToPickup_quadRight = () -> Commands
-                                .deadline(MoveTo_quadRight.get(), intake.runPickupIn());
 
                 Supplier<Command> MoveTo_centerRightIntakeEndLookHub = () -> new AutoPilotV2Command.Builder(
                                 () -> centerRightIntakeEndLookHub.get(), drivetrain, "centerRightIntakeEndLookHub")
@@ -337,11 +331,6 @@ public class CommandsForAutos {
                 Supplier<Command> MoveToIntakeUp_centerLeftIntakeEndLookHub = () -> Commands
                                 .parallel(MoveTo_centerLeftIntakeEndLookHub.get(), intake.runIntakeCenter());
 
-                Supplier<Command> MoveToIntakeUp_quadLeft = () -> Commands
-                                .parallel(MoveTo_quadLeft.get(), intake.runIntakeCenter());
-
-                Supplier<Command> MoveToIntakeUp_quadRight = () -> Commands
-                                .parallel(MoveTo_quadRight.get(), intake.runIntakeCenter());
 
                 Supplier<Command> MoveTo_rightLoadInZone = () -> new AutoPilotV2Command.Builder(
                                 () -> rightLoadInZone.get(), drivetrain, "MoveTo_rightLoadInZone")
@@ -704,7 +693,7 @@ public class CommandsForAutos {
                                 MoveTo_leftBump_AllianceToFieldStart.get(),
                                 MoveTo_leftBump_AllianceToFieldStart_LOOK_HUB.get(),
                                 MoveTo_leftBump_AllianceToFieldEnd.get(),
-                                // MoveAndDeploy_centerLeftIntakeStart.get(),
+                                Commands.parallel(MoveTo_centerLeftIntakeStart.get(), intake.runIntakeOut()),
                                 MoveTo_centerLeftIntakeStart.get(),
                                 MoveTo_centerLeftIntakeEnd.get(),
                                 // MoveToPickup_centerLeftIntakeEnd.get(),
@@ -720,22 +709,17 @@ public class CommandsForAutos {
                 Command RightQuad = new SequentialCommandGroup(
                                 MoveTo_rightBump_AllianceToFieldStart.get(),
                                 MoveTo_rightBump_AllianceToFieldEnd.get(),
-                                Commands.deadline(MoveTo_centerRightIntakeStart.get(),
-                                                intake.runIntakeOut()),
-                                MoveTo_centerRightIntakeStart.get(),
-                                MoveToPickup_quadLeft.get(),
-                                MoveToIntakeUp_quadLeft.get(),
-                                // MoveTo_quadLeft.get(),
-                                MoveTo_rightBump_FieldToAllianceStart.get(),
+                                Commands.parallel(MoveTo_centerRightIntakeStart.get(), intake.runIntakeOut()),
+                                Commands.deadline(MoveTo_quadLeft.get(), intake.runPickupIn()),
+                                Commands.parallel(intake.runIntakeCenter(), MoveTo_rightBump_FieldToAllianceStart.get()),
                                 MoveTo_rightBump_FieldToAllianceEnd.get());
 
                 Command LeftQuad = new SequentialCommandGroup(
                                 MoveTo_leftBump_AllianceToFieldStart.get(),
                                 MoveTo_leftBump_AllianceToFieldEnd.get(),
-                                MoveAndDeploy_centerLeftIntakeStart.get(),
-                                MoveToPickup_quadRight.get(),
-                                MoveToIntakeUp_quadRight.get(),
-                                MoveTo_leftBump_FieldToAllianceStart.get(),
+                                Commands.parallel(MoveTo_centerLeftIntakeStart.get(), intake.runIntakeOut()),
+                                Commands.deadline(MoveTo_quadRight.get(), intake.runPickupIn()),
+                                Commands.parallel(intake.runIntakeCenter(), MoveTo_leftBump_FieldToAllianceStart.get()),
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 MoveTo_allianceCenter.get(),
                                 MoveTo_FrontHubShoot.get(),
