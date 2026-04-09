@@ -78,18 +78,15 @@ public class Constants {
         public static final AngularVelocity LONG;
 
         static {
-            Preferences.initDouble("ShooterVelocities/Short", 38.0);
-            SHORT = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Short", 38.0));
+            SHORT = RotationsPerSecond.of(38.0);
 
             // Positions are a percentage of a full range of motion
             Preferences.initDouble("ShooterVelocities/Intermediate", 20.0);
             INTERMEDIATE = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Intermediate", 20.0));
 
-            Preferences.initDouble("ShooterVelocities/Medium", 42.0);
-            MEDIUM = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Medium", 42.0));
+            MEDIUM = RotationsPerSecond.of(42.0);
 
-            Preferences.initDouble("ShooterVelocities/Long", 75.0);
-            LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 75.0));
+            LONG = RotationsPerSecond.of(75.0);
         }
 
         // Shooting distances
@@ -121,12 +118,9 @@ public class Constants {
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 35);
             INDEXER_VELOCITY = RotationsPerSecond.of(50);
 
-            Preferences.initDouble("ShooterAccuracy/Tight", 3);
-            TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 3);
-            Preferences.initDouble("ShooterAccuracy/Wide", 5);
-            WIDE = Preferences.getDouble("ShooterAccuracy/Wide", 5);
-            Preferences.initInt("ShooterAccuracy/StableCount", 5);
-            STABLE_COUNT = Preferences.getInt("ShooterAccuracy/StableCount", 5);
+            TIGHT = 3;
+            WIDE = 5;
+            STABLE_COUNT = 5;
         }
     }
 
@@ -289,7 +283,7 @@ public class Constants {
         public static final double DEPLOY_JERK = 100.0; // rotations per second^3
 
         // PID gains for pickup roller motor (velocity control)
-        public static final double PICKUP_KP = 0.55;
+        public static final double PICKUP_KP = 0.5;
         public static final double PICKUP_KI = 0.0;
         public static final double PICKUP_KD = 0.0;
         public static final double PICKUP_KS = 0.25;
@@ -298,7 +292,7 @@ public class Constants {
         // MotionMagic profile for pickup roller (velocity mode)
         // public static final double PICKUP_CRUISE_VELOCITY = 10.0; // rotations per
         // second
-        public static final double PICKUP_ACCELERATION = 33.0; // rotations per second^2, flr acceleration = 50
+        public static final double PICKUP_ACCELERATION = 200.0; // rotations per second^2, flr acceleration = 50
         public static final double PICKUP_JERK = 0.0; // rotations per second^3
 
         // Current limits to protect the chain and detect hard stops
@@ -328,7 +322,7 @@ public class Constants {
             Preferences.initDouble("Pickup/In", 80.0);
 
             // target pickup velocity (rps)
-            PICKUP_MOTOR_IN = 50;
+            PICKUP_MOTOR_IN = 75;
 
             Preferences.initDouble("Intake/SettleCount", 5);
             SETTLE_COUNT = (int) Preferences.getDouble("Intake/SettleCount", 5);

@@ -21,12 +21,17 @@ import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterPhysicalProperties;
 import frc.robot.Constants.ShooterPIDConfig;
@@ -34,6 +39,7 @@ import frc.robot.Constants.ShooterPreferences;
 import frc.robot.constants.FeatureSwitches;
 import frc.robot.lib.FinneyLogger;
 import frc.robot.lib.MotorSim.MotorSim_Mech;
+import frc.robot.commands.RumbleJoystick;
 
 public class Shooter extends SubsystemBase {
   private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName(),
@@ -75,22 +81,46 @@ public class Shooter extends SubsystemBase {
   private boolean locked = false;
   private boolean wasLocked = false;
 
+  private CommandXboxController operatorJoystick;
+
+  public Command vibrate;
+
   private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.LONG;
 
   public boolean isReadyToFire() {
     return locked;
   }
 
+  public boolean isShooterSpinning() {
+    return shooterMotor1.getVelocity().getValueAsDouble() >= 0.5;
+  }
+
   private void setupMotors() {
     // Leader Motor
     TalonFXConfiguration mainMotorCfg = new TalonFXConfiguration();
-
-    mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
-    mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
-    mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
-    mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
-    mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
-
+    if (!RobotBase.isSimulation()) {
+      // real robot
+      mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
+      mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
+      mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
+      mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
+      mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
+    } else {
+      if (FeatureSwitches.CUSTOM_SIMULATION_SHOOTER_PIDS) {
+        // simulation
+        mainMotorCfg.Slot0.kP = 0.2;
+        mainMotorCfg.Slot0.kI = 0.0;
+        mainMotorCfg.Slot0.kD = 0.0;
+        mainMotorCfg.Slot0.kV = 0.1;
+        mainMotorCfg.Slot0.kS = 0.15;
+      } else {
+        mainMotorCfg.Slot0.kP = ShooterPIDConfig.KP;
+        mainMotorCfg.Slot0.kI = ShooterPIDConfig.KI;
+        mainMotorCfg.Slot0.kD = ShooterPIDConfig.KD;
+        mainMotorCfg.Slot0.kV = ShooterPIDConfig.KV;
+        mainMotorCfg.Slot0.kS = ShooterPIDConfig.KS;
+      }
+    }
     mainMotorCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
         .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
 
@@ -116,7 +146,7 @@ public class Shooter extends SubsystemBase {
 
     StatusCode status2 = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
-      status2 = shooterMotor2.getConfigurator().apply(mainMotorCfg);
+      status2 = shooterMotor2.getConfigurator().apply(followerMotorsCfg);
       if (status2.isOK())
         break;
     }
@@ -128,7 +158,7 @@ public class Shooter extends SubsystemBase {
 
     StatusCode status3 = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
-      status3 = shooterMotor3.getConfigurator().apply(mainMotorCfg);
+      status3 = shooterMotor3.getConfigurator().apply(followerMotorsCfg);
       if (status3.isOK())
         break;
     }
@@ -146,13 +176,15 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Creates a new Shooter. */
-  public Shooter() {
+  public Shooter(CommandXboxController operatorJoystick) {
+    this.operatorJoystick = operatorJoystick;
     setupMotors();
     simulationInit();
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     SmartDashboard.putNumber("Shooter/TestTargetRPS", 10.0);
     shooterStop();
+    vibrate = new RumbleJoystick(operatorJoystick, RumbleType.kBothRumble, 0.5, 1.0);
   }
 
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
@@ -227,7 +259,7 @@ public class Shooter extends SubsystemBase {
   public Command runShooterAuto(Supplier<AngularVelocity> requestedSpeed) {
     return Commands.startEnd(
         () -> setShooterSpeed(requestedSpeed),
-        () -> stopShooter(),
+        () -> shooterStop(),
         this);
   }
 
@@ -255,6 +287,7 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+
     // --- Velocities (cache to avoid redundant CAN calls) ---
     double motor1RPS = shooterMotor1.getVelocity().getValueAsDouble();
     double motor2RPS = shooterMotor2.getVelocity().getValueAsDouble();
@@ -405,6 +438,10 @@ public class Shooter extends SubsystemBase {
       // Shooter Distance
       SmartDashboard.putNumber("Shooter/Requested Speed", requestedSpeed.get().in(RotationsPerSecond));
       SmartDashboard.putNumber("Shooter/Desired Distance", getDistanceFromSpeed().get());
+
+      if (isShooterSpinning()) {
+        CommandScheduler.getInstance().schedule(vibrate);
+      }
     }
   }
 

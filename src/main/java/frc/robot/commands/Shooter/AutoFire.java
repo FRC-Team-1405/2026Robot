@@ -8,16 +8,20 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.constants.FeatureSwitches;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
 public class AutoFire {
+
+  private static double INDEXER_ROTATION_THRESHOLD = 150.0;
 
   private AutoFire() {
   }
@@ -69,6 +73,7 @@ public class AutoFire {
     private final Supplier<AngularVelocity> indexerVelocity;
     private boolean feeding;
     private double shooterStartTimestamp = 0.0;
+    private double startRotation;
 
     TeleopFireCommand(Shooter shooter, Indexer indexer,
         Supplier<AngularVelocity> indexerVelocity) {
@@ -91,6 +96,9 @@ public class AutoFire {
       feeding = false;
       shooterStartTimestamp = Timer.getFPGATimestamp();
       System.out.println("[AutoFire] initialize: spinning up");
+
+      indexer.getRotations();
+      startRotation = indexer.getRotations();
     }
 
     @Override
@@ -103,12 +111,27 @@ public class AutoFire {
         indexer.stopFeeding();
         feeding = false;
         System.out.println("[AutoFire] unlocked - feeding stopped");
+
       }
 
+      // retract intake after 3 seconds
       if (this.intake != null) {
-        double currentTimeShooting = Timer.getFPGATimestamp() - shooterStartTimestamp;
-        if (currentTimeShooting > 3) {
-          CommandScheduler.getInstance().schedule(intake.runIntakeCenter());
+        System.out.println("A");
+        if (FeatureSwitches.RETRACT_INTAKE_WITH_TIME) {
+          double currentTimeShooting = Timer.getFPGATimestamp() - shooterStartTimestamp;
+          if (currentTimeShooting > 3) {
+            CommandScheduler.getInstance().schedule(intake.runIntakeCenter());
+          }
+        }
+
+        if (FeatureSwitches.RETRACT_INTAKE_USING_INDEXER_ROTATIONS) {
+          System.out.println("B");
+          // current rotations minus rotation in beginning
+          double currentRotations = indexer.getRotations() - startRotation;
+          SmartDashboard.putNumber("AutoFire/IndexerRotations", currentRotations);
+          if (currentRotations > INDEXER_ROTATION_THRESHOLD) {
+            CommandScheduler.getInstance().schedule(intake.runIntakeCenter());
+          }
         }
       }
 

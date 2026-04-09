@@ -223,6 +223,9 @@ public class Intake extends SubsystemBase {
   // ── Low-Level Motor Actions ──────────────────────────────────────────────
 
   private void setIntakePosition(double position) {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return;
+    }
     intakeMotor.setControl(intakePositionRequest.withPosition(position));
     intakePositionTarget = position;
     settleCount = 0;
@@ -230,11 +233,17 @@ public class Intake extends SubsystemBase {
   }
 
   private void setPickupVelocity(double velocity) {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return;
+    }
     pickupMotor.setControl(pickupVelocityRequest.withVelocity(velocity));
     isPickupActive = true;
   }
 
   private void stopPickupMotor() {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return;
+    }
     pickupMotor.setControl(neutralRequest);
     isPickupActive = false;
   }
@@ -377,6 +386,7 @@ public class Intake extends SubsystemBase {
       SmartDashboard.putNumber("Intake/PickupStatorCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupSupplyCurrent", pickupMotor.getSupplyCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupVelocity", pickupMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/PickupError", pickupMotor.getClosedLoopError().getValueAsDouble());
       SmartDashboard.putBoolean("Intake/IsDeployed", isIntakeDeployed);
       SmartDashboard.putBoolean("Intake/IsPickupActive", isPickupActive);
       SmartDashboard.putBoolean("Intake/AtTarget", isAtTarget());
