@@ -78,17 +78,14 @@ public class Constants {
         public static final AngularVelocity LONG;
 
         static {
-            Preferences.initDouble("ShooterVelocities/Short", 38.0);
             SHORT = RotationsPerSecond.of(38.0);
 
             // Positions are a percentage of a full range of motion
             Preferences.initDouble("ShooterVelocities/Intermediate", 20.0);
             INTERMEDIATE = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Intermediate", 20.0));
 
-            Preferences.initDouble("ShooterVelocities/Medium", 42.0);
             MEDIUM = RotationsPerSecond.of(42.0);
 
-            Preferences.initDouble("ShooterVelocities/Long", 75.0);
             LONG = RotationsPerSecond.of(75.0);
         }
 
