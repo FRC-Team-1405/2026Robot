@@ -62,6 +62,11 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  */
 public class AutoPilotV2Command extends FinneyCommand {
     private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName());
+
+    public static final double DEFAULT_XY_THRESHOLD = 4.0;
+    public static final double DEFAULT_THETA_THRESHOLD = 6.0;
+    public static final double DEFAULT_BEELINE_THRESHOLD = 16.0;
+
     private static final String NT = "APv2/";
 
     private final StructPublisher<Pose2d> targetPublisher = NetworkTableInstance.getDefault()
@@ -71,7 +76,7 @@ public class AutoPilotV2Command extends FinneyCommand {
     private static final APConstraints kDefaultConstraints = new APConstraints()
             .withAcceleration(8.0)
             .withVelocity(4.0)
-            .withJerk(10.0);
+            .withJerk(67.0);
 
     private final APConstraints kConstraints;
     private final APProfile kProfile;
@@ -108,9 +113,9 @@ public class AutoPilotV2Command extends FinneyCommand {
         private Optional<Rotation2d> entryAngle = Optional.empty();
         private boolean flipPoseForAlliance = false;
         private APConstraints constraints = kDefaultConstraints;
-        private double errorXYCentimeters = 4.0;
-        private double errorThetaDegrees = 2.0;
-        private double beelineRadiusCentimeters = 16.0;
+        private double errorXYCentimeters = DEFAULT_XY_THRESHOLD;
+        private double errorThetaDegrees = DEFAULT_THETA_THRESHOLD;
+        private double beelineRadiusCentimeters = DEFAULT_BEELINE_THRESHOLD;
         private double headingKP = 2.0;
         private double headingKD = 0.0;
         private double headingDeadbandDegrees = 1.0;
