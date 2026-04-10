@@ -195,7 +195,7 @@ public class CommandsForAutos {
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
         // #endregion
 
-        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(4, 0, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(2, 0, Rotation2d.fromDegrees(0));
 
         public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber,
                         Intake intake,
@@ -237,7 +237,7 @@ public class CommandsForAutos {
                 Supplier<Command> MoveTo_fourMeters = () -> new AutoPilotV2Command.Builder(
                                 () -> fourMeters.get(), drivetrain, "MoveTo_fourMeters")
                                 .withFlipPoseForAlliance(true)
-                                .withConstraints(fullFieldConstraints)
+                                // .withConstraints(fullFieldConstraints)
                                 .build();
                 // #endregion
 
@@ -816,6 +816,6 @@ public class CommandsForAutos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: add window in Elastic
-                OVERRIDE_AUTO_COMMAND = JUST_SHOOT_FROM_ANYWHERE;
+                OVERRIDE_AUTO_COMMAND = fourMeters;
         }
 }
