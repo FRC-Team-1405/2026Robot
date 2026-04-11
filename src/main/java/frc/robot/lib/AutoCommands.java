@@ -11,8 +11,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.AutoPilot.CommandsForAutos;
 import frc.robot.commands.Autos.AutoPoses;
+import frc.robot.commands.Autos.CommandsForAutos;
+import frc.robot.commands.Autos.Full_Autos;
 import frc.robot.commands.PidToPose.PidToPoseCommands;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
@@ -31,14 +32,16 @@ public class AutoCommands {
                         Hopper hopper,
                         Indexer indexer,
                         Shooter shooter,
-                        AdjustableHood hood) {
-                SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
-                SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
-
-                PidToPoseCommands.registerCommands(drivetrain);
-                CommandsForAutos.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
-                // this HAS to go after AutoPilotCommands
-                AutoCommands.configureAutos(autoChooser, drivetrain);
+                        AdjustableHood hood, 
+                        CommandsForAutos commandsForAutos) {
+                                        SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
+                                        SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
+                        
+                                        PidToPoseCommands.registerCommands(drivetrain);
+                                        // CommandsForAutos.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
+                                        // this HAS to go after AutoPilotCommands
+                                        AutoCommands.configureAutos(autoChooser, drivetrain);
+                                        Full_Autos full_Autos = new Full_Autos(commandsForAutos);
 
         }
 
@@ -141,8 +144,8 @@ public class AutoCommands {
                 if (DriverStation.isFMSAttached()
                                 || SmartDashboard.getBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false)) {
                         SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
-                        if (CommandsForAutos.OVERRIDE_AUTO_COMMAND != null) {
-                                return CommandsForAutos.OVERRIDE_AUTO_COMMAND;
+                        if (Full_Autos.OVERRIDE_AUTO_COMMAND != null) {
+                                return Full_Autos.OVERRIDE_AUTO_COMMAND;
                         }
                         return autoChooser.getSelected();
                 } else {

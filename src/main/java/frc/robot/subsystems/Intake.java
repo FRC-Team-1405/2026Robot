@@ -104,6 +104,10 @@ public class Intake extends SubsystemBase {
     if (!status.isOK()) {
       System.out.println("Could not configure intake motor. Error: " + status.toString());
     }
+
+    intakeMotor.getPosition().setUpdateFrequency(10);
+    intakeMotor.optimizeBusUtilization();
+    
     fLogger.log("Intake motor configured (deploy)");
   }
 
@@ -209,6 +213,9 @@ public class Intake extends SubsystemBase {
   // ── State Queries ────────────────────────────────────────────────────────
 
   private boolean isAtTarget() {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return true;
+    }
     return settleCount >= IntakePreferences.SETTLE_COUNT;
   }
 
@@ -223,6 +230,9 @@ public class Intake extends SubsystemBase {
   // ── Low-Level Motor Actions ──────────────────────────────────────────────
 
   private void setIntakePosition(double position) {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return;
+    }
     intakeMotor.setControl(intakePositionRequest.withPosition(position));
     intakePositionTarget = position;
     settleCount = 0;
@@ -377,6 +387,7 @@ public class Intake extends SubsystemBase {
       SmartDashboard.putNumber("Intake/PickupStatorCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupSupplyCurrent", pickupMotor.getSupplyCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupVelocity", pickupMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/PickupError", pickupMotor.getClosedLoopError().getValueAsDouble());
       SmartDashboard.putBoolean("Intake/IsDeployed", isIntakeDeployed);
       SmartDashboard.putBoolean("Intake/IsPickupActive", isPickupActive);
       SmartDashboard.putBoolean("Intake/AtTarget", isAtTarget());
