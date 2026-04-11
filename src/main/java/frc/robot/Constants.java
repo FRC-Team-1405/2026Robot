@@ -113,6 +113,20 @@ public class Constants {
             return RotationsPerSecond.of(powerMap.interpolate(distance.in(Meters)));
         }
 
+        private static InterpolationMap angleMap = new InterpolationMap(
+                new InterpolationMap.MapPoint[] {
+                        new InterpolationMap.MapPoint(ShooterPreferences.SHORT_DISTANCE.get(),
+                                HoodPreferences.SERVO_SHORT_PERCENTAGE),
+                        new InterpolationMap.MapPoint(ShooterPreferences.MEDIUM_DISTANCE.get(),
+                                HoodPreferences.SERVO_MEDIUM_PERCENTAGE),
+                        new InterpolationMap.MapPoint(ShooterPreferences.LONG_DISTANCE.get(),
+                                HoodPreferences.SERVO_LONG_PERCENTAGE)
+                });
+
+        public static double distanceToAngle(Distance distance) {
+            return angleMap.interpolate(distance.in(Meters));
+        }
+
         static {
             // Indexer Velocities
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 35);
@@ -176,25 +190,29 @@ public class Constants {
 
     public static class HoodPreferences {
 
-        public static final double SERVO_FULL_RANGE_SECONDS;
-        public static final double SERVO_SHORT_PERCENTAGE;
-        public static final double SERVO_MEDIUM_PERCENTAGE;
-        public static final double SERVO_LONG_PERCENTAGE;
+        public static final double SERVO_FULL_RANGE_SECONDS = 5.0;
+        public static final double SERVO_SHORT_PERCENTAGE = 0.25;
+        public static final double SERVO_MEDIUM_PERCENTAGE = 0.3;
+        public static final double SERVO_LONG_PERCENTAGE = 0.3;
 
-        static {
-            Preferences.initDouble("Hood/Servo Full Range Seconds", 0.5);
-            SERVO_FULL_RANGE_SECONDS = Preferences.getDouble("Hood/Servo Full Range Seconds", 0.5);
+        // static {
+        // Preferences.initDouble("Hood/Servo Full Range Seconds", 5.0);
+        // SERVO_FULL_RANGE_SECONDS = Preferences.getDouble("Hood/Servo Full Range
+        // Seconds", 5.0);
 
-            // Positions are a percentage of a full range of motion
-            Preferences.initDouble("Hood/Servo Short Position", 0.3);
-            SERVO_SHORT_PERCENTAGE = Preferences.getDouble("Hood/Servo Short Position", 0.3);
+        // // Positions are a percentage of a full range of motion
+        // Preferences.initDouble("Hood/Servo Short Position", 0.25);
+        // SERVO_SHORT_PERCENTAGE = Preferences.getDouble("Hood/Servo Short Position",
+        // 0.25);
 
-            Preferences.initDouble("Hood/Servo Medium Position", 0.6);
-            SERVO_MEDIUM_PERCENTAGE = Preferences.getDouble("Hood/Servo Medium Position", 0.6);
+        // Preferences.initDouble("Hood/Servo Medium Position", 0.3);
+        // SERVO_MEDIUM_PERCENTAGE = Preferences.getDouble("Hood/Servo Medium Position",
+        // 0.3);
 
-            Preferences.initDouble("Hood/Servo Long Position", 1.0);
-            SERVO_LONG_PERCENTAGE = Preferences.getDouble("Hood/Servo Long Position", 1.0);
-        }
+        // Preferences.initDouble("Hood/Servo Long Position", 0.3);
+        // SERVO_LONG_PERCENTAGE = Preferences.getDouble("Hood/Servo Long Position",
+        // 0.3);
+        // }
 
         public enum HoodAngles {
             ZERO(0),
