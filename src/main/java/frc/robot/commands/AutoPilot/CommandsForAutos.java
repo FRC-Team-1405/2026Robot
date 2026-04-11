@@ -129,7 +129,6 @@ public class CommandsForAutos {
                         Rotation2d.fromDegrees(90)); // was 180
         // #endregion
 
-        // TODO: fix this
         // #region SHOOTER Poses
         public static Supplier<Pose2d> FrontHubShoot = () -> new Pose2d(3.069361, 4.034638, Rotation2d.fromDegrees(0));
         public static Supplier<Pose2d> IntakeIN_FrontHubShoot = () -> new Pose2d(3.569361, 4.034638,
@@ -164,7 +163,7 @@ public class CommandsForAutos {
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(200));
         // TODO:Fix lookHub
         public static Supplier<Pose2d> centerLeftIntakeEndLookHub = () -> new Pose2d(7.75,
-                        LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(180));
+                        LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(160));
         // #endregion
 
         // #region DEPOT Poses
@@ -296,12 +295,6 @@ public class CommandsForAutos {
                                 .build();
 
                 
-                Supplier<Command> MoveAndDeploy_allianceCenter = () -> Commands.parallel(
-                                MoveTo_allianceCenter.get(),
-                                intake.runIntakeOut());
-
-                Supplier<Command> MoveToPickup_centerLeftIntakeEnd = () -> Commands
-                                .deadline(MoveTo_centerLeftIntakeEnd.get(), intake.runPickupIn());
                 // deadline runs in
                 // parrallel until the
                 // first command
@@ -327,9 +320,6 @@ public class CommandsForAutos {
                                 .withFlipPoseForAlliance(true)
                                 // .withWaitSeconds(1)
                                 .build();
-
-                Supplier<Command> MoveToIntakeUp_centerLeftIntakeEndLookHub = () -> Commands
-                                .parallel(MoveTo_centerLeftIntakeEndLookHub.get(), intake.runIntakeCenter());
 
 
                 Supplier<Command> MoveTo_rightLoadInZone = () -> new AutoPilotV2Command.Builder(
@@ -671,39 +661,36 @@ public class CommandsForAutos {
 
                 // TODO: Fix this
                 Command RightStartCenterHarvestInLeft = new SequentialCommandGroup(
-                                MoveTo_rightBump_AllianceToFieldStart.get(),
-                                MoveTo_rightBump_AllianceToFieldStart_LOOK_HUB.get(),
+                                //MoveTo_rightBump_AllianceToFieldStart.get(),
                                 MoveTo_rightBump_AllianceToFieldEnd.get(),
-                                Commands.deadline(MoveTo_centerRightIntakeStart.get(),
-                                                intake.runIntakeOut()),
-                                // Commands.deadline(MoveTo_centerRightIntakeEnd.get(), intake.runPickupIn());
-                                MoveTo_centerRightIntakeStart.get(),
-                                MoveTo_centerRightIntakeEnd.get(),
-                                // Commands.parallel(MoveTo_centerRightIntakeEndLookHub.get(),
-                                // intake.runIntakeCenter());
-                                MoveTo_centerRightIntakeEndLookHub.get(),
+                                Commands.parallel(MoveTo_centerRightIntakeStart.get(), intake.runIntakeOut()),
+                                Commands.deadline(MoveTo_centerRightIntakeEnd.get(), intake.runPickupIn()),
+                                // MoveTo_centerRightIntakeStart.get(),
+                                // MoveTo_centerRightIntakeEnd.get(),
+                                Commands.parallel(MoveTo_centerRightIntakeEndLookHub.get(),
+                                intake.runIntakeCenter()),
+                                // MoveTo_centerRightIntakeEndLookHub.get(),
                                 // intake.runIntakeCenter(),
                                 MoveTo_leftBump_FieldToAllianceStart.get(),
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
-                                MoveTo_allianceCenter.get(),
-                                MoveTo_FrontHubShoot.get(),
+                                //MoveTo_allianceCenter.get(),
+                               // MoveTo_FrontHubShoot.get(),
                                 mediumShoot.get());
 
                 Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
-                                MoveTo_leftBump_AllianceToFieldStart.get(),
-                                MoveTo_leftBump_AllianceToFieldStart_LOOK_HUB.get(),
+                                //MoveTo_leftBump_AllianceToFieldStart.get(),
                                 MoveTo_leftBump_AllianceToFieldEnd.get(),
                                 Commands.parallel(MoveTo_centerLeftIntakeStart.get(), intake.runIntakeOut()),
-                                MoveTo_centerLeftIntakeStart.get(),
-                                MoveTo_centerLeftIntakeEnd.get(),
-                                // MoveToPickup_centerLeftIntakeEnd.get(),
-                                // MoveToIntakeUp_centerLeftIntakeEndLookHub.get(),
-                                MoveTo_centerLeftIntakeEndLookHub.get(),
-                                // intake.runIntakeCenter(),
+                                Commands.deadline(MoveTo_centerLeftIntakeEnd.get(), intake.runPickupIn()),
+                                // MoveTo_centerLeftIntakeStart.get(),
+                                // MoveTo_centerLeftIntakeEnd.get(),
+                                Commands.parallel(MoveTo_centerLeftIntakeEndLookHub.get(), intake.runIntakeCenter()),
+                                //MoveTo_centerLeftIntakeEndLookHub.get(),
+                                //intake.runIntakeCenter(),
                                 MoveTo_rightBump_FieldToAllianceStart.get(),
                                 MoveTo_rightBump_FieldToAllianceEnd.get(),
-                                MoveTo_allianceCenter.get(),
-                                MoveTo_FrontHubShoot.get(),
+                                //MoveTo_allianceCenter.get(),
+                                //MoveTo_FrontHubShoot.get(),
                                 mediumShoot.get());
 
                 Command RightQuad = new SequentialCommandGroup(
@@ -802,6 +789,6 @@ public class CommandsForAutos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: add window in Elastic
-                OVERRIDE_AUTO_COMMAND = RightQuad;
+                OVERRIDE_AUTO_COMMAND = LeftStartCenterHarvestInRight;
         }
 }
