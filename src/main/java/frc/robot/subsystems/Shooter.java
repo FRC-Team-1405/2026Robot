@@ -146,7 +146,7 @@ public class Shooter extends SubsystemBase {
 
     StatusCode status2 = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
-      status2 = shooterMotor2.getConfigurator().apply(mainMotorCfg);
+      status2 = shooterMotor2.getConfigurator().apply(followerMotorsCfg);
       if (status2.isOK())
         break;
     }
@@ -158,7 +158,7 @@ public class Shooter extends SubsystemBase {
 
     StatusCode status3 = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
-      status3 = shooterMotor3.getConfigurator().apply(mainMotorCfg);
+      status3 = shooterMotor3.getConfigurator().apply(followerMotorsCfg);
       if (status3.isOK())
         break;
     }
@@ -236,10 +236,13 @@ public class Shooter extends SubsystemBase {
    * @return
    */
   public Supplier<Double> getDistanceFromSpeed() {
-    return ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.get(requestedSpeed.get()) == null
+    Supplier<Double> distanceFromSpeed = ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.get(requestedSpeed.get()) == null
         ? ShooterPreferences.MEDIUM_DISTANCE
         : ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE
             .get(requestedSpeed.get());
+
+    System.out.println("getDistanceFromSpeed: " + distanceFromSpeed.get().doubleValue());
+    return distanceFromSpeed;
   }
 
   public void increaseDistanceForSpeed() {
@@ -259,7 +262,7 @@ public class Shooter extends SubsystemBase {
   public Command runShooterAuto(Supplier<AngularVelocity> requestedSpeed) {
     return Commands.startEnd(
         () -> setShooterSpeed(requestedSpeed),
-        () -> stopShooter(),
+        () -> shooterStop(),
         this);
   }
 
