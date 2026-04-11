@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -139,7 +138,8 @@ public class SwerveFeatures {
         // publishRobotAcceleration();
         // Publish command NAME only — do NOT use putData with a live Command object.
         // putData creates a bidirectional .running property that can cancel the command
-        // when the NT entry retains a stale value from the previous command at this key.
+        // when the NT entry retains a stale value from the previous command at this
+        // key.
         if (m_drivetrain != null && m_drivetrain.getCurrentCommand() != null) {
             SmartDashboard.putString("Commands/SwerveDriveCommand", m_drivetrain.getCurrentCommand().getName());
         }
