@@ -726,8 +726,8 @@ public class CommandsForAutos {
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 // MoveTo_allianceCenter.get(),
                                 // MoveTo_FrontHubShoot.get(),
-                                MoveTo_ClosestShootingPosition_SHORT.get(),
-                                shortShoot.get());
+                                MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                mediumShoot.get());
 
                 Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
                                 //MoveTo_leftBump_AllianceToFieldStart.get(),
@@ -743,6 +743,7 @@ public class CommandsForAutos {
                                 MoveTo_rightBump_FieldToAllianceEnd.get(),
                                 //MoveTo_allianceCenter.get(),
                                 //MoveTo_FrontHubShoot.get(),
+                                MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 mediumShoot.get());
 
                 Command RightQuad = new SequentialCommandGroup(
@@ -756,7 +757,9 @@ public class CommandsForAutos {
                                                 // MoveTo_rightQuadSecondSweep_End.get(),
                                         ), intake.runPickupIn()),
                                 Commands.parallel(intake.runIntakeCenter(), MoveTo_rightBump_FieldToAllianceStart.get()),
-                                MoveTo_rightBump_FieldToAllianceEnd.get());
+                                MoveTo_rightBump_FieldToAllianceEnd.get(),
+                                MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                mediumShoot.get());
 
                 Command LeftQuad = new SequentialCommandGroup(
                                 //MoveTo_leftBump_AllianceToFieldStart.get(),
@@ -772,6 +775,7 @@ public class CommandsForAutos {
                                 Commands.parallel(intake.runIntakeCenter(), MoveTo_leftBump_FieldToAllianceStart.get()),
                                 //MoveTo_leftBump_FieldToAllianceStart.get(),
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
+                                MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 mediumShoot.get());
 
                 // Actual name: RightFeedShootCenterHarvest
