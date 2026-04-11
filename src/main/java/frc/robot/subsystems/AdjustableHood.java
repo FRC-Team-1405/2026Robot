@@ -25,7 +25,8 @@ public class AdjustableHood extends SubsystemBase {
    * Hood that adjusts angle using a servo.
    */
   public AdjustableHood() {
-
+    servo1.setBoundsMicroseconds(2000, 1000, 1500, 1200, 1000);
+    servo2.setBoundsMicroseconds(2000, 1000, 1500, 1200, 1000);
   }
 
   @Override
@@ -37,11 +38,13 @@ public class AdjustableHood extends SubsystemBase {
   public void setServo(double position) {
     target = position;
     SmartDashboard.putNumber("Hood/Hood Target", target);
+    SmartDashboard.putBoolean("Hood/Moving", true);
     servo1.set(position);
     servo2.set(position);
   }
 
   public void stopServo() {
+    SmartDashboard.putBoolean("Hood/Moving", false);
     servo1.setDisabled();
     servo2.setDisabled();
   }

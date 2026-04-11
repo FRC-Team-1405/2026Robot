@@ -28,6 +28,7 @@ import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
 import frc.robot.lib.AprilTags;
 import frc.robot.lib.AutoCommands;
+import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Hopper;
@@ -192,7 +193,8 @@ public class CommandsForAutoPilot {
                         Intake intake,
                         Hopper hopper,
                         Indexer indexer,
-                        Shooter shooter) {
+                        Shooter shooter,
+                        AdjustableHood hood) {
                 /* Commands */
                 // Uses command suppliers instead of commands so that we can reuse the same
                 // command in an autonomous
@@ -513,7 +515,7 @@ public class CommandsForAutoPilot {
 
                 Supplier<Command> midShoot = () -> Commands.sequence(
                                 shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG),
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY,
+                                new AutoFire(shooter, indexer, hopper, hood, () -> ShooterPreferences.INDEXER_VELOCITY,
                                                 () -> SwerveFeatures.getDistanceToHub(drivetrain,
                                                                 FieldConstants.ALLIANCE_HUB_POSITION))
                                                 .repeatedly())

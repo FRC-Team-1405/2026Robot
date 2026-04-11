@@ -108,7 +108,7 @@ public class RobotContainer {
         public RobotContainer() {
                 configureBindings();
 
-                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter);
+                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
                 drivetrain.initOverridePose();
         }
@@ -296,7 +296,7 @@ public class RobotContainer {
 
                 // Shoot
                 driverJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY,
+                                new AutoFire(shooter, indexer, hopper, hood, () -> ShooterPreferences.INDEXER_VELOCITY,
                                                 () -> SwerveFeatures.getDistanceToHub(drivetrain,
                                                                 FieldConstants.ALLIANCE_HUB_POSITION))
                                                 .repeatedly());
@@ -321,8 +321,8 @@ public class RobotContainer {
                         return SmartDashboard.getNumber("DistanceMock", 0);
                 };
                 shooterJoystick.rightBumper().onTrue(
-                                new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY,
-                                                distanceMock));
+                                new AutoFire(shooter, indexer, hopper, hood, () -> ShooterPreferences.INDEXER_VELOCITY,
+                                                distanceMock).repeatedly());
                 shooterJoystick.rightBumper().onFalse(
                                 Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
         }

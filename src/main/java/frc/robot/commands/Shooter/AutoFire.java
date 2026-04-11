@@ -6,8 +6,11 @@ package frc.robot.commands.Shooter;
 
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
+import frc.robot.commands.SetHoodPosition;
+import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Shooter;
@@ -28,10 +31,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class AutoFire extends SequentialCommandGroup {
 
   /** Creates a new AutoFire. */
-  public AutoFire(Shooter shooterSubsytem, Indexer indexerSubsystem, Hopper hopper,
+  public AutoFire(Shooter shooterSubsytem, Indexer indexerSubsystem, Hopper hopper, AdjustableHood hood,
       Supplier<AngularVelocity> indexerVelocity, DoubleSupplier distanceToHub) {
 
     addCommands(
+        new SetHoodPosition(hood, () -> {
+          Distance distance = Meters.of(distanceToHub.getAsDouble());
+          return Constants.ShooterPreferences.distanceToAngle(distance);
+        }),
         shooterSubsytem.runSetRequestedSpeed(() -> {
           Distance distance = Meters.of(distanceToHub.getAsDouble());
           return Constants.ShooterPreferences.distanceToVelocity(distance);
@@ -48,6 +55,5 @@ public class AutoFire extends SequentialCommandGroup {
         }),
         indexerSubsystem.runStopIndexer(),
         hopper.runStopHopper());
-
   };
 }

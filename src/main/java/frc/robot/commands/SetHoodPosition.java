@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,8 +16,8 @@ import frc.robot.subsystems.AdjustableHood;
 public class SetHoodPosition extends Command {
 
   private final AdjustableHood subsystem;
-  private final double targetPosition;
-  private final double moveTimeSeconds;
+  private final DoubleSupplier targetPosition;
+  private double moveTimeSeconds;
 
   private HoodAngles hoodAngle;
 
@@ -26,10 +28,9 @@ public class SetHoodPosition extends Command {
    * @param targetPosition  servo position 0.0–1.0
    * @param moveTimeSeconds safe wait time (0.3–0.6 typical)
    */
-  public SetHoodPosition(AdjustableHood subsystem, double targetPosition, double moveTimeSeconds) {
+  public SetHoodPosition(AdjustableHood subsystem, DoubleSupplier targetPosition) {
     this.subsystem = subsystem;
     this.targetPosition = targetPosition;
-    this.moveTimeSeconds = moveTimeSeconds;
 
     hoodAngle = null;
     SmartDashboard.putString("Hood/Hood Position", HoodAngles.ZERO.name());
@@ -38,14 +39,19 @@ public class SetHoodPosition extends Command {
   }
 
   public SetHoodPosition(AdjustableHood subsystem, HoodAngles angle) {
-    this(subsystem, angle.getPositionPercentage(),
-        Math.abs(angle.getPositionPercentage() - subsystem.getTarget()) * HoodPreferences.SERVO_FULL_RANGE_SECONDS);
+    this(subsystem, () -> {
+      return angle.getPositionPercentage();
+    });
     this.hoodAngle = angle;
   }
 
   @Override
   public void initialize() {
-    subsystem.setServo(targetPosition);
+    double target = targetPosition.getAsDouble();
+    double pos = subsystem.getTarget();
+    moveTimeSeconds = Math.abs(targetPosition.getAsDouble() - subsystem.getTarget())
+        * HoodPreferences.SERVO_FULL_RANGE_SECONDS;
+    subsystem.setServo(targetPosition.getAsDouble());
     startTime = Timer.getFPGATimestamp();
 
     if (hoodAngle != null) {
