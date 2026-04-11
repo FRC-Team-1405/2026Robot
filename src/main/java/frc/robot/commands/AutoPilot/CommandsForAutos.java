@@ -1,7 +1,5 @@
 package frc.robot.commands.AutoPilot;
 
-import static edu.wpi.first.units.Units.Seconds;
-
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.NamedCommands;
@@ -27,6 +25,9 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import static frc.robot.commands.AutoPilot.AutoPilotV2Command.DEFAULT_XY_THRESHOLD;
+import static frc.robot.commands.AutoPilot.AutoPilotV2Command.DEFAULT_THETA_THRESHOLD;
+import static frc.robot.commands.AutoPilot.AutoPilotV2Command.DEFAULT_BEELINE_THRESHOLD;
 
 public class CommandsForAutos {
         // TODO: integrate shooting positions dropdown into all autos, include the shoot
@@ -43,9 +44,9 @@ public class CommandsForAutos {
         public static Command OVERRIDE_AUTO_COMMAND = null;
         // #region CONSTRAINTS
         private static final APConstraints bumpConstraints = new APConstraints()
-                        .withAcceleration(2.0) // TUNE THIS TO YOUR ROBOT!
-                        .withVelocity(2.0)
-                        .withJerk(67);
+                        .withAcceleration(20) // TUNE THIS TO YOUR ROBOT!
+                        .withVelocity(6)
+                        .withJerk(68);
 
         // TODO: Adjust
         private static final APConstraints fullFieldConstraints = new APConstraints()
@@ -71,10 +72,10 @@ public class CommandsForAutos {
         public static Supplier<Pose2d> feedingStation = () -> FieldConstants.BLUE_FEED_ROBOT_POSITION;
         public static Supplier<Pose2d> rightLoadInZone = () -> new Pose2d(5.75, 2.5, Rotation2d.fromDegrees(180));
         public static Supplier<Pose2d> leftLoadInZone = () -> new Pose2d(5.75, 5.5, Rotation2d.fromDegrees(180));
-        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(7.5, 3.5, Rotation2d.fromDegrees(90)); // was 7.5,
-                                                                                                          // 3.5
-        public static Supplier<Pose2d> quadRight = () -> new Pose2d(7.5, 6.5, Rotation2d.fromDegrees(270)); // was 7.5,
-                                                                                                            // 6.5
+        public static Supplier<Pose2d> quadRight = () -> new Pose2d(7.75, 3.5, Rotation2d.fromDegrees(90)); // was 7.5,
+                                                                                                           // 3.5
+        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(7.75, 4.5, Rotation2d.fromDegrees(270)); // was 7.5,
+                                                                                                           // 6.5
 
         // #region START Poses
         public static Supplier<Pose2d> startRightFaceIn = () -> new Pose2d(BUMP_LEFT_ALLIANCE_SIDE, 5,
@@ -141,10 +142,14 @@ public class CommandsForAutos {
         // #region Center Harvest Poses
         // y position to start center harvesting on the right side
         // TODO: Change for actual field
-        private static double RIGHT_START_HARVEST_HORIZONTAL_POINT = 3; // was 1
-        private static double RIGHT_END_HARVEST_HORIZONTAL_POINT = 5.5; // was 6
-        private static double LEFT_START_HARVEST_HORIZONTAL_POINT = 6; // was 7
+        private static double RIGHT_START_HARVEST_HORIZONTAL_POINT = 1; // was 1
+        private static double RIGHT_END_HARVEST_HORIZONTAL_POINT = 5.0; // was 6
+        private static double LEFT_START_HARVEST_HORIZONTAL_POINT = 7; // was 7
         private static double LEFT_END_HARVEST_HORIZONTAL_POINT = 2.5; // was 2
+        private static double RIGHT_START_SECOND_SWEEP_HORIZONTAL_POINT = 1; 
+        private static double RIGHT_END_SECOND_SWEEP_HORIZONTAL_POINT = 3.5; 
+        private static double LEFT_START_SECOND_SWEEP_HORIZONTAL_POINT = 7; 
+        private static double LEFT_END_SECOND_SWEEP_HORIZONTAL_POINT = 4.5; 
 
         // centerRightIntakeStart was (7.75, 1, 90)
         public static Supplier<Pose2d> centerRightIntakeStart = () -> new Pose2d(7.45,
@@ -161,9 +166,22 @@ public class CommandsForAutos {
         // rotation was 180
         public static Supplier<Pose2d> centerRightIntakeEndLookHub = () -> new Pose2d(7.75,
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(200));
-        // TODO:Fix lookHub
+        
         public static Supplier<Pose2d> centerLeftIntakeEndLookHub = () -> new Pose2d(7.75,
                         LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(160));
+        //Second Sweeps
+        public static Supplier<Pose2d> rightQuadSecondSweep_Start = () -> new Pose2d(6.95,
+                        RIGHT_START_SECOND_SWEEP_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
+       
+        public static Supplier<Pose2d> rightQuadSecondSweep_End = () -> new Pose2d(6.55,
+                        RIGHT_END_SECOND_SWEEP_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
+        
+        public static Supplier<Pose2d> leftQuadSecondSweep_Start = () -> new Pose2d(6.95,
+                        LEFT_START_SECOND_SWEEP_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
+        
+        public static Supplier<Pose2d> leftQuadSecondSweep_End = () -> new Pose2d(6.55,
+                        LEFT_END_SECOND_SWEEP_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
+
         // #endregion
 
         // #region DEPOT Poses
@@ -193,7 +211,7 @@ public class CommandsForAutos {
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
         // #endregion
 
-        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(4, 0, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(2, 0, Rotation2d.fromDegrees(0));
 
         public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber,
                         Intake intake,
@@ -214,7 +232,7 @@ public class CommandsForAutos {
                                 .withFlipPoseForAlliance(true)
                                 .build();
 
-                Supplier<Command> MoveTo_centerOfField = () -> new AutoPilotCommand.Builder(
+                Supplier<Command> MoveTo_centerOfField = () -> new AutoPilotV2Command.Builder(
                                 () -> centerOfField.get(), drivetrain, "MoveTo_centerOfField")
                                 .withFlipPoseForAlliance(true)
                                 .build();
@@ -235,7 +253,7 @@ public class CommandsForAutos {
                 Supplier<Command> MoveTo_fourMeters = () -> new AutoPilotV2Command.Builder(
                                 () -> fourMeters.get(), drivetrain, "MoveTo_fourMeters")
                                 .withFlipPoseForAlliance(true)
-                                .withConstraints(fullFieldConstraints)
+                                // .withConstraints(fullFieldConstraints)
                                 .build();
                 // #endregion
 
@@ -250,6 +268,12 @@ public class CommandsForAutos {
                 Supplier<Command> MoveTo_requestedSpeedDistanceToHub = () -> new DriveToHubDistance(drivetrain,
                                 FieldConstants.ALLIANCE_HUB_POSITION,
                                 shooter.getDistanceFromSpeed());
+
+                // Move To Shooting Positions
+                Supplier<Command> MoveTo_ClosestShootingPosition_SHORT = () -> Commands.sequence(
+                                new InstantCommand(() -> shooter
+                                                .setRequestedSpeedWithoutShooting(() -> ShooterPreferences.SHORT)),
+                                MoveTo_requestedSpeedDistanceToHub.get());
                 Supplier<Command> MoveTo_ClosestShootingPosition_MEDIUM = () -> Commands.sequence(
                                 new InstantCommand(() -> shooter
                                                 .setRequestedSpeedWithoutShooting(() -> ShooterPreferences.MEDIUM)),
@@ -293,25 +317,46 @@ public class CommandsForAutos {
                                 .withFlipPoseForAlliance(true)
                                 // .withConstraints(centerHarvestConstraint)
                                 .build();
+                Supplier<Command> MoveTo_rightQuadSecondSweep_Start = () -> new AutoPilotV2Command.Builder(
+                                () -> rightQuadSecondSweep_Start.get(), drivetrain, "MoveTo_rightQuadSecondSweep_Start")
+                                .withFlipPoseForAlliance(true)
+                                .build();
 
+                Supplier<Command> MoveTo_rightQuadSecondSweep_End = () -> new AutoPilotV2Command.Builder(
+                                () -> rightQuadSecondSweep_End.get(), drivetrain, "MoveTo_rightQuadSecondSweep_End")
+                                .withFlipPoseForAlliance(true)
+                                // TODO: .withConstraints(fullFieldConstraints)
+                                .build();
+
+                Supplier<Command> MoveTo_leftQuadSecondSweep_Start = () -> new AutoPilotV2Command.Builder(
+                                () -> leftQuadSecondSweep_Start.get(), drivetrain, "MoveTo_leftQuadSecondSweep_Start")
+                                .withFlipPoseForAlliance(true)
+                                .build();
+
+                Supplier<Command> MoveTo_leftQuadSecondSweep_End = () -> new AutoPilotV2Command.Builder(
+                                () -> leftQuadSecondSweep_End.get(), drivetrain, "MoveTo_leftQuadSecondSweep_End")
+                                .withFlipPoseForAlliance(true)
+                                // .withConstraints(centerHarvestConstraint)
+                                .build();
                 
                 // deadline runs in
                 // parrallel until the
                 // first command
                 // finishes
-                Supplier<Command> MoveTo_quadLeft = () -> new AutoPilotV2Command.Builder(
-                                () -> quadLeft.get(), drivetrain, "MoveTo_quadLeft")
-                                .withFlipPoseForAlliance(true)
-                                .build();
                 Supplier<Command> MoveTo_quadRight = () -> new AutoPilotV2Command.Builder(
                                 () -> quadRight.get(), drivetrain, "MoveTo_quadRight")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-
+                Supplier<Command> MoveTo_quadLeft = () -> new AutoPilotV2Command.Builder(
+                                () -> quadLeft.get(), drivetrain, "MoveTo_quadLeft")
+                                .withFlipPoseForAlliance(true)
+                                .build();
 
                 Supplier<Command> MoveTo_centerRightIntakeEndLookHub = () -> new AutoPilotV2Command.Builder(
                                 () -> centerRightIntakeEndLookHub.get(), drivetrain, "centerRightIntakeEndLookHub")
                                 .withFlipPoseForAlliance(true)
+                                .withProfileThresholds(
+                                                16.0, 5.0, DEFAULT_BEELINE_THRESHOLD)
                                 // .withWaitSeconds(1)
                                 .build();
 
@@ -406,7 +451,7 @@ public class CommandsForAutos {
                                 () -> leftBump_AllianceToFieldEnd.get(), drivetrain,
                                 "MoveTo_leftBump_AllianceToFieldEnd")
                                 .withFlipPoseForAlliance(true)
-                                // .withConstraints(bumpConstraints)
+                                .withConstraints(bumpConstraints)
                                 .build();
 
                 Supplier<Command> MoveTo_rightBump_AllianceToFieldStart = () -> new AutoPilotV2Command.Builder(
@@ -433,6 +478,7 @@ public class CommandsForAutos {
                                 () -> rightBump_AllianceToFieldEnd.get(), drivetrain,
                                 "MoveTo_rightBump_AllianceToFieldEnd")
                                 .withFlipPoseForAlliance(true)
+                                .withConstraints(bumpConstraints)
                                 .build();
 
                 Supplier<Command> MoveTo_leftBump_FieldToAllianceStart = () -> new AutoPilotV2Command.Builder(
@@ -446,7 +492,8 @@ public class CommandsForAutos {
                                 () -> leftBump_FieldToAllianceEnd.get(), drivetrain,
                                 "MoveTo_leftBump_FieldToAllianceEnd")
                                 .withFlipPoseForAlliance(true)
-                                // .withConstraints(bumpConstraints)
+                                .withProfileThresholds(6, 12, DEFAULT_BEELINE_THRESHOLD)
+                                .withConstraints(bumpConstraints)
                                 .build();
                 Supplier<Command> MoveTo_rightBump_FieldToAllianceStart = () -> new AutoPilotV2Command.Builder(
                                 () -> rightBump_FieldToAllianceStart.get(), drivetrain,
@@ -570,6 +617,10 @@ public class CommandsForAutos {
                 // MoveTo_leftLoadInZone.get()
                 // MoveTo_rightLoadInZone.get()
                 );
+
+                Command JUST_SHOOT_FROM_ANYWHERE = Commands.sequence(MoveTo_ClosestShootingPosition_SHORT.get(),
+                                shortShoot.get());
+
                 Command LeftStart_JUSTSHOOT = new SequentialCommandGroup(
                                 MoveTo_LeftMidAlliance.get(),
                                 MoveTo_ClosestShootingPosition_MEDIUM.get(),
@@ -607,7 +658,7 @@ public class CommandsForAutos {
                                 Commands.deadline(MoveTo_centerRightIntakeEnd.get(), intake.runPickupIn()),
                                 Commands.parallel(MoveTo_centerRightIntakeEndLookHub.get(), intake.runIntakeCenter()),
                                 // MoveTo_centerRightIntakeEndLookHub.get(),
-                                intake.runIntakeCenter(),
+                                // intake.runIntakeCenter(),
                                 MoveTo_leftBump_FieldToAllianceStart.get(),
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 MoveTo_allianceCenter.get(),
@@ -673,9 +724,10 @@ public class CommandsForAutos {
                                 // intake.runIntakeCenter(),
                                 MoveTo_leftBump_FieldToAllianceStart.get(),
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
-                                //MoveTo_allianceCenter.get(),
-                               // MoveTo_FrontHubShoot.get(),
-                                mediumShoot.get());
+                                // MoveTo_allianceCenter.get(),
+                                // MoveTo_FrontHubShoot.get(),
+                                MoveTo_ClosestShootingPosition_SHORT.get(),
+                                shortShoot.get());
 
                 Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
                                 //MoveTo_leftBump_AllianceToFieldStart.get(),
@@ -694,22 +746,32 @@ public class CommandsForAutos {
                                 mediumShoot.get());
 
                 Command RightQuad = new SequentialCommandGroup(
-                                MoveTo_rightBump_AllianceToFieldStart.get(),
+                                //MoveTo_rightBump_AllianceToFieldStart.get(),
                                 MoveTo_rightBump_AllianceToFieldEnd.get(),
                                 Commands.parallel(MoveTo_centerRightIntakeStart.get(), intake.runIntakeOut()),
-                                Commands.deadline(MoveTo_quadLeft.get(), intake.runPickupIn()),
+                                Commands.deadline(
+                                        Commands.sequence(
+                                                MoveTo_quadRight.get(), 
+                                                MoveTo_rightQuadSecondSweep_Start.get()
+                                                // MoveTo_rightQuadSecondSweep_End.get(),
+                                        ), intake.runPickupIn()),
                                 Commands.parallel(intake.runIntakeCenter(), MoveTo_rightBump_FieldToAllianceStart.get()),
                                 MoveTo_rightBump_FieldToAllianceEnd.get());
 
                 Command LeftQuad = new SequentialCommandGroup(
-                                MoveTo_leftBump_AllianceToFieldStart.get(),
+                                //MoveTo_leftBump_AllianceToFieldStart.get(),
                                 MoveTo_leftBump_AllianceToFieldEnd.get(),
                                 Commands.parallel(MoveTo_centerLeftIntakeStart.get(), intake.runIntakeOut()),
-                                Commands.deadline(MoveTo_quadRight.get(), intake.runPickupIn()),
+                                Commands.deadline(
+                                        Commands.sequence(
+                                                MoveTo_quadLeft.get(),
+                                                MoveTo_leftQuadSecondSweep_Start.get()
+                                                //MoveTo_leftQuadSecondSweep_End.get(),
+                                                ), intake.runPickupIn()),
+                                
                                 Commands.parallel(intake.runIntakeCenter(), MoveTo_leftBump_FieldToAllianceStart.get()),
+                                //MoveTo_leftBump_FieldToAllianceStart.get(),
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
-                                MoveTo_allianceCenter.get(),
-                                MoveTo_FrontHubShoot.get(),
                                 mediumShoot.get());
 
                 // Actual name: RightFeedShootCenterHarvest
@@ -744,9 +806,7 @@ public class CommandsForAutos {
                                 MoveTo_FrontHubShoot.get());
 
                 Command fourMeters = new SequentialCommandGroup(
-                                intake.runIntakeOut(),
-                                Commands.parallel(MoveTo_fourMeters.get(), intake.runPickupIn()),
-                                intake.runPickupStop());
+                                MoveTo_quadLeft.get());
                 Command TheShowboater = new SequentialCommandGroup(
                                 MoveTo_depot_BackFace_Start.get(),
                                 MoveTo_depot_BackFace_End.get(),
@@ -789,6 +849,6 @@ public class CommandsForAutos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: add window in Elastic
-                OVERRIDE_AUTO_COMMAND = LeftStartCenterHarvestInRight;
+                OVERRIDE_AUTO_COMMAND = RightQuad;
         }
 }

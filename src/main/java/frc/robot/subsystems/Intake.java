@@ -104,6 +104,10 @@ public class Intake extends SubsystemBase {
     if (!status.isOK()) {
       System.out.println("Could not configure intake motor. Error: " + status.toString());
     }
+
+    intakeMotor.getPosition().setUpdateFrequency(10);
+    intakeMotor.optimizeBusUtilization();
+    
     fLogger.log("Intake motor configured (deploy)");
   }
 
@@ -209,6 +213,9 @@ public class Intake extends SubsystemBase {
   // ── State Queries ────────────────────────────────────────────────────────
 
   private boolean isAtTarget() {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return true;
+    }
     return settleCount >= IntakePreferences.SETTLE_COUNT;
   }
 
@@ -233,17 +240,11 @@ public class Intake extends SubsystemBase {
   }
 
   private void setPickupVelocity(double velocity) {
-    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
-      return;
-    }
     pickupMotor.setControl(pickupVelocityRequest.withVelocity(velocity));
     isPickupActive = true;
   }
 
   private void stopPickupMotor() {
-    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
-      return;
-    }
     pickupMotor.setControl(neutralRequest);
     isPickupActive = false;
   }
