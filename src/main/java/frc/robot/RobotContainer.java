@@ -316,10 +316,13 @@ public class RobotContainer {
                 // shooterJoystick.a().onTrue(shooter.runSetRequestedSpeed(() ->
                 // ShooterPreferences.LONG));
                 // Fire + stop
+                SmartDashboard.putNumber("DistanceMock", 0);
+                DoubleSupplier distanceMock = () -> {
+                        return SmartDashboard.getNumber("DistanceMock", 0);
+                };
                 shooterJoystick.rightBumper().onTrue(
                                 new AutoFire(shooter, indexer, hopper, () -> ShooterPreferences.INDEXER_VELOCITY,
-                                                () -> SwerveFeatures.getDistanceToHub(drivetrain,
-                                                                FieldConstants.ALLIANCE_HUB_POSITION)));
+                                                distanceMock));
                 shooterJoystick.rightBumper().onFalse(
                                 Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
         }

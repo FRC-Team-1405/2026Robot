@@ -32,6 +32,7 @@ import frc.robot.Constants.ShooterPIDConfig;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.constants.FeatureSwitches;
 import frc.robot.lib.FinneyLogger;
+import frc.robot.lib.InterpolationMap;
 import frc.robot.lib.MotorSim.MotorSim_Mech;
 
 public class Shooter extends SubsystemBase {
@@ -233,11 +234,11 @@ public class Shooter extends SubsystemBase {
   public double dynamicShooterRPS(Double floorDistance, Double ceilingDistance, AngularVelocity floorSpeed,
       AngularVelocity ceilingSpeed, DoubleSupplier distanceToHub) {
     double dynamicRPS;
-    dynamicRPS = (floorSpeed.baseUnitMagnitude() * (ceilingDistance - distanceToHub.getAsDouble())
-        + ceilingSpeed.baseUnitMagnitude() * (distanceToHub.getAsDouble() - floorDistance))
+    dynamicRPS = (floorSpeed.magnitude() * (ceilingDistance - distanceToHub.getAsDouble())
+        + ceilingSpeed.magnitude() * (distanceToHub.getAsDouble() - floorDistance))
         / (ceilingDistance - floorDistance);
-    if (dynamicRPS >= ShooterPreferences.MAX.baseUnitMagnitude()) {
-      dynamicRPS = ShooterPreferences.MAX.baseUnitMagnitude();
+    if (dynamicRPS >= ShooterPreferences.MAX.magnitude()) {
+      dynamicRPS = ShooterPreferences.MAX.magnitude();
     }
     return dynamicRPS;
   }

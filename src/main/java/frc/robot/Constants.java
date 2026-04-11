@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Preferences;
+import frc.robot.lib.InterpolationMap;
 
 /** Add your docs here. */
 public class Constants {
@@ -98,10 +99,18 @@ public class Constants {
         public static final double TIGHT;
         public static final double WIDE;
         public static final int STABLE_COUNT;
+        private static InterpolationMap powerMap = new InterpolationMap(
+                new InterpolationMap.MapPoint[] {
+                        new InterpolationMap.MapPoint(ShooterPreferences.SHORT_DISTANCE.get(),
+                                ShooterPreferences.SHORT.magnitude()),
+                        new InterpolationMap.MapPoint(ShooterPreferences.MEDIUM_DISTANCE.get(),
+                                ShooterPreferences.MEDIUM.magnitude()),
+                        new InterpolationMap.MapPoint(ShooterPreferences.LONG_DISTANCE.get(),
+                                ShooterPreferences.LONG.magnitude())
+                });
 
         public static AngularVelocity distanceToVelocity(Distance distance) {
-            double temp = distance.in(Feet);
-            return RotationsPerSecond.of(temp * 5);
+            return RotationsPerSecond.of(powerMap.interpolate(distance.in(Meters)));
         }
 
         static {
