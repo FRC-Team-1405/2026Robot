@@ -152,7 +152,6 @@ public class RobotContainer {
                 // Operator Controls
                 //
                 RumbleJoystick.setPeriodChangeWarningOccasion(operatorJoystick);
-                driverJoystick.b().onTrue(new RumbleJoystick(driverJoystick, RumbleType.kBothRumble, 0.5, 1.0));
 
                 cmd = intake.runIntakeOut();
                 // SmartDashboard.putData("Commands/RunIntakeOut", cmd);
@@ -161,8 +160,11 @@ public class RobotContainer {
                 // SmartDashboard.putData("Commands/RunIntakeIn", cmd);
                 operatorJoystick.povDown().onTrue(cmd);
 
-                operatorJoystick.povRight().onTrue(new InstantCommand(() -> shooter.increaseDistanceForSpeed()));
-                operatorJoystick.povLeft().onTrue(new InstantCommand(() -> shooter.descreaseDistanceForSpeed()));
+                cmd = intake.runIntakeCenter();
+                operatorJoystick.povLeft().onTrue(cmd);
+
+                cmd = new InstantCommand(() -> intake.toggleIntakeMovementDisabledFlag(operatorJoystick));
+                operatorJoystick.povRight().onTrue(cmd);
 
                 operatorJoystick.y().onTrue(new SetHoodPosition(hood, HoodAngles.SHORT));
                 operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));

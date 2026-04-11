@@ -52,19 +52,6 @@
             }
           },
           {
-            "title": "Use Velocity Compensated Point",
-            "x": 384.0,
-            "y": 0.0,
-            "width": 320.0,
-            "height": 128.0,
-            "type": "Toggle Button",
-            "properties": {
-              "topic": "/SmartDashboard/MoveMode/Use Velocity Compensated Point",
-              "period": 0.06,
-              "data_type": "boolean"
-            }
-          },
-          {
             "title": "Intake Position",
             "x": 0.0,
             "y": 384.0,
@@ -237,20 +224,6 @@
             }
           },
           {
-            "title": "Desired Distance",
-            "x": 512.0,
-            "y": 384.0,
-            "width": 192.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Shooter/Desired Distance",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
-          {
             "title": "Long Speed",
             "x": 576.0,
             "y": 256.0,
@@ -285,17 +258,20 @@
             }
           },
           {
-            "title": "TestTargetRPS",
-            "x": 704.0,
-            "y": 0.0,
-            "width": 128.0,
+            "title": "IntakeMovementEnabled",
+            "x": 512.0,
+            "y": 384.0,
+            "width": 256.0,
             "height": 128.0,
-            "type": "Text Display",
+            "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Shooter/TestTargetRPS",
+              "topic": "/SmartDashboard/Intake/IntakeMovementEnabled",
               "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
         ]
@@ -479,6 +455,54 @@
               "topic": "/SmartDashboard/Auto/Auto Mode/selected",
               "period": 0.06,
               "data_type": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Debug",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Use Velocity Compensated Point",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 320.0,
+            "height": 128.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/SmartDashboard/MoveMode/Use Velocity Compensated Point",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "TestTargetRPS",
+            "x": 320.0,
+            "y": 0.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/TestTargetRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": true
+            }
+          },
+          {
+            "title": "Desired Distance",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Shooter/Desired Distance",
+              "period": 0.06,
+              "data_type": "double"
             }
           }
         ]

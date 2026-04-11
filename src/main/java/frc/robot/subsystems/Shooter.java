@@ -86,7 +86,7 @@ public class Shooter extends SubsystemBase {
 
   private CommandXboxController operatorJoystick;
 
-  public Command vibrate;
+  private Command vibrate;
 
   private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.LONG;
 
