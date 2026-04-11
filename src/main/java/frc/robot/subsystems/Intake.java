@@ -104,6 +104,10 @@ public class Intake extends SubsystemBase {
     if (!status.isOK()) {
       System.out.println("Could not configure intake motor. Error: " + status.toString());
     }
+
+    intakeMotor.getPosition().setUpdateFrequency(10);
+    intakeMotor.optimizeBusUtilization();
+    
     fLogger.log("Intake motor configured (deploy)");
   }
 
