@@ -236,12 +236,15 @@ public class Shooter extends SubsystemBase {
    * @return
    */
   public Supplier<Double> getDistanceFromSpeed() {
+    // TODO fix the bug where this doesn't update due to callers getting the value
+    // once instead of using the supplier properly
     Supplier<Double> distanceFromSpeed = ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.get(requestedSpeed.get()) == null
         ? ShooterPreferences.MEDIUM_DISTANCE
         : ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE
             .get(requestedSpeed.get());
 
-    System.out.println("getDistanceFromSpeed: " + distanceFromSpeed.get().doubleValue());
+    // System.out.println("getDistanceFromSpeed: " +
+    // distanceFromSpeed.get().doubleValue());
     return distanceFromSpeed;
   }
 

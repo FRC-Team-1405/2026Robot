@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
+import frc.robot.commands.AutoPilot.AutoPilotV2Command;
 import frc.robot.commands.PidToPose.PidToPoseCommand;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -504,8 +505,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Supplier<Pose2d> poseSupplier = () -> (targetPoseSupplier.get().get());// TODO pass the real supplier in so it
                                                                                // can constantly update its position,
                                                                                // based on user input
-        return new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose")
-                .withFlipPoseForAlliance(flipPoseForRedAlliance).withTolerance(0.5).withThetaTolerance(1.0).build();
+        return new AutoPilotV2Command.Builder(poseSupplier, this, "DriveToPose")
+                .withFlipPoseForAlliance(flipPoseForRedAlliance)
+                .withProfileThresholds(1, 1.0, AutoPilotV2Command.DEFAULT_BEELINE_THRESHOLD).build();
     }
 
     public void publishDistanceToHub() {
