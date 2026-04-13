@@ -72,10 +72,6 @@ public class CommandsForAutos {
         public static Supplier<Pose2d> feedingStation = () -> FieldConstants.BLUE_FEED_ROBOT_POSITION;
         public static Supplier<Pose2d> rightLoadInZone = () -> new Pose2d(5.75, 2.5, Rotation2d.fromDegrees(180));
         public static Supplier<Pose2d> leftLoadInZone = () -> new Pose2d(5.75, 5.5, Rotation2d.fromDegrees(180));
-        public static Supplier<Pose2d> quadRight = () -> new Pose2d(7.5, 3.5, Rotation2d.fromDegrees(90)); // was 7.5,
-                                                                                                           // 3.5
-        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(7.5, 6.5, Rotation2d.fromDegrees(270)); // was 7.5,
-                                                                                                           // 6.5
 
         // #region START Poses
         public static Supplier<Pose2d> startRightFaceIn = () -> new Pose2d(BUMP_LEFT_ALLIANCE_SIDE, 5,
@@ -145,27 +141,34 @@ public class CommandsForAutos {
         // TODO: Change for actual field
         private static double RIGHT_START_HARVEST_HORIZONTAL_POINT = 3; // was 1
         private static double RIGHT_END_HARVEST_HORIZONTAL_POINT = 5.0; // was 6
-        private static double LEFT_START_HARVEST_HORIZONTAL_POINT = 6; // was 7
+        private static double LEFT_START_HARVEST_HORIZONTAL_POINT = 5.5; // was 7 //was 6 at Finney
         private static double LEFT_END_HARVEST_HORIZONTAL_POINT = 2.5; // was 2
+        private static double LEFT_QUAD_HARVEST_END_POINT = 2.5; // was 7
 
         // centerRightIntakeStart was (7.75, 1, 90)
         public static Supplier<Pose2d> centerRightIntakeStart = () -> new Pose2d(7.45,
                         RIGHT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
         // centerRightIntakeEnd was (7.75, 6, 90)
-        public static Supplier<Pose2d> centerRightIntakeEnd = () -> new Pose2d(7.45,
-                        RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> centerRightIntakeEnd = () -> new Pose2d(7.45, RIGHT_END_HARVEST_HORIZONTAL_POINT,
+                        Rotation2d.fromDegrees(90));
         // centerRightIntakeStart was (7.75, 7, 270)
         public static Supplier<Pose2d> centerLeftIntakeStart = () -> new Pose2d(7.75,
                         LEFT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
         // centerLeftIntakeEnd was (7.75, 2, 270)
-        public static Supplier<Pose2d> centerLeftIntakeEnd = () -> new Pose2d(7.75,
-                        LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> centerLeftIntakeEnd = () -> new Pose2d(7.75, LEFT_END_HARVEST_HORIZONTAL_POINT,
+                        Rotation2d.fromDegrees(270));
         // rotation was 180
         public static Supplier<Pose2d> centerRightIntakeEndLookHub = () -> new Pose2d(7.75,
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(200));
-        // TODO:Fix lookHub
+
         public static Supplier<Pose2d> centerLeftIntakeEndLookHub = () -> new Pose2d(7.75,
                         LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(180));
+
+        public static Supplier<Pose2d> quadRight = () -> new Pose2d(7.5, 3.5, Rotation2d.fromDegrees(90)); // was 7.5,
+                                                                                                           // 3.5
+        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(7.5, LEFT_QUAD_HARVEST_END_POINT,
+                        Rotation2d.fromDegrees(270)); // was 7.5,
+        // // 6.5
         // #endregion
 
         // #region DEPOT Poses
@@ -312,11 +315,11 @@ public class CommandsForAutos {
                 // parrallel until the
                 // first command
                 // finishes
-                Supplier<Command> MoveTo_quadLeft = () -> new AutoPilotV2Command.Builder(
-                                () -> quadRight.get(), drivetrain, "MoveTo_quadLeft")
+                Supplier<Command> MoveTo_quadRight = () -> new AutoPilotV2Command.Builder(
+                                () -> quadRight.get(), drivetrain, "MoveTo_quadRight")
                                 .withFlipPoseForAlliance(true)
                                 .build();
-                Supplier<Command> MoveTo_quadwillbeleft = () -> new AutoPilotV2Command.Builder(
+                Supplier<Command> MoveTo_quadLeft = () -> new AutoPilotV2Command.Builder(
                                 () -> quadLeft.get(), drivetrain, "MoveTo_quadRight")
                                 .withFlipPoseForAlliance(true)
                                 .build();
@@ -705,21 +708,20 @@ public class CommandsForAutos {
                 Command RightQuad = new SequentialCommandGroup(
                                 Commands.parallel(MoveTo_rightBump_AllianceToFieldEnd.get(), intake.runIntakeOut()),
                                 Commands.deadline(MoveTo_centerRightIntakeStart.get(), intake.runPickupIn()),
-                                Commands.deadline(MoveTo_quadLeft.get(), intake.runPickupIn()),
+                                Commands.deadline(MoveTo_quadRight.get(), intake.runPickupIn()),
                                 Commands.deadline(MoveTo_rightBump_FieldToAllianceStart.get(), intake.runPickupIn()),
                                 MoveTo_rightBump_FieldToAllianceEnd.get(),
                                 MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 mediumShoot.get());
 
                 Command LeftQuad = new SequentialCommandGroup(
-                                MoveTo_leftBump_AllianceToFieldStart.get(),
-                                MoveTo_leftBump_AllianceToFieldEnd.get(),
-                                Commands.parallel(MoveTo_centerLeftIntakeStart.get(), intake.runIntakeOut()),
-                                Commands.deadline(MoveTo_quadwillbeleft.get(), intake.runPickupIn()),
-                                Commands.parallel(intake.runIntakeCenter(), MoveTo_leftBump_FieldToAllianceStart.get()),
-                                MoveTo_leftBump_FieldToAllianceEnd.get(),
-                                MoveTo_allianceCenter.get(),
-                                MoveTo_FrontHubShoot.get(),
+                                Commands.parallel(MoveTo_leftBump_AllianceToFieldEnd.get(), intake.runIntakeOut()),
+                                
+                                
+                                Commands.deadline(Commands.sequence(MoveTo_centerLeftIntakeStart.get(),
+                                MoveTo_quadLeft.get(), MoveTo_leftBump_FieldToAllianceStart.get()), intake.runPickupIn()),
+                                
+                                Commands.parallel(MoveTo_leftBump_FieldToAllianceEnd.get(), intake.runIntakeCenter()),
                                 mediumShoot.get());
 
                 // Actual name: RightFeedShootCenterHarvest
