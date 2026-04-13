@@ -683,39 +683,23 @@ public class CommandsForAutos {
 
                 // TODO: Fix this
                 Command RightStartCenterHarvestInLeft = new SequentialCommandGroup(
-                                // MoveTo_rightBump_AllianceToFieldStart.get(),
-                                // MoveTo_rightBump_AllianceToFieldStart_LOOK_HUB.get(),
                                 Commands.parallel(MoveTo_rightBump_AllianceToFieldEnd.get(), intake.runIntakeOut()),
-                                Commands.deadline(MoveTo_centerRightIntakeStart.get(),
-                                                intake.runPickupIn()),
+                                Commands.deadline(MoveTo_centerRightIntakeStart.get(), intake.runPickupIn()),
                                 Commands.deadline(MoveTo_centerRightIntakeEnd.get(), intake.runPickupIn()),
-                                // MoveTo_centerRightIntakeStart.get(),
-                                // MoveTo_centerRightIntakeEnd.get(),
                                 MoveTo_centerRightIntakeEndLookHub.get(),
-                                // MoveTo_centerRightIntakeEndLookHub.get(),
-                                // intake.runIntakeCenter(),
                                 Commands.deadline(MoveTo_leftBump_FieldToAllianceStart.get(), intake.runPickupIn()),
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
-                                // MoveTo_allianceCenter.get(),
-                                // MoveTo_FrontHubShoot.get(),
                                 MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 mediumShoot.get());
 
                 Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
-                                MoveTo_leftBump_AllianceToFieldStart.get(),
-                                MoveTo_leftBump_AllianceToFieldStart_LOOK_HUB.get(),
-                                MoveTo_leftBump_AllianceToFieldEnd.get(),
-                                Commands.parallel(MoveTo_centerLeftIntakeStart.get(), intake.runIntakeOut()),
-                                MoveTo_centerLeftIntakeStart.get(),
-                                MoveTo_centerLeftIntakeEnd.get(),
-                                // MoveToPickup_centerLeftIntakeEnd.get(),
-                                // MoveToIntakeUp_centerLeftIntakeEndLookHub.get(),
+                                Commands.parallel(MoveTo_leftBump_AllianceToFieldEnd.get(), intake.runIntakeOut()),
+                                Commands.deadline(MoveTo_centerLeftIntakeStart.get(), intake.runPickupIn()),
+                                Commands.deadline(MoveTo_centerLeftIntakeEnd.get(), intake.runPickupIn()),
                                 MoveTo_centerLeftIntakeEndLookHub.get(),
-                                // intake.runIntakeCenter(),
-                                MoveTo_rightBump_FieldToAllianceStart.get(),
+                                Commands.deadline(MoveTo_rightBump_FieldToAllianceStart.get(), intake.runPickupIn()),
                                 MoveTo_rightBump_FieldToAllianceEnd.get(),
-                                MoveTo_allianceCenter.get(),
-                                MoveTo_FrontHubShoot.get(),
+                                MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 mediumShoot.get());
 
                 Command RightQuad = new SequentialCommandGroup(
