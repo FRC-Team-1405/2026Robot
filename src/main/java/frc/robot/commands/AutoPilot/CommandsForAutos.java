@@ -46,7 +46,7 @@ public class CommandsForAutos {
         private static final APConstraints bumpConstraints = new APConstraints()
                         .withAcceleration(20) // TUNE THIS TO YOUR ROBOT!
                         .withVelocity(6)
-                        .withJerk(68);
+                        .withJerk(200);
 
         // TODO: Adjust
         private static final APConstraints fullFieldConstraints = new APConstraints()
@@ -499,7 +499,7 @@ public class CommandsForAutos {
 
                 Supplier<Command> mediumShoot = () -> Commands.sequence(
                                 shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM),
-                                AutoFire.autonomous(shooter, indexer, hopper,
+                                AutoFire.autonomous(shooter, indexer,
                                                 () -> ShooterPreferences.INDEXER_VELOCITY))
                                 .withTimeout(10)
                                 .andThen(Commands.sequence(
@@ -509,7 +509,7 @@ public class CommandsForAutos {
 
                 Supplier<Command> shortShoot = () -> Commands.sequence(
                                 shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT),
-                                AutoFire.autonomous(shooter, indexer, hopper,
+                                AutoFire.autonomous(shooter, indexer,
                                                 () -> ShooterPreferences.INDEXER_VELOCITY))
                                 .withTimeout(10)
                                 .andThen(Commands.sequence(
@@ -685,22 +685,21 @@ public class CommandsForAutos {
                 Command RightStartCenterHarvestInLeft = new SequentialCommandGroup(
                                 // MoveTo_rightBump_AllianceToFieldStart.get(),
                                 // MoveTo_rightBump_AllianceToFieldStart_LOOK_HUB.get(),
-                                MoveTo_rightBump_AllianceToFieldEnd.get(),
+                                Commands.parallel(MoveTo_rightBump_AllianceToFieldEnd.get(), intake.runIntakeOut()),
                                 Commands.deadline(MoveTo_centerRightIntakeStart.get(),
-                                                intake.runIntakeOut()),
+                                                intake.runPickupIn()),
                                 Commands.deadline(MoveTo_centerRightIntakeEnd.get(), intake.runPickupIn()),
                                 // MoveTo_centerRightIntakeStart.get(),
                                 // MoveTo_centerRightIntakeEnd.get(),
-                                Commands.parallel(MoveTo_centerRightIntakeEndLookHub.get(),
-                                                intake.runIntakeCenter()),
+                                MoveTo_centerRightIntakeEndLookHub.get(),
                                 // MoveTo_centerRightIntakeEndLookHub.get(),
                                 // intake.runIntakeCenter(),
-                                MoveTo_leftBump_FieldToAllianceStart.get(),
+                                Commands.deadline(MoveTo_leftBump_FieldToAllianceStart.get(), intake.runPickupIn()),
                                 MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 // MoveTo_allianceCenter.get(),
                                 // MoveTo_FrontHubShoot.get(),
-                                MoveTo_ClosestShootingPosition_SHORT.get(),
-                                shortShoot.get());
+                                MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                mediumShoot.get());
 
                 Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
                                 MoveTo_leftBump_AllianceToFieldStart.get(),

@@ -77,7 +77,7 @@ public class PidToPoseCommand extends FinneyCommand {
         private static final TrapezoidProfile.Constraints REEF_DEFAULT_CONSTRAINTS = new TrapezoidProfile.Constraints(5,
                         6);
 
-        private final boolean DEBUG_LOGGING_ENABLED = true;
+        private final boolean DEBUG_LOGGING_ENABLED = false;
         DataLog log = DataLogManager.getLog();
         StringLogEntry commandLog = new StringLogEntry(log, "/Commands/P2P");
 

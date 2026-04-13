@@ -404,7 +404,7 @@ public class Intake extends SubsystemBase {
   // ── Telemetry ────────────────────────────────────────────────────────────
 
   private void publishTelemetry() {
-    if (FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING) {
+    if (FeatureSwitches.ENABLE_SUBSYSTEM_NT_LOGGING) {
       double position = intakeMotor.getPosition().getValueAsDouble();
       SmartDashboard.putNumber("Intake/DeployPosition", position);
       SmartDashboard.putNumber("Intake/DeployTarget", intakePositionTarget);

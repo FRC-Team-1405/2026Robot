@@ -46,7 +46,7 @@ import frc.robot.lib.MotorSim.MotorSim_Mech;
 
 public class Shooter extends SubsystemBase {
   private final FinneyLogger fLogger = new FinneyLogger(this.getClass().getSimpleName(),
-      FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING);
+      FeatureSwitches.ENABLE_SUBSYSTEM_NT_LOGGING);
 
   private final TalonFX shooterMotor1 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_1);
   private final TalonFX shooterMotor2 = new TalonFX(Constants.CANBus.SHOOTER_MOTOR_2);
@@ -393,7 +393,7 @@ public class Shooter extends SubsystemBase {
     shooterMotorSimMech.update(shooterMotor1.getPosition(), shooterMotor1.getVelocity());
 
     // --- SmartDashboard ---
-    if (FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING) {
+    if (FeatureSwitches.ENABLE_SUBSYSTEM_NT_LOGGING) {
       // Velocity
       SmartDashboard.putNumber("Shooter/Motor1RPS", motor1RPS);
       SmartDashboard.putNumber("Shooter/Motor2RPS", motor2RPS);
