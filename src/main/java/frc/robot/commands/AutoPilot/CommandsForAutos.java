@@ -703,13 +703,13 @@ public class CommandsForAutos {
                                 mediumShoot.get());
 
                 Command RightQuad = new SequentialCommandGroup(
-                                MoveTo_rightBump_AllianceToFieldStart.get(),
-                                MoveTo_rightBump_AllianceToFieldEnd.get(),
-                                Commands.parallel(MoveTo_centerRightIntakeStart.get(), intake.runIntakeOut()),
+                                Commands.parallel(MoveTo_rightBump_AllianceToFieldEnd.get(), intake.runIntakeOut()),
+                                Commands.deadline(MoveTo_centerRightIntakeStart.get(), intake.runPickupIn()),
                                 Commands.deadline(MoveTo_quadLeft.get(), intake.runPickupIn()),
-                                Commands.parallel(intake.runIntakeCenter(),
-                                                MoveTo_rightBump_FieldToAllianceStart.get()),
-                                MoveTo_rightBump_FieldToAllianceEnd.get());
+                                Commands.deadline(MoveTo_rightBump_FieldToAllianceStart.get(), intake.runPickupIn()),
+                                MoveTo_rightBump_FieldToAllianceEnd.get(),
+                                MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                mediumShoot.get());
 
                 Command LeftQuad = new SequentialCommandGroup(
                                 MoveTo_leftBump_AllianceToFieldStart.get(),
@@ -799,6 +799,6 @@ public class CommandsForAutos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: add window in Elastic
-                OVERRIDE_AUTO_COMMAND = RightStartCenterHarvestInLeft;
+                OVERRIDE_AUTO_COMMAND = RightQuad;
         }
 }
