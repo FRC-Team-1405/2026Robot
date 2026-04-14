@@ -44,9 +44,13 @@ public class CommandsForAutos {
         public static Command OVERRIDE_AUTO_COMMAND = null;
         // #region CONSTRAINTS
         private static final APConstraints bumpConstraints = new APConstraints()
-                        .withAcceleration(20) // TUNE THIS TO YOUR ROBOT!
+                        .withAcceleration(30) // TUNE THIS TO YOUR ROBOT!
                         .withVelocity(6)
-                        .withJerk(200);
+                        .withJerk(600);
+
+        private static final double BUMP_NARROW_XY_THRESHOLD_CM = 12;
+        private static final double BUMP_WIDE_XY_THRESHOLD_CM = 30;
+        private static final double BUMP_THETA_THRESHOLD_DEG = 12;
 
         // TODO: Adjust
         private static final APConstraints fullFieldConstraints = new APConstraints()
@@ -65,7 +69,7 @@ public class CommandsForAutos {
         public static final Rotation2d CW_30deg = Rotation2d.fromDegrees(-30);
         public static final Rotation2d CCW_30deg = Rotation2d.fromDegrees(30);
         private static double BUMP_RIGHT_FIELD_SIDE = 6.0;
-        private static double BUMP_LEFT_ALLIANCE_SIDE = 3.3;
+        private static double BUMP_LEFT_ALLIANCE_SIDE = 3.0;
         // Poses
         // off blue center only used for Right Start Depot Score
 
@@ -89,8 +93,9 @@ public class CommandsForAutos {
         // #region BUMP Poses
         // Left Bump
 
-        // Values for our test field at home, TODO update to the real field values
-        private static double BUMP_CROSSING_ANGLE = 45;
+        // Move across the bump while rotating to always face the hub
+        private static double RIGHT_BUMP_ALLIANCE_ANGLE = 45;
+        private static double RIGHT_BUMP_FIELD_ANGLE = 125;
 
         public static Supplier<Pose2d> leftBump_AllianceToFieldStart = () -> new Pose2d(
                         BUMP_LEFT_ALLIANCE_SIDE, 5.5,
@@ -111,20 +116,20 @@ public class CommandsForAutos {
         // Right Bump
         public static Supplier<Pose2d> rightBump_AllianceToFieldStart = () -> new Pose2d(
                         BUMP_LEFT_ALLIANCE_SIDE, 2.5, // was 2.5
-                        Rotation2d.fromDegrees(45)); // rotation was 0
+                        Rotation2d.fromDegrees(RIGHT_BUMP_ALLIANCE_ANGLE)); // rotation was 0
         public static Supplier<Pose2d> rightBump_AllianceToFieldStart_LOOK_HUB = () -> new Pose2d(
                         BUMP_RIGHT_FIELD_SIDE, 2.5, // was 2.5
                         Rotation2d.fromDegrees(90)); // rotation was 0
         public static Supplier<Pose2d> rightBump_AllianceToFieldEnd = () -> new Pose2d(
                         BUMP_RIGHT_FIELD_SIDE, 2.5, // was 2.5
-                        Rotation2d.fromDegrees(125)); // rotation was 0
+                        Rotation2d.fromDegrees(RIGHT_BUMP_FIELD_ANGLE)); // rotation was 0
 
         public static Supplier<Pose2d> rightBump_FieldToAllianceStart = () -> new Pose2d(
                         BUMP_RIGHT_FIELD_SIDE, 2.5,
-                        Rotation2d.fromDegrees(125)); // was 180
+                        Rotation2d.fromDegrees(RIGHT_BUMP_FIELD_ANGLE)); // was 180
         public static Supplier<Pose2d> rightBump_FieldToAllianceEnd = () -> new Pose2d(
                         BUMP_LEFT_ALLIANCE_SIDE, 2.5,
-                        Rotation2d.fromDegrees(45)); // was 180
+                        Rotation2d.fromDegrees(RIGHT_BUMP_ALLIANCE_ANGLE)); // was 180
         public static Supplier<Pose2d> rightBump_FieldToAllianceEndDos = () -> new Pose2d(
                         BUMP_LEFT_ALLIANCE_SIDE, 2.5,
                         Rotation2d.fromDegrees(90)); // was 180
@@ -429,6 +434,8 @@ public class CommandsForAutos {
                                 () -> rightBump_AllianceToFieldStart.get(), drivetrain,
                                 "MoveTo_rightBump_AllianceToFieldStart")
                                 .withFlipPoseForAlliance(true)
+                                .withProfileThresholds(BUMP_NARROW_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
+                                                DEFAULT_BEELINE_THRESHOLD)
                                 // .withConstraints(bumpConstraints)
                                 .build();
                 Supplier<Command> MoveTo_rightBump_AllianceToFieldStart_LOOK_HUB = () -> new AutoPilotV2Command.Builder(
@@ -450,6 +457,9 @@ public class CommandsForAutos {
                                 "MoveTo_rightBump_AllianceToFieldEnd")
                                 .withFlipPoseForAlliance(true)
                                 .withConstraints(bumpConstraints)
+                                .withProfileThresholds(
+                                                BUMP_WIDE_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
+                                                DEFAULT_BEELINE_THRESHOLD)
                                 .build();
 
                 Supplier<Command> MoveTo_leftBump_FieldToAllianceStart = () -> new AutoPilotV2Command.Builder(
@@ -470,6 +480,8 @@ public class CommandsForAutos {
                                 () -> rightBump_FieldToAllianceStart.get(), drivetrain,
                                 "MoveTo_rightBump_FieldToAllianceStart")
                                 .withFlipPoseForAlliance(true)
+                                .withProfileThresholds(BUMP_NARROW_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
+                                                DEFAULT_BEELINE_THRESHOLD)
                                 .build();
                 Supplier<Command> MoveTo_rightBump_FieldToAllianceEnd = () -> new AutoPilotV2Command.Builder(
                                 () -> rightBump_FieldToAllianceEnd.get(), drivetrain,
@@ -621,7 +633,7 @@ public class CommandsForAutos {
                                 MoveTo_leftBump_FieldToAllianceStart.get(),
                                 MoveTo_leftBump_FieldToAllianceEnd.get());
                 // Center Harvest
-                Command CenterHarvest = new SequentialCommandGroup(
+                Command TESTCenterHarvest = new SequentialCommandGroup(
                                 MoveTo_rightBump_AllianceToFieldStart.get(),
                                 MoveTo_rightBump_AllianceToFieldStart_LOOK_HUB.get(),
                                 MoveTo_rightBump_AllianceToFieldEnd.get(),
@@ -703,6 +715,8 @@ public class CommandsForAutos {
                                 mediumShoot.get());
 
                 Command RightQuad = new SequentialCommandGroup(
+                                Commands.deadline(MoveTo_rightBump_AllianceToFieldStart.get(), intake
+                                                .runIntakeOut()),
                                 Commands.parallel(MoveTo_rightBump_AllianceToFieldEnd.get(), intake.runIntakeOut()),
                                 Commands.deadline(MoveTo_centerRightIntakeStart.get(), intake.runPickupIn()),
                                 Commands.deadline(MoveTo_quadLeft.get(), intake.runPickupIn()),
@@ -779,7 +793,7 @@ public class CommandsForAutos {
                 NamedCommands.registerCommand("rightBumpToAlliance", rightBumpToAlliance);
                 NamedCommands.registerCommand("leftBumpToAlliance", leftBumpToAlliance);
 
-                NamedCommands.registerCommand("CenterHarvest", CenterHarvest);
+                NamedCommands.registerCommand("TESTCenterHarvest", TESTCenterHarvest);
                 NamedCommands.registerCommand("LeftStartDepotScore", LeftStartDepotScore);
                 NamedCommands.registerCommand("RightStartDepotScore", RightStartDepotScore);
 

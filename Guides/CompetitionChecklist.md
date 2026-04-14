@@ -24,7 +24,16 @@
 - Flash drives with:
   - Latest robot code
   - Calibration data (for ideal field)
-- Ethernet cables and spare radios (if allowed)
+- Ethernet cables
+- Power strip / Extension cords
+- April Tags
+
+### Good Spares to have
+- Two spare controllers
+- 2 spare rio's
+- 2 spare micro SD cards
+- 2 spare radios
+- 2 spare camera's
 
 ### Robot Prep
 - Clear out roborio deploy directory of any logs and ensure roborio has plenty of spare drive space
