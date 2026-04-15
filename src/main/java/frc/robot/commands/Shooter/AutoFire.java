@@ -47,7 +47,7 @@ public class AutoFire {
   public static Command autonomous(
       Shooter shooter,
       Indexer indexer,
-      Supplier<AngularVelocity> indexerVelocity) {
+      Supplier<AngularVelocity> indexerVelocity, DoubleSupplier distanceToHub) {
 
     double requestedDuration = 5.0;
 
@@ -56,7 +56,7 @@ public class AutoFire {
         Commands.deadline(
             new DynamicWaitCommand(
                 () -> Math.min(requestedDuration, Robot.getAutonomousTimeLeft() - 1.0)),
-            new TeleopFireCommand(shooter, indexer, indexerVelocity)));
+            new TeleopFireCommand(shooter, indexer, indexerVelocity, distanceToHub)));
   }
 
   /**

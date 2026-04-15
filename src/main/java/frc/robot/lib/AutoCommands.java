@@ -20,6 +20,7 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.SwerveFeatures;
 
 public class AutoCommands {
         private static final SendableChooser<Command> autoChooser = new SendableChooser<>();
@@ -30,12 +31,13 @@ public class AutoCommands {
                         Hopper hopper,
                         Indexer indexer,
                         Shooter shooter,
-                        AdjustableHood hood) {
+                        AdjustableHood hood, SwerveFeatures swerveFeatures) {
                 SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
                 SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
 
                 PidToPoseCommands.registerCommands(drivetrain);
-                CommandsForAutos.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
+                CommandsForAutos.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood,
+                                swerveFeatures);
                 // this HAS to go after AutoPilotCommands
                 AutoCommands.configureAutos(autoChooser, drivetrain);
 
