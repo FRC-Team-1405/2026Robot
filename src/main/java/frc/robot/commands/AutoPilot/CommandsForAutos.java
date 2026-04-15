@@ -519,9 +519,7 @@ public class CommandsForAutos {
                 Supplier<Command> mediumShoot = () -> Commands.sequence(
                                 shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM),
                                 AutoFire.autonomous(shooter, indexer,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY, () -> swerveFeatures
-                                                                .getDistanceToHub(drivetrain,
-                                                                                FieldConstants.ALLIANCE_HUB_POSITION)))
+                                                () -> ShooterPreferences.INDEXER_VELOCITY))
                                 .withTimeout(10)
                                 .andThen(Commands.sequence(
                                                 indexer.runStopIndexer(),
@@ -531,9 +529,7 @@ public class CommandsForAutos {
                 Supplier<Command> shortShoot = () -> Commands.sequence(
                                 shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT),
                                 AutoFire.autonomous(shooter, indexer,
-                                                () -> ShooterPreferences.INDEXER_VELOCITY, () -> swerveFeatures
-                                                                .getDistanceToHub(drivetrain,
-                                                                                FieldConstants.ALLIANCE_HUB_POSITION)))
+                                                () -> ShooterPreferences.INDEXER_VELOCITY))
                                 .withTimeout(10)
                                 .andThen(Commands.sequence(
                                                 indexer.runStopIndexer(),

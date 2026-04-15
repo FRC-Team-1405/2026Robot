@@ -85,6 +85,10 @@ public class RobotContainer {
         private final SwerveFeatures swerveFeatures = new SwerveFeatures(drivetrain);
         MoveMode moveMode = new MoveMode();
 
+        // Default setting for AutoFire command
+        Command shootCommand = AutoFire.teleop(shooter, indexer,
+                        () -> ShooterPreferences.INDEXER_VELOCITY, intake);
+
         public RobotContainer() {
                 configureBindings();
                 // configureBindings_CTReDefault();
@@ -177,6 +181,17 @@ public class RobotContainer {
                 operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
                 operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
                 operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+
+                operatorJoystick.y().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake));
+                operatorJoystick.b().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake));
+                operatorJoystick.a().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake));
+
+                operatorJoystick.x().onTrue(shootCommand = AutoFire.DynamicTeleop(shooter, indexer,
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake, () -> swerveFeatures
+                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION)));
 
                 // Stop Shooter
                 Command stopShooterAndDeployIntake = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer(),
@@ -302,9 +317,6 @@ public class RobotContainer {
 
                 // Shoot — continuous auto-fire while held, with drivetrain brake.
                 // Hopper is driven by hopperTrigger (follows indexer state).
-                final Command shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake, () -> swerveFeatures
-                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION));
 
                 // when you fix the brake mode not allowing driver to manually adjust while
                 // shooting bug,

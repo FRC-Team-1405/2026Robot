@@ -40,8 +40,8 @@ public class AutoFire {
   public static Command teleop(
       Shooter shooter,
       Indexer indexer,
-      Supplier<AngularVelocity> indexerVelocity, Intake intake, DoubleSupplier distanceToHub) {
-    return new TeleopFireCommand(shooter, indexer, indexerVelocity, intake, distanceToHub);
+      Supplier<AngularVelocity> indexerVelocity, Intake intake) {
+    return new TeleopFireCommand(shooter, indexer, indexerVelocity, intake);
   }
 
   public static Command DynamicTeleop(
@@ -54,6 +54,21 @@ public class AutoFire {
   public static Command autonomous(
       Shooter shooter,
       Indexer indexer,
+      Supplier<AngularVelocity> indexerVelocity) {
+
+    double requestedDuration = 5.0;
+
+    return Commands.sequence(
+        Commands.waitUntil(() -> Robot.getAutonomousTimeLeft() > 1.0),
+        Commands.deadline(
+            new DynamicWaitCommand(
+                () -> Math.min(requestedDuration, Robot.getAutonomousTimeLeft() - 1.0)),
+            new TeleopFireCommand(shooter, indexer, indexerVelocity)));
+  }
+
+  public static Command dynamicAutonomous(
+      Shooter shooter,
+      Indexer indexer,
       Supplier<AngularVelocity> indexerVelocity, DoubleSupplier distanceToHub) {
 
     double requestedDuration = 5.0;
@@ -63,7 +78,7 @@ public class AutoFire {
         Commands.deadline(
             new DynamicWaitCommand(
                 () -> Math.min(requestedDuration, Robot.getAutonomousTimeLeft() - 1.0)),
-            new TeleopFireCommand(shooter, indexer, indexerVelocity, distanceToHub)));
+            new DynamicTeleopFireCommand(shooter, indexer, indexerVelocity, distanceToHub)));
   }
 
   /**
@@ -101,27 +116,24 @@ public class AutoFire {
     private boolean feeding;
     private double shooterStartTimestamp = 0.0;
     private double startRotation;
-    DoubleSupplier distanceToHub;
 
     TeleopFireCommand(Shooter shooter, Indexer indexer,
-        Supplier<AngularVelocity> indexerVelocity, DoubleSupplier distanceToHub) {
+        Supplier<AngularVelocity> indexerVelocity) {
       this.shooter = shooter;
       this.indexer = indexer;
       this.indexerVelocity = indexerVelocity;
-      this.distanceToHub = distanceToHub;
       addRequirements(shooter, indexer);
       setName("AutoFire_Teleop");
     }
 
     TeleopFireCommand(Shooter shooter, Indexer indexer,
-        Supplier<AngularVelocity> indexerVelocity, Intake intake, DoubleSupplier distanceToHub) {
-      this(shooter, indexer, indexerVelocity, distanceToHub);
+        Supplier<AngularVelocity> indexerVelocity, Intake intake) {
+      this(shooter, indexer, indexerVelocity);
       this.intake = intake;
     }
 
     @Override
     public void initialize() {
-      shooter.setDynamicShooterSpeed(distanceToHub);
       shooter.spinUp();
       feeding = false;
       shooterStartTimestamp = Timer.getFPGATimestamp();
@@ -133,7 +145,6 @@ public class AutoFire {
 
     @Override
     public void execute() {
-      shooter.setDynamicShooterSpeed(distanceToHub);
       shooter.updateSpeed();
       if (!feeding && shooter.isReadyToFire()) {
         indexer.startFeeding(indexerVelocity);
