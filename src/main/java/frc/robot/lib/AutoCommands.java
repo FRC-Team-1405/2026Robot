@@ -70,8 +70,8 @@ public class AutoCommands {
 
                 // commandsToAddToChooser.put("ShootFromDepot",
                 // NamedCommands.getCommand("ShootFromDepot"));
-                commandsToAddToChooser.put("CenterHarvest",
-                                NamedCommands.getCommand("CenterHarvest"));
+                commandsToAddToChooser.put("TESTCenterHarvest",
+                                NamedCommands.getCommand("TESTCenterHarvest"));
                 // commandsToAddToChooser.put("LeftStartDepotScore",
                 // NamedCommands.getCommand("LeftStartDepotScore"));
                 // commandsToAddToChooser.put("RightStartDepotScore",

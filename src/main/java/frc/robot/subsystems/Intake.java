@@ -15,10 +15,16 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.RumbleJoystick;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakePreferences;
 import frc.robot.constants.FeatureSwitches;
@@ -46,10 +52,14 @@ public class Intake extends SubsystemBase {
   private boolean isIntakeDeployed = false;
   private boolean isPickupActive = false;
 
+  // Mechanical protection
+  private boolean isIntakeMovementDisabled = false;
+
   public Intake() {
     setupMotors();
     simulationInit();
 
+    SmartDashboard.putBoolean("Intake/IntakeMovementEnabled", !isIntakeMovementDisabled);
     SmartDashboard.putBoolean("Intake/Zero Intake Position", false);
   }
 
@@ -107,7 +117,7 @@ public class Intake extends SubsystemBase {
 
     intakeMotor.getPosition().setUpdateFrequency(10);
     intakeMotor.optimizeBusUtilization();
-    
+
     fLogger.log("Intake motor configured (deploy)");
   }
 
@@ -233,6 +243,11 @@ public class Intake extends SubsystemBase {
     if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
       return;
     }
+
+    if (isIntakeMovementDisabled) {
+      return;
+    }
+
     intakeMotor.setControl(intakePositionRequest.withPosition(position));
     intakePositionTarget = position;
     settleCount = 0;
@@ -374,10 +389,22 @@ public class Intake extends SubsystemBase {
     }
   }
 
+  public void toggleIntakeMovementDisabledFlag(CommandXboxController joystick) {
+    isIntakeMovementDisabled = !isIntakeMovementDisabled;
+
+    SmartDashboard.putBoolean("Intake/IntakeMovementEnabled", !isIntakeMovementDisabled);
+
+    if (isIntakeMovementDisabled) {
+      CommandScheduler.getInstance().schedule(new RumbleJoystick(joystick, RumbleType.kBothRumble, 0.3, 0.5));
+    } else {
+      CommandScheduler.getInstance().schedule(RumbleJoystick.leftRightLeftRight(joystick));
+    }
+  }
+
   // ── Telemetry ────────────────────────────────────────────────────────────
 
   private void publishTelemetry() {
-    if (FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING) {
+    if (FeatureSwitches.ENABLE_SUBSYSTEM_NT_LOGGING) {
       double position = intakeMotor.getPosition().getValueAsDouble();
       SmartDashboard.putNumber("Intake/DeployPosition", position);
       SmartDashboard.putNumber("Intake/DeployTarget", intakePositionTarget);

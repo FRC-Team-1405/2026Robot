@@ -31,6 +31,7 @@ import frc.robot.lib.AllianceSymmetry;
 import frc.robot.lib.FinneyCommand;
 import frc.robot.lib.FinneyLogger;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.SwerveFeatures;
 
 /**
  * Simplified AutoPilot command — single control path, no theta controller
@@ -94,6 +95,9 @@ public class AutoPilotV2Command extends FinneyCommand {
     private boolean m_nearTargetVisionSuppressed = false;
     private boolean m_previousVisionOdometryUpdatesEnabled = true;
 
+    private boolean isVelocityThresholdActive = false;
+    private double velocityThreshold = 0.5;
+
     // Single swerve request for every cycle
     private final SwerveRequest.FieldCentricFacingAngle m_request;
 
@@ -119,6 +123,8 @@ public class AutoPilotV2Command extends FinneyCommand {
         private double headingKP = 2.0;
         private double headingKD = 0.0;
         private double headingDeadbandDegrees = 1.0;
+        private boolean isVelocityThresholdActive = false;
+        private double velocityThreshold = 0.5;
 
         public Builder(Supplier<Pose2d> targetSupplier, CommandSwerveDrivetrain drivetrain, String commandName) {
             this.targetSupplier = targetSupplier;
@@ -138,6 +144,12 @@ public class AutoPilotV2Command extends FinneyCommand {
 
         public Builder withConstraints(APConstraints constraints) {
             this.constraints = constraints;
+            return this;
+        }
+
+        public Builder withVelocityThreshold(double velocityThreshold) {
+            this.isVelocityThresholdActive = true;
+            this.velocityThreshold = velocityThreshold;
             return this;
         }
 
@@ -184,6 +196,9 @@ public class AutoPilotV2Command extends FinneyCommand {
         m_flipPoseForAlliance = b.flipPoseForAlliance;
         commandName = b.commandName;
 
+        this.isVelocityThresholdActive = b.isVelocityThresholdActive;
+        this.velocityThreshold = b.velocityThreshold;
+
         kConstraints = b.constraints;
         kProfile = new APProfile(kConstraints)
                 .withErrorXY(Centimeters.of(b.errorXYCentimeters))
@@ -224,13 +239,14 @@ public class AutoPilotV2Command extends FinneyCommand {
         Pose2d currentPose = m_drivetrain.getState().Pose;
         double dist = currentPose.getTranslation().getDistance(m_target.getReference().getTranslation());
 
-        fLogger.log("INIT %s | target(%.2f,%.2f,%.1fdeg) current(%.2f,%.2f,%.1fdeg) dist=%.2fm",
+        fLogger.log(
+                "INIT %s | target(%.2f,%.2f,%.1fdeg) current(%.2f,%.2f,%.1fdeg) dist=%.2fm, activeVelThresh: %s, velThresh: %s",
                 getName(),
                 m_target.getReference().getX(), m_target.getReference().getY(),
                 m_target.getReference().getRotation().getDegrees(),
                 currentPose.getX(), currentPose.getY(),
                 currentPose.getRotation().getDegrees(),
-                dist);
+                dist, isVelocityThresholdActive, velocityThreshold);
     }
 
     @Override
@@ -280,7 +296,16 @@ public class AutoPilotV2Command extends FinneyCommand {
 
     @Override
     public boolean isFinished() {
-        return kAutopilot.atTarget(m_drivetrain.getState().Pose, m_target);
+        if (isVelocityThresholdActive) {
+            double velocity = SwerveFeatures.getRobotVelocity(m_drivetrain);
+            fLogger.log("VELTHRESH RobotVelocity: " + velocity);
+            return velocity <= velocityThreshold
+                    && kAutopilot.atTarget(m_drivetrain.getState().Pose, m_target);
+        } else {
+            double velocity = SwerveFeatures.getRobotVelocity(m_drivetrain);
+            fLogger.log("NO VELTHRESH RobotVelocity: " + velocity);
+            return kAutopilot.atTarget(m_drivetrain.getState().Pose, m_target);
+        }
     }
 
     @Override

@@ -7,7 +7,9 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -31,11 +33,11 @@ public class RumbleJoystick extends SequentialCommandGroup {
   public RumbleJoystick(CommandXboxController joystick, RumbleType rumbleType, double rumbleStrength,
       double rumbleDuration) {
     addCommands(
-        runRumbleStart(joystick, RumbleType.kBothRumble, rumbleStrength),
+        Commands.print(String.format("Running RumbleJoystick rumbleType: %s, rumbleStrenth: %s, rumbleDuration: %s",
+            rumbleType.name(), rumbleStrength, rumbleDuration)),
+        runRumbleStart(joystick, rumbleType, rumbleStrength),
         new WaitCommand(rumbleDuration),
         runRumbleStop(joystick));
-
-    schedule();
   }
 
   /**
@@ -68,13 +70,25 @@ public class RumbleJoystick extends SequentialCommandGroup {
    */
   public static void setPeriodChangeOccasion(CommandXboxController joystick) {
     GamePeriod.setPeriodChangeListener(() -> {
-      new RumbleJoystick(joystick, RumbleType.kBothRumble, 0.8, 0.5);
+      CommandScheduler.getInstance().schedule(new RumbleJoystick(joystick, RumbleType.kBothRumble, 0.8, 0.5));
     });
   }
 
   public static void setPeriodChangeWarningOccasion(CommandXboxController joystick) {
     GamePeriod.setPeriodChangeWarningListener(() -> {
-      new RumbleJoystick(joystick, RumbleType.kBothRumble, 0.5, 0.5);
+      CommandScheduler.getInstance().schedule(new RumbleJoystick(joystick, RumbleType.kBothRumble, 0.5, 0.5));
     });
+  }
+
+  //
+  // Presets
+  //
+
+  public static Command leftRightLeftRight(CommandXboxController joystick) {
+    return new SequentialCommandGroup(
+        new RumbleJoystick(joystick, RumbleType.kLeftRumble, 1.0, 0.15),
+        new RumbleJoystick(joystick, RumbleType.kRightRumble, 1.0, 0.15),
+        new RumbleJoystick(joystick, RumbleType.kLeftRumble, 1.0, 0.15),
+        new RumbleJoystick(joystick, RumbleType.kRightRumble, 1.0, 0.15));
   }
 }

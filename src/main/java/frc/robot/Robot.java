@@ -8,6 +8,7 @@ import com.ctre.phoenix6.HootAutoReplay;
 
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.FieldConstants;
@@ -25,6 +26,9 @@ public class Robot extends TimedRobot {
             .withTimestampReplay()
             .withJoystickReplay();
 
+    private static final double AUTO_DURATION = 20.0; // 2026 autonomous length
+    private static Timer autoTimer = new Timer();
+
     public Robot() {
         m_robotContainer = new RobotContainer();
 
@@ -41,6 +45,11 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().schedule(m_robotContainer.shooter.stopShooter());
         CommandScheduler.getInstance().schedule(m_robotContainer.indexer.runStopIndexer());
         CommandScheduler.getInstance().schedule(m_robotContainer.hopper.runStopHopper());
+    }
+
+    private static void startAutoTimer() {
+        autoTimer.reset();
+        autoTimer.start();
     }
 
     @Override
@@ -71,6 +80,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         resetSubsystems_init();
+        startAutoTimer();
 
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
@@ -133,4 +143,20 @@ public class Robot extends TimedRobot {
         PhysicsSim.getInstance().run();
         PhysicsSim_SJC.getInstance().run();
     }
+
+    public static double getAutonomousTimeLeft() {
+        double fmsTime = Timer.getMatchTime();
+
+        // If FMS is giving real match time, use it
+        if (fmsTime >= 0) {
+            return fmsTime;
+        }
+
+        // Otherwise fall back to our own timer
+        double elapsed = autoTimer.get();
+        double remaining = AUTO_DURATION - elapsed;
+
+        return Math.max(remaining, 0); // never go negative
+    }
+
 }

@@ -100,7 +100,7 @@ public class Full_Autos {
                         cmds.MoveTo_leftBump_FieldToAllianceStart.get(),
                         cmds.MoveTo_leftBump_FieldToAllianceEnd.get());
         // Center Harvest
-        Command CenterHarvest = new SequentialCommandGroup(
+        Command TESTCenterHarvest = new SequentialCommandGroup(
                         cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
                         cmds.MoveTo_rightBump_AllianceToFieldStart_LOOK_HUB.get(),
                         cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
@@ -162,41 +162,57 @@ public class Full_Autos {
 
         // TODO: Fix this
         Command RightStartCenterHarvestInLeft = new SequentialCommandGroup(
-                        // MoveTo_rightBump_AllianceToFieldStart.get(),
-                        cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
-                        Commands.parallel(cmds.MoveTo_centerRightIntakeStart.get(), cmds.intake.runIntakeOut()),
+                        Commands.parallel(cmds.MoveTo_rightBump_AllianceToFieldEnd.get(), cmds.intake.runIntakeOut()),
+                        Commands.deadline(cmds.MoveTo_centerRightIntakeStart.get(), cmds.intake.runPickupIn()),
                         Commands.deadline(cmds.MoveTo_centerRightIntakeEnd.get(), cmds.intake.runPickupIn()),
-                        // MoveTo_centerRightIntakeStart.get(),
-                        // MoveTo_centerRightIntakeEnd.get(),
-                        Commands.parallel(cmds.MoveTo_centerRightIntakeEndLookHub.get(),
-                                        cmds.intake.runIntakeCenter()),
-                        // MoveTo_centerRightIntakeEndLookHub.get(),
-                        // intake.runIntakeCenter(),
-                        cmds.MoveTo_leftBump_FieldToAllianceStart.get(),
+                        cmds.MoveTo_centerRightIntakeEndLookHub.get(),
+                        Commands.deadline(cmds.MoveTo_leftBump_FieldToAllianceStart.get(), cmds.intake.runPickupIn()),
                         cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
-                        // MoveTo_allianceCenter.get(),
-                        // MoveTo_FrontHubShoot.get(),
                         cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                         cmds.mediumShoot.get());
 
         Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
-                        // MoveTo_leftBump_AllianceToFieldStart.get(),
-                        cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
-                        Commands.parallel(cmds.MoveTo_centerLeftIntakeStart.get(), cmds.intake.runIntakeOut()),
+                        Commands.parallel(cmds.MoveTo_leftBump_AllianceToFieldEnd.get(), cmds.intake.runIntakeOut()),
+                        Commands.deadline(cmds.MoveTo_centerLeftIntakeStart.get(), cmds.intake.runPickupIn()),
                         Commands.deadline(cmds.MoveTo_centerLeftIntakeEnd.get(), cmds.intake.runPickupIn()),
-                        // MoveTo_centerLeftIntakeStart.get(),
-                        // MoveTo_centerLeftIntakeEnd.get(),
-                        Commands.parallel(cmds.MoveTo_centerLeftIntakeEndLookHub.get(), cmds.intake.runIntakeCenter()),
-                        // MoveTo_centerLeftIntakeEndLookHub.get(),
-                        // intake.runIntakeCenter(),
-                        cmds.MoveTo_rightBump_FieldToAllianceStart.get(),
+                        cmds.MoveTo_centerLeftIntakeEndLookHub.get(),
+                        Commands.deadline(cmds.MoveTo_rightBump_FieldToAllianceStart.get(), cmds.intake.runPickupIn()),
                         cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
-                        // MoveTo_allianceCenter.get(),
-                        // MoveTo_FrontHubShoot.get(),
+                        cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                        cmds.mediumShoot.get());
+        Command RightQuad = new SequentialCommandGroup(
+                        Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(), cmds.intake.runIntakeOut()),
+                        Commands.parallel(
+                                        cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
+                                        cmds.intake.runIntakeOut()),
+                        Commands.deadline(
+                                        Commands.sequence(
+                                                        cmds.MoveTo_centerRightIntakeStart.get(),
+                                                        cmds.MoveTo_quadRight.get(),
+                                                        cmds.MoveTo_centerLeftIntakeEndLookHub.get()// ,
+                                        // MoveTo_rightBump_FieldToAllianceStart.get() // move to the start of
+                                        // the bump before crossing
+                                        ),
+                                        cmds.intake.runPickupIn()),
+                        cmds.MoveTo_rightBump_FieldToAllianceEnd.get(), // TODO run pickup while we move to this
+                                                                        // position?
                         cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                         cmds.mediumShoot.get());
 
-        Command RightQuad = new SequentialCommandGroup(
+        Command LeftQuad = new SequentialCommandGroup(
+                        Commands.parallel(
+                                        cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
+                                        cmds.intake.runIntakeOut()),
+                        Commands.deadline(
+                                        Commands.sequence(
+                                                        cmds.MoveTo_centerLeftIntakeStart.get(),
+                                                        cmds.MoveTo_quadLeft.get(),
+                                                        cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
+                                        cmds.intake.runPickupIn()),
+                        cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
+                        cmds.mediumShoot.get());
+
+        Command Zac_RightQuad = new SequentialCommandGroup(
                         // MoveTo_rightBump_AllianceToFieldStart.get(),
                         cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
                         Commands.parallel(cmds.MoveTo_centerRightIntakeStart.get(), cmds.intake.runIntakeOut()),
@@ -212,7 +228,7 @@ public class Full_Autos {
                         cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                         cmds.mediumShoot.get());
 
-        Command LeftQuad = new SequentialCommandGroup(
+        Command Zac_LeftQuad = new SequentialCommandGroup(
                         // MoveTo_leftBump_AllianceToFieldStart.get(),
                         cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
                         Commands.parallel(cmds.MoveTo_centerLeftIntakeStart.get(), cmds.intake.runIntakeOut()),
@@ -275,7 +291,7 @@ public class Full_Autos {
         // NamedCommands.registerCommand("blueCenter", blueCenter);
         public void registerAutos() {
                 NamedCommands.registerCommand("FrontHubShoot", FrontHubShoot);
-                NamedCommands.registerCommand("blueCenterToDepot", LeftStart_ToDepot);
+                NamedCommands.registerCommand("LeftStart_ToDepot", LeftStart_ToDepot);
                 NamedCommands.registerCommand("TEST", TEST);
                 NamedCommands.registerCommand("DepotFaceIn", DepotFaceIn);
                 NamedCommands.registerCommand("JUSTSHOOT", JUSTSHOOT);
@@ -286,7 +302,10 @@ public class Full_Autos {
                 NamedCommands.registerCommand("rightBumpToAlliance", rightBumpToAlliance);
                 NamedCommands.registerCommand("leftBumpToAlliance", leftBumpToAlliance);
 
-                NamedCommands.registerCommand("CenterHarvest", CenterHarvest);
+                NamedCommands.registerCommand("Zac_RightQuad", Zac_RightQuad);
+                NamedCommands.registerCommand("Zac_LeftQuad", Zac_LeftQuad);
+
+                NamedCommands.registerCommand("TESTCenterHarvest", TESTCenterHarvest);
                 NamedCommands.registerCommand("LeftStartDepotScore", LeftStartDepotScore);
                 NamedCommands.registerCommand("RightStartDepotScore", RightStartDepotScore);
 

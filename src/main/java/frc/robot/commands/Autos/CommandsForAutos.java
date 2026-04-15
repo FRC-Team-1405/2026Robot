@@ -46,9 +46,13 @@ public class CommandsForAutos {
 
         // #region CONSTRAINTS
         private static final APConstraints bumpConstraints = new APConstraints()
-                        .withAcceleration(20) // TUNE THIS TO YOUR ROBOT!
+                        .withAcceleration(30) // TUNE THIS TO YOUR ROBOT!
                         .withVelocity(6)
-                        .withJerk(68);
+                        .withJerk(600);
+
+        private static final double BUMP_NARROW_XY_THRESHOLD_CM = 12;
+        private static final double BUMP_WIDE_XY_THRESHOLD_CM = 30;
+        private static final double BUMP_THETA_THRESHOLD_DEG = 12;
 
         // TODO: Adjust
         private static final APConstraints fullFieldConstraints = new APConstraints()
@@ -323,6 +327,8 @@ public class CommandsForAutos {
                         () -> rightBump_AllianceToFieldStart.get(), drivetrain,
                         "MoveTo_rightBump_AllianceToFieldStart")
                         .withFlipPoseForAlliance(true)
+                        .withProfileThresholds(BUMP_NARROW_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
+                                        DEFAULT_BEELINE_THRESHOLD)
                         // .withConstraints(bumpConstraints)
                         .build();
         Supplier<Command> MoveTo_rightBump_AllianceToFieldStart_LOOK_HUB = () -> new AutoPilotV2Command.Builder(
@@ -344,6 +350,9 @@ public class CommandsForAutos {
                         "MoveTo_rightBump_AllianceToFieldEnd")
                         .withFlipPoseForAlliance(true)
                         .withConstraints(bumpConstraints)
+                        .withProfileThresholds(
+                                        BUMP_WIDE_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
+                                        DEFAULT_BEELINE_THRESHOLD)
                         .build();
 
         Supplier<Command> MoveTo_leftBump_FieldToAllianceStart = () -> new AutoPilotV2Command.Builder(
@@ -364,6 +373,8 @@ public class CommandsForAutos {
                         () -> rightBump_FieldToAllianceStart.get(), drivetrain,
                         "MoveTo_rightBump_FieldToAllianceStart")
                         .withFlipPoseForAlliance(true)
+                        .withProfileThresholds(BUMP_NARROW_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
+                                        DEFAULT_BEELINE_THRESHOLD)
                         .build();
         Supplier<Command> MoveTo_rightBump_FieldToAllianceEnd = () -> new AutoPilotV2Command.Builder(
                         () -> rightBump_FieldToAllianceEnd.get(), drivetrain,
@@ -393,7 +404,7 @@ public class CommandsForAutos {
 
         Supplier<Command> mediumShoot = () -> Commands.sequence(
                         shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM),
-                        AutoFire.autonomous(shooter, indexer, hopper,
+                        AutoFire.autonomous(shooter, indexer,
                                         () -> ShooterPreferences.INDEXER_VELOCITY))
                         .withTimeout(10)
                         .andThen(Commands.sequence(
@@ -403,7 +414,7 @@ public class CommandsForAutos {
 
         Supplier<Command> shortShoot = () -> Commands.sequence(
                         shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT),
-                        AutoFire.autonomous(shooter, indexer, hopper,
+                        AutoFire.autonomous(shooter, indexer,
                                         () -> ShooterPreferences.INDEXER_VELOCITY))
                         .withTimeout(10)
                         .andThen(Commands.sequence(
