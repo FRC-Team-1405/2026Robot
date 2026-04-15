@@ -89,7 +89,8 @@ public class RobotContainer {
                 configureBindings();
                 // configureBindings_CTReDefault();
 
-                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
+                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood,
+                                swerveFeatures);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
                 drivetrain.initOverridePose();
         }
