@@ -176,8 +176,8 @@ public class Full_Autos {
                         cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
                         // MoveTo_allianceCenter.get(),
                         // MoveTo_FrontHubShoot.get(),
-                        cmds.MoveTo_ClosestShootingPosition_SHORT.get(),
-                        cmds.shortShoot.get());
+                        cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                        cmds.mediumShoot.get());
 
         Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
                         // MoveTo_leftBump_AllianceToFieldStart.get(),
@@ -193,6 +193,7 @@ public class Full_Autos {
                         cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
                         // MoveTo_allianceCenter.get(),
                         // MoveTo_FrontHubShoot.get(),
+                        cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                         cmds.mediumShoot.get());
 
         Command RightQuad = new SequentialCommandGroup(
@@ -207,7 +208,9 @@ public class Full_Autos {
                                         ), cmds.intake.runPickupIn()),
                         Commands.parallel(cmds.intake.runIntakeCenter(),
                                         cmds.MoveTo_rightBump_FieldToAllianceStart.get()),
-                        cmds.MoveTo_rightBump_FieldToAllianceEnd.get());
+                        cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
+                        cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                        cmds.mediumShoot.get());
 
         Command LeftQuad = new SequentialCommandGroup(
                         // MoveTo_leftBump_AllianceToFieldStart.get(),
@@ -224,6 +227,7 @@ public class Full_Autos {
                                         cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
                         // MoveTo_leftBump_FieldToAllianceStart.get(),
                         cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
+                        cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                         cmds.mediumShoot.get());
 
         // Actual name: RightFeedShootCenterHarvest

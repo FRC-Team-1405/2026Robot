@@ -84,19 +84,20 @@ public class RobotContainer {
         public final Intake intake = new Intake();
         private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
         MoveMode moveMode = new MoveMode();
-        public final CommandsForAutos commandsForAutos = new CommandsForAutos(CommandSwerveDrivetrain, Climber,
-                        Intake,
-                        Hopper,
-                        Indexer,
-                        Shooter,
-                        AdjustableHood);
+        public final CommandsForAutos commandsForAutos = new CommandsForAutos(drivetrain, climber,
+                        intake,
+                        hopper,
+                        indexer,
+                        shooter,
+                        hood);
         public final Full_Autos full_Autos = new Full_Autos(commandsForAutos);
 
         public RobotContainer() {
                 configureBindings();
                 // configureBindings_CTReDefault();
 
-                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood, commandsForAutos);
+                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood,
+                                commandsForAutos);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
                 drivetrain.initOverridePose();
         }

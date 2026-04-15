@@ -44,7 +44,6 @@ public class CommandsForAutos {
         // Acceleration in a second, how much can velocity change
         // Jerk is how fast it starts and stops
 
-
         // #region CONSTRAINTS
         private static final APConstraints bumpConstraints = new APConstraints()
                         .withAcceleration(20) // TUNE THIS TO YOUR ROBOT!
