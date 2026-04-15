@@ -211,6 +211,17 @@ public class Shooter extends SubsystemBase {
     setShooterSpeed(requestedSpeed);
   }
 
+  /**
+   * Update the motor control to the current requested speed without resetting
+   * settle tracking state. Use this for continuous speed updates (e.g. dynamic
+   * distance-based shooting) to avoid disrupting the lock/settle logic.
+   */
+  public void updateSpeed() {
+    AngularVelocity target = requestedSpeed.get();
+    shooterMotor1.setControl(velocityVoltage.withVelocity(target));
+    shooterTarget = target.in(RotationsPerSecond);
+  }
+
   /** Stop the flywheel motors. */
   public void spinDown() {
     shooterStop();

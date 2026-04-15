@@ -127,7 +127,7 @@ public class AutoFire {
     @Override
     public void execute() {
       shooter.setDynamicShooterSpeed(distanceToHub);
-      shooter.spinUp();
+      shooter.updateSpeed();
       if (!feeding && shooter.isReadyToFire()) {
         indexer.startFeeding(indexerVelocity);
         feeding = true;
