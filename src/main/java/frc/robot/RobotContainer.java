@@ -34,6 +34,7 @@ import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
 import frc.robot.commands.Shooter.AutoFire;
+import frc.robot.constants.FeatureSwitches;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.lib.AprilTags;
@@ -154,7 +155,6 @@ public class RobotContainer {
                 // Operator Controls
                 //
                 RumbleJoystick.setPeriodChangeWarningOccasion(operatorJoystick);
-                driverJoystick.b().onTrue(new RumbleJoystick(driverJoystick, RumbleType.kBothRumble, 0.5, 1.0));
 
                 cmd = intake.runIntakeOut();
                 // SmartDashboard.putData("Commands/RunIntakeOut", cmd);
@@ -163,8 +163,11 @@ public class RobotContainer {
                 // SmartDashboard.putData("Commands/RunIntakeIn", cmd);
                 operatorJoystick.povDown().onTrue(cmd);
 
-                operatorJoystick.povRight().onTrue(new InstantCommand(() -> shooter.increaseDistanceForSpeed()));
-                operatorJoystick.povLeft().onTrue(new InstantCommand(() -> shooter.descreaseDistanceForSpeed()));
+                cmd = intake.runIntakeCenter();
+                operatorJoystick.povLeft().onTrue(cmd);
+
+                cmd = new InstantCommand(() -> intake.toggleIntakeMovementDisabledFlag(operatorJoystick));
+                operatorJoystick.povRight().onTrue(cmd);
 
                 operatorJoystick.y().onTrue(new SetHoodPosition(hood, HoodAngles.SHORT));
                 operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));
@@ -173,15 +176,25 @@ public class RobotContainer {
                 operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
                 operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
                 operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
-                operatorJoystick.rightBumper().onTrue(
-                                Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer()));
+
+                // Stop Shooter
+                Command stopShooterAndDeployIntake = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer(),
+                                intake.runIntakeOut());
+                Command stopShooter = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer());
+
+                if (FeatureSwitches.DEPLOY_INTAKE_WHEN_STOPPING_SHOOTER) {
+                        operatorJoystick.rightBumper().onTrue(stopShooterAndDeployIntake);
+                } else {
+                        operatorJoystick.rightBumper().onTrue(stopShooter);
+                }
+
                 operatorJoystick.leftBumper().toggleOnTrue(intake.runIntakeCenter());
 
                 // Bump mode (for crossing the bump)
-                operatorJoystick.leftTrigger().onTrue(moveMode.setToBumpMode(drivetrain));
+                operatorJoystick.rightTrigger().onTrue(moveMode.setToBumpMode(drivetrain));
 
                 // Exit Bump Mode
-                operatorJoystick.rightTrigger().onTrue(moveMode.setToNormalMode());
+                operatorJoystick.leftTrigger().onTrue(moveMode.setToNormalMode());
 
                 //
                 // Driver Controls
@@ -322,57 +335,6 @@ public class RobotContainer {
                 // AutoFire.teleop(shooter, indexer, hopper,
                 // () -> ShooterPreferences.INDEXER_VELOCITY));
                 // shooterJoystick.rightBumper().onFalse(indexer.runStopIndexer());
-        }
-
-        private void configureBindings_CTReDefault() {
-                // Note that X is defined as forward according to WPILib convention,
-                // and Y is defined as to the left according to WPILib convention.
-                drivetrain.setDefaultCommand(
-                                // Drivetrain will execute this command periodically
-                                drivetrain.applyRequest(() -> SwerveFeatures.drive
-                                                .withVelocityX(-driverJoystick.getLeftY() * SwerveFeatures.MaxSpeed) // Drive
-                                                // forward
-                                                // with
-                                                // negative
-                                                // Y
-                                                // (forward)
-                                                .withVelocityY(-driverJoystick.getLeftX() * SwerveFeatures.MaxSpeed) // Drive
-                                                                                                                     // left
-                                                                                                                     // with
-                                                // negative X
-                                                // (left)
-                                                .withRotationalRate(-driverJoystick.getRightX()
-                                                                * SwerveFeatures.MaxAngularRate) // Drive
-                                // counterclockwise
-                                // with
-                                // negative
-                                // X
-                                // (left)
-                                ));
-
-                // Idle while the robot is disabled. This ensures the configured
-                // neutral mode is applied to the drive motors while disabled.
-                final var idle = new SwerveRequest.Idle();
-                RobotModeTriggers.disabled().whileTrue(
-                                drivetrain.applyRequest(() -> idle).ignoringDisable(true));
-
-                driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-                driverJoystick.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(
-                                new Rotation2d(-driverJoystick.getLeftY(), -driverJoystick.getLeftX()))));
-
-                // Run SysId routines when holding back/start and X/Y.
-                // Note that each routine should be run exactly once in a single log.
-                driverJoystick.back().and(driverJoystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-                driverJoystick.back().and(driverJoystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-                driverJoystick.start().and(driverJoystick.y())
-                                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-                driverJoystick.start().and(driverJoystick.x())
-                                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-                // Reset the field-centric heading on left bumper press.
-                driverJoystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-
-                drivetrain.registerTelemetry(logger::telemeterize);
         }
 
         public static double applyDeadband(double value) {

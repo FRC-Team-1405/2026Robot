@@ -1,8 +1,11 @@
 package frc.robot.lib;
 
+import com.fasterxml.jackson.annotation.JsonFormat.Feature;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import frc.robot.constants.FeatureSwitches;
 
 public class FinneyLogger {
     // Get the NetworkTable instance
@@ -19,7 +22,7 @@ public class FinneyLogger {
 
     // Constructor takes a string to determine the log entry key
     public FinneyLogger(String entryKey) {
-        this.loggingEnabled = true;
+        this.loggingEnabled = FeatureSwitches.ENABLE_SUBSYSTEM_DEBUG_PRINTS;
         this.logEntry = logTable.getEntry(entryKey);
         log("loggerInit");
     }

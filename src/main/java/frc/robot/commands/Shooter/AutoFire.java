@@ -14,6 +14,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Robot;
+import frc.robot.commands.DynamicWaitCommand;
 import frc.robot.constants.FeatureSwitches;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
@@ -22,7 +25,7 @@ import frc.robot.subsystems.Shooter;
 
 public class AutoFire {
 
-  private static double INDEXER_ROTATION_THRESHOLD = 300.0;
+  private static double INDEXER_ROTATION_THRESHOLD = 150.0;
 
   private AutoFire() {
   }
@@ -41,24 +44,40 @@ public class AutoFire {
     return new TeleopFireCommand(shooter, indexer, indexerVelocity, intake, distanceToHub);
   }
 
+  public static Command autonomous(
+      Shooter shooter,
+      Indexer indexer,
+      Supplier<AngularVelocity> indexerVelocity) {
+
+    double requestedDuration = 5.0;
+
+    return Commands.sequence(
+        Commands.waitUntil(() -> Robot.getAutonomousTimeLeft() > 1.0),
+        Commands.deadline(
+            new DynamicWaitCommand(
+                () -> Math.min(requestedDuration, Robot.getAutonomousTimeLeft() - 1.0)),
+            new TeleopFireCommand(shooter, indexer, indexerVelocity)));
+  }
+
   /**
    * Autonomous single-shot fire sequence. Spins up, waits for lock, fires one
    * ball, then stops.
    */
   // TODO change this to a time based shooting sequence
-  public static Command autonomous(
-      Shooter shooter,
-      Indexer indexer,
-      Hopper hopper,
-      Supplier<AngularVelocity> indexerVelocity) {
-    return new SequentialCommandGroup(
-        shooter.runShooter(),
-        Commands.waitUntil(shooter::isReadyToFire),
-        indexer.runIndexer(indexerVelocity),
-        Commands.waitUntil(() -> !shooter.isReadyToFire()),
-        indexer.runStopIndexer(),
-        hopper.runStopHopper());
-  }
+  // public static Command autonomous(
+  // Shooter shooter,
+  // Indexer indexer,
+  // Hopper hopper,
+  // Supplier<AngularVelocity> indexerVelocity) {
+  // return new SequentialCommandGroup(
+  // shooter.runShooter(),
+  // Commands.waitUntil(shooter::isReadyToFire),
+  // indexer.runIndexer(indexerVelocity),
+  // Commands.waitSeconds(5),
+  // shooter.stopShooter(),
+  // indexer.runStopIndexer(),
+  // hopper.runStopHopper());
+  // }
 
   /**
    * Continuous fire command for teleop use. Spins up the flywheel, waits for
@@ -112,11 +131,11 @@ public class AutoFire {
       if (!feeding && shooter.isReadyToFire()) {
         indexer.startFeeding(indexerVelocity);
         feeding = true;
-        System.out.println("[AutoFire] locked - feeding started");
+        // System.out.println("[AutoFire] locked - feeding started");
       } else if (!shooter.isReadyToFire() && feeding) {
         indexer.stopFeeding();
         feeding = false;
-        System.out.println("[AutoFire] unlocked - feeding stopped");
+        // System.out.println("[AutoFire] unlocked - feeding stopped");
 
       }
 
@@ -125,7 +144,7 @@ public class AutoFire {
         if (FeatureSwitches.RETRACT_INTAKE_WITH_TIME) {
           double currentTimeShooting = Timer.getFPGATimestamp() - shooterStartTimestamp;
           if (currentTimeShooting > 3) {
-            CommandScheduler.getInstance().schedule(intake.runIntakeCenter());
+            CommandScheduler.getInstance().schedule(intake.runIntakeCenter()); // TODO are you rescheduling every loop?
           }
         }
 
@@ -134,7 +153,7 @@ public class AutoFire {
           double currentRotations = indexer.getRotations() - startRotation;
           SmartDashboard.putNumber("AutoFire/IndexerRotations", currentRotations);
           if (currentRotations > INDEXER_ROTATION_THRESHOLD) {
-            CommandScheduler.getInstance().schedule(intake.runIntakeCenter());
+            CommandScheduler.getInstance().schedule(intake.runIntakeCenter()); // TODO are you rescheduling every loop?
           }
         }
       }
@@ -144,6 +163,7 @@ public class AutoFire {
     @Override
     public void end(boolean interrupted) {
       indexer.stopFeeding();
+      shooter.stopShooter(); // TODO maybe remove this or make it only on autonomous
       System.out.println("[AutoFire] end: interrupted=" + interrupted);
     }
 

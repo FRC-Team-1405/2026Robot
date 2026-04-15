@@ -89,7 +89,7 @@ public class Indexer extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING) {
+        if (FeatureSwitches.ENABLE_SUBSYSTEM_NT_LOGGING) {
             SmartDashboard.putNumber("Indexer/StatorCurrent", indexerMotor.getStatorCurrent().getValueAsDouble());
             SmartDashboard.putNumber("Indexer/Velocity", indexerMotor.getVelocity().getValueAsDouble());
             SmartDashboard.putNumber("Indexer/PIDError", indexerMotor.getClosedLoopError().getValueAsDouble());

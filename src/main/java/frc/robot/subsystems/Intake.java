@@ -15,10 +15,16 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.RumbleJoystick;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakePreferences;
 import frc.robot.constants.FeatureSwitches;
@@ -46,10 +52,14 @@ public class Intake extends SubsystemBase {
   private boolean isIntakeDeployed = false;
   private boolean isPickupActive = false;
 
+  // Mechanical protection
+  private boolean isIntakeMovementDisabled = false;
+
   public Intake() {
     setupMotors();
     simulationInit();
 
+    SmartDashboard.putBoolean("Intake/IntakeMovementEnabled", !isIntakeMovementDisabled);
     SmartDashboard.putBoolean("Intake/Zero Intake Position", false);
   }
 
@@ -104,6 +114,10 @@ public class Intake extends SubsystemBase {
     if (!status.isOK()) {
       System.out.println("Could not configure intake motor. Error: " + status.toString());
     }
+
+    intakeMotor.getPosition().setUpdateFrequency(10);
+    intakeMotor.optimizeBusUtilization();
+
     fLogger.log("Intake motor configured (deploy)");
   }
 
@@ -209,6 +223,9 @@ public class Intake extends SubsystemBase {
   // ── State Queries ────────────────────────────────────────────────────────
 
   private boolean isAtTarget() {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return true;
+    }
     return settleCount >= IntakePreferences.SETTLE_COUNT;
   }
 
@@ -223,6 +240,14 @@ public class Intake extends SubsystemBase {
   // ── Low-Level Motor Actions ──────────────────────────────────────────────
 
   private void setIntakePosition(double position) {
+    if (FeatureSwitches.INTAKE_SAFTEY_MODE_NO_DEPLOY) {
+      return;
+    }
+
+    if (isIntakeMovementDisabled) {
+      return;
+    }
+
     intakeMotor.setControl(intakePositionRequest.withPosition(position));
     intakePositionTarget = position;
     settleCount = 0;
@@ -364,10 +389,22 @@ public class Intake extends SubsystemBase {
     }
   }
 
+  public void toggleIntakeMovementDisabledFlag(CommandXboxController joystick) {
+    isIntakeMovementDisabled = !isIntakeMovementDisabled;
+
+    SmartDashboard.putBoolean("Intake/IntakeMovementEnabled", !isIntakeMovementDisabled);
+
+    if (isIntakeMovementDisabled) {
+      CommandScheduler.getInstance().schedule(new RumbleJoystick(joystick, RumbleType.kBothRumble, 0.3, 0.5));
+    } else {
+      CommandScheduler.getInstance().schedule(RumbleJoystick.leftRightLeftRight(joystick));
+    }
+  }
+
   // ── Telemetry ────────────────────────────────────────────────────────────
 
   private void publishTelemetry() {
-    if (FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING) {
+    if (FeatureSwitches.ENABLE_SUBSYSTEM_NT_LOGGING) {
       double position = intakeMotor.getPosition().getValueAsDouble();
       SmartDashboard.putNumber("Intake/DeployPosition", position);
       SmartDashboard.putNumber("Intake/DeployTarget", intakePositionTarget);
@@ -377,6 +414,7 @@ public class Intake extends SubsystemBase {
       SmartDashboard.putNumber("Intake/PickupStatorCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupSupplyCurrent", pickupMotor.getSupplyCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupVelocity", pickupMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("Intake/PickupError", pickupMotor.getClosedLoopError().getValueAsDouble());
       SmartDashboard.putBoolean("Intake/IsDeployed", isIntakeDeployed);
       SmartDashboard.putBoolean("Intake/IsPickupActive", isPickupActive);
       SmartDashboard.putBoolean("Intake/AtTarget", isAtTarget());

@@ -466,9 +466,10 @@ public class MoveMode {
         double currentAngle = drivetrain.getState().Pose.getRotation().getRadians();
 
         double rateToRotate = rotationController.calculate(currentAngle);
-        System.out.printf("PID error: %.3f, target: %.3f, current: %.3f, rateToRotate: %.3f\n",
-                rotationController.getError(),
-                rotationController.getSetpoint(), currentAngle, rateToRotate);
+        // System.out.printf("PID error: %.3f, target: %.3f, current: %.3f,
+        // rateToRotate: %.3f\n",
+        // rotationController.getError(),
+        // rotationController.getSetpoint(), currentAngle, rateToRotate);
 
         return rateToRotate;
     }
@@ -528,9 +529,10 @@ public class MoveMode {
         double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
         double rateToRotate = rotationController.calculate(currentRad);
 
-        System.out.printf("[VelComp] PID error: %.3f, target: %.3f, current: %.3f, rate: %.3f\n",
-                rotationController.getError(),
-                rotationController.getSetpoint(), currentRad, rateToRotate);
+        // System.out.printf("[VelComp] PID error: %.3f, target: %.3f, current: %.3f,
+        // rate: %.3f\n",
+        // rotationController.getError(),
+        // rotationController.getSetpoint(), currentRad, rateToRotate);
 
         return rateToRotate;
     }
