@@ -1,13 +1,13 @@
 {
   "hubs": [
     {
-      "x": -8,
-      "y": -8,
-      "width": 1540,
-      "height": 916,
+      "x": 0,
+      "y": 0,
+      "width": 800,
+      "height": 912,
       "state": {
         "sidebar": {
-          "width": 296,
+          "width": 342,
           "expanded": [
             "/AdvantageScopeLogs",
             "/AUTOPILOT",
@@ -23,11 +23,20 @@
             "/SmartDashboard/Auto/AUTOPILOT/TargetPose",
             "/SmartDashboard/Auto/Auto Mode/options",
             "/SmartDashboard/Auto/AUTOPILOT/PID_TO_POSE",
-            "/SmartDashboard/Shooter"
+            "/SmartDashboard/Shooter",
+            "/SmartDashboard/Vision",
+            "/CameraPublisher",
+            "/CameraPublisher/Left",
+            "/photonvision",
+            "/DriveState",
+            "/SmartDashboard/SwerveDrive",
+            "/SmartDashboard/Auto",
+            "/SmartDashboard/Auto/APv2",
+            "/SmartDashboard/APv2"
           ]
         },
         "tabs": {
-          "selected": 2,
+          "selected": 1,
           "tabs": [
             {
               "type": 0,
@@ -41,7 +50,38 @@
               "type": 1,
               "title": "Line Graph",
               "controller": {
-                "leftSources": [],
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/Shooter/AverageError",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#c0b487",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/VisionWeight",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#858584",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/SwerveDrive/DistanceToHub",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a",
+                      "size": "normal"
+                    }
+                  }
+                ],
                 "rightSources": [
                   {
                     "type": "stepped",
@@ -57,7 +97,7 @@
                     "type": "stepped",
                     "logKey": "NT:/SmartDashboard/Indexer/Velocity",
                     "logType": "Number",
-                    "visible": false,
+                    "visible": true,
                     "options": {
                       "color": "#af2437",
                       "size": "normal"
@@ -67,7 +107,7 @@
                     "type": "stepped",
                     "logKey": "NT:/SmartDashboard/Hopper/Velocity",
                     "logType": "Number",
-                    "visible": false,
+                    "visible": true,
                     "options": {
                       "color": "#80588e",
                       "size": "normal"
@@ -77,9 +117,85 @@
                     "type": "stepped",
                     "logKey": "NT:/SmartDashboard/Intake/PickupVelocity",
                     "logType": "Number",
-                    "visible": false,
+                    "visible": true,
                     "options": {
                       "color": "#e48b32",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/SmartDashboard/Shooter/Locked",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "a7sh9ujh8zqntm7rr3mabalz121p3ewx",
+              "renderer": null,
+              "controlsHeight": 335
+            },
+            {
+              "type": 1,
+              "title": "auto",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/APv2/distToTarget_m",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/APv2/headingError_deg",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/APv2/robotSpeed_vy",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/APv2/robotSpeed_vx",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
                       "size": "normal"
                     }
                   }
@@ -98,9 +214,9 @@
                 "leftFilter": 0,
                 "rightFilter": 0
               },
-              "controllerUUID": "a7sh9ujh8zqntm7rr3mabalz121p3ewx",
+              "controllerUUID": "la2w49fizyccin6hn9clzdrmc7ory530",
               "renderer": null,
-              "controlsHeight": 298
+              "controlsHeight": 200
             },
             {
               "type": 2,
@@ -136,7 +252,7 @@
                   },
                   {
                     "type": "arrow",
-                    "logKey": "NT:SmartDashboard/Auto/AUTOPILOT/PID_TO_POSE/TargetPose",
+                    "logKey": "NT:SmartDashboard/Auto/APv2/TargetPose",
                     "logType": "Pose2d",
                     "visible": true,
                     "options": {
@@ -150,7 +266,7 @@
               },
               "controllerUUID": "rus54iuqrg1zyorlb3ryv9hs1ngfcqwy",
               "renderer": null,
-              "controlsHeight": 0
+              "controlsHeight": 268
             },
             {
               "type": 9,
@@ -229,6 +345,18 @@
       }
     }
   ],
-  "satellites": [],
-  "version": "26.0.0"
+  "satellites": [
+    {
+      "x": 794,
+      "y": 0,
+      "width": 748,
+      "height": 918,
+      "state": {
+        "type": 2,
+        "visualizer": null
+      },
+      "uuid": "rus54iuqrg1zyorlb3ryv9hs1ngfcqwy"
+    }
+  ],
+  "version": "26.0.1"
 }

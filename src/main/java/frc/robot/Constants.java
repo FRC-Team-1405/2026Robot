@@ -86,14 +86,14 @@ public class Constants {
 
             MEDIUM = RotationsPerSecond.of(42.0);
 
-            LONG = RotationsPerSecond.of(75.0);
+            LONG = RotationsPerSecond.of(50.0);
         }
 
         // Shooting distances
         // desired robot distances for each shooting speed
         public static Supplier<Double> SHORT_DISTANCE = () -> 1.4;
         public static Supplier<Double> MEDIUM_DISTANCE = () -> 1.9542;// was 2.2082
-        public static Supplier<Double> LONG_DISTANCE = () -> 2.5;
+        public static Supplier<Double> LONG_DISTANCE = () -> 2.8;
 
         public static final HashMap<AngularVelocity, Supplier<Double>> SHOOTER_SPEED_TO_DISTANCE = new HashMap<>();
         static {
