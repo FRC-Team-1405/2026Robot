@@ -44,6 +44,8 @@ public class Constants {
         public static final double KS = 0.15;
         public static final double PEAK_FORWARD_VOLTAGE = 10.0;
         public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+        public static final double SUPPLY_CURRENT_LIMIT = 40;
+        public static final double STATOR_CURRENT_LIMIT = 60;
         public static final double MOTION_MAGIC_ACCELERATION = 60.0;
         public static final int FILTER_WINDOW = 50;
         public static final double TARGET_MATCH_TOLERANCE = 1.0;
@@ -130,6 +132,9 @@ public class Constants {
         // MotionMagic profile for indexer roller
         public static final double CRUISE_VELOCITY = 40.0; // rotations per second
         public static final double ACCELERATION = 40.0; // rotations per second^2
+
+        public static final double STATOR_CURRENT_LIMIT = 60;
+        public static final double SUPPLY_CURRENT_LIMIT = 50;
     }
 
     public static class ClimberPreferences {
@@ -239,6 +244,9 @@ public class Constants {
         // MotionMagic profile for hopper roller
         public static final double CRUISE_VELOCITY = 40.0; // rotations per second
         public static final double ACCELERATION = 40.0; // rotations per second^2
+
+        public static final double STATOR_CURRENT_LIMIT = 60;
+        public static final double SUPPLY_CURRENT_LIMIT = 50;
 
         static {
             Preferences.initDouble("Hopper/Forward", 5.0);

@@ -147,6 +147,8 @@ public class Shooter extends SubsystemBase {
     // Follower Motors
     TalonFXConfiguration followerMotorsCfg = new TalonFXConfiguration();
     followerMotorsCfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    followerMotorsCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
+        .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
 
     StatusCode status2 = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
