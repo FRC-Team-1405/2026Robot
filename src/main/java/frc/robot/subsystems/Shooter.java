@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -210,6 +211,17 @@ public class Shooter extends SubsystemBase {
     setShooterSpeed(requestedSpeed);
   }
 
+  /**
+   * Update the motor control to the current requested speed without resetting
+   * settle tracking state. Use this for continuous speed updates (e.g. dynamic
+   * distance-based shooting) to avoid disrupting the lock/settle logic.
+   */
+  public void updateSpeed() {
+    AngularVelocity target = requestedSpeed.get();
+    shooterMotor1.setControl(velocityVoltage.withVelocity(target));
+    shooterTarget = target.in(RotationsPerSecond);
+  }
+
   /** Stop the flywheel motors. */
   public void spinDown() {
     shooterStop();
@@ -260,6 +272,51 @@ public class Shooter extends SubsystemBase {
   public void descreaseDistanceForSpeed() {
     Double value = ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.get(requestedSpeed.get()).get();
     ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.put(requestedSpeed.get(), () -> value - 0.1);
+  }
+
+  public void setDynamicShooterSpeed(DoubleSupplier distanceToHub) {
+    double floorDistance;
+    double ceilingDistance;
+    AngularVelocity floorSpeed;
+    AngularVelocity ceilingSpeed;
+    if (distanceToHub.getAsDouble() <= ShooterPreferences.SHORT_DISTANCE.get()) {
+      floorDistance = 0.0;
+      ceilingDistance = ShooterPreferences.SHORT_DISTANCE.get();
+      floorSpeed = RotationsPerSecond.of(0);
+      ceilingSpeed = ShooterPreferences.SHORT;
+    } else if (distanceToHub.getAsDouble() <= ShooterPreferences.MEDIUM_DISTANCE.get()) {
+      floorDistance = ShooterPreferences.SHORT_DISTANCE.get();
+      ceilingDistance = ShooterPreferences.MEDIUM_DISTANCE.get();
+      floorSpeed = ShooterPreferences.SHORT;
+      ceilingSpeed = ShooterPreferences.MEDIUM;
+    } else if (distanceToHub.getAsDouble() <= ShooterPreferences.LONG_DISTANCE.get()) {
+      floorDistance = ShooterPreferences.MEDIUM_DISTANCE.get();
+      ceilingDistance = ShooterPreferences.LONG_DISTANCE.get();
+      floorSpeed = ShooterPreferences.MEDIUM;
+      ceilingSpeed = ShooterPreferences.LONG;
+    } else {
+      floorDistance = ShooterPreferences.LONG_DISTANCE.get();
+      ceilingDistance = 4.02844;
+      floorSpeed = ShooterPreferences.LONG;
+      ceilingSpeed = ShooterPreferences.LUDICROUS_SPEED;
+    }
+    setRequestedSpeedWithoutShooting(() -> {
+      return AngularVelocity.ofBaseUnits(
+          dynamicShooterRPS(floorDistance, ceilingDistance, floorSpeed, ceilingSpeed, distanceToHub),
+          RotationsPerSecond);
+    });
+  }
+
+  public double dynamicShooterRPS(Double floorDistance, Double ceilingDistance, AngularVelocity floorSpeed,
+      AngularVelocity ceilingSpeed, DoubleSupplier distanceToHub) {
+    double dynamicRPS;
+    dynamicRPS = (floorSpeed.baseUnitMagnitude() * (ceilingDistance - distanceToHub.getAsDouble())
+        + (ceilingSpeed.baseUnitMagnitude() * (distanceToHub.getAsDouble() - floorDistance)))
+        / (ceilingDistance - floorDistance);
+    if (dynamicRPS >= ShooterPreferences.MAX.baseUnitMagnitude()) {
+      dynamicRPS = ShooterPreferences.MAX.baseUnitMagnitude();
+    }
+    return dynamicRPS;
   }
 
   public Command runShooter(Supplier<AngularVelocity> speed) {
@@ -401,6 +458,10 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putNumber("Shooter/TargetRPS", shooterTarget);
       // SmartDashboard.putNumber("Shooter/Motor1StdDev", stdDev);
       // SmartDashboard.putNumber("Shooter/BallExitVelocityFPS", exitVelocityFPS);
+
+      // Dynamice Shooter
+      // SmartDashboard.putNumber("Shooter/DynamicRPS", ); //TODO ben needs to finish
+      // writing this
 
       // Follower sync
       SmartDashboard.putNumber("Shooter/Motor2RPSDelta", motor2RPSDelta);

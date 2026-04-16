@@ -7,6 +7,7 @@ package frc.robot;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -48,6 +49,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.MoveMode;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.SwerveFeatures;
+import frc.robot.subsystems.SwerveFeatures;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
@@ -80,13 +82,19 @@ public class RobotContainer {
         public final Hopper hopper = new Hopper();
         public final Intake intake = new Intake();
         private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
+        private final SwerveFeatures swerveFeatures = new SwerveFeatures(drivetrain);
         MoveMode moveMode = new MoveMode();
+
+        // Default setting for AutoFire command
+        Command shootCommand = AutoFire.teleop(shooter, indexer,
+                        () -> ShooterPreferences.INDEXER_VELOCITY, intake);
 
         public RobotContainer() {
                 configureBindings();
                 // configureBindings_CTReDefault();
 
-                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
+                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood,
+                                swerveFeatures);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
                 drivetrain.initOverridePose();
         }
@@ -173,6 +181,27 @@ public class RobotContainer {
                 operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
                 operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
                 operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+
+                operatorJoystick.y().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(
+                                                new InstantCommand(
+                                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                                                "Normal"))));
+                operatorJoystick.b().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(
+                                                new InstantCommand(
+                                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                                                "Normal"))));
+                operatorJoystick.a().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake)
+                                .andThen(new InstantCommand(
+                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "Normal"))));
+
+                operatorJoystick.x().onTrue(shootCommand = AutoFire.DynamicTeleop(shooter, indexer,
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake, () -> swerveFeatures
+                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION))
+                                .andThen(new InstantCommand(
+                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "dynamic"))));
 
                 // Stop Shooter
                 Command stopShooterAndDeployIntake = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer(),
@@ -298,8 +327,6 @@ public class RobotContainer {
 
                 // Shoot — continuous auto-fire while held, with drivetrain brake.
                 // Hopper is driven by hopperTrigger (follows indexer state).
-                final Command shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake);
 
                 // when you fix the brake mode not allowing driver to manually adjust while
                 // shooting bug,
@@ -309,7 +336,7 @@ public class RobotContainer {
                 // TODO allow driver to override brake mode while shooting so they can manually
                 // adjust
                 driverJoystick.rightBumper()
-                                .whileTrue(Commands.parallel(shootCommand, Commands.none()));
+                                .whileTrue(shootCommand);
 
                 //
                 // Shooter Joystick (DEBUG) Controls

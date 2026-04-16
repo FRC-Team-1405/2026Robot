@@ -25,6 +25,8 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.SwerveFeatures;
+
 import static frc.robot.commands.AutoPilot.AutoPilotV2Command.DEFAULT_XY_THRESHOLD;
 import static frc.robot.commands.AutoPilot.AutoPilotV2Command.DEFAULT_THETA_THRESHOLD;
 import static frc.robot.commands.AutoPilot.AutoPilotV2Command.DEFAULT_BEELINE_THRESHOLD;
@@ -211,7 +213,8 @@ public class CommandsForAutos {
                         Hopper hopper,
                         Indexer indexer,
                         Shooter shooter,
-                        AdjustableHood hood) {
+                        AdjustableHood hood,
+                        SwerveFeatures swerveFeatures) {
                 /* Commands */
                 // Uses command suppliers instead of commands so that we can reuse the same
                 // command in an autonomous
