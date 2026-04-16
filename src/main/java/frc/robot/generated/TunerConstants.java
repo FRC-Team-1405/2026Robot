@@ -25,19 +25,19 @@ public class TunerConstants {
         // the
         // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
         private static final Slot0Configs steerGains = new Slot0Configs()
-                        .withKP(60).withKI(0).withKD(0.1)
+                        .withKP(40).withKI(0).withKD(0.1)
                         .withKS(0.15).withKV(0).withKA(0)
                         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
         // When using closed-loop control, the drive motor uses the control
         // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
         private static final Slot0Configs driveGains = new Slot0Configs()
-                        .withKP(0.25).withKI(0).withKD(0.01)
-                        .withKS(0.0).withKV(0.12).withKA(0);
+                        .withKP(0.3).withKI(0).withKD(0.0)
+                        .withKS(0.15).withKV(0.12).withKA(0);
 
         /**
-         * Example values for driveGains:
-         * .withKP(0.5).withKI(0).withKD(0.01)
-         * .withKS(0.3).withKV(1.6).withKA(3.0);
+         * Tuning order: kV first (SysId or estimate), then kS, then kP, then kD.
+         * kV = ~12.0 / (max motor rps). kS = voltage to overcome static friction.
+         * Verify with SysId when possible.
          */
 
         // The closed-loop output type to use for the steer motors;
@@ -100,7 +100,11 @@ public class TunerConstants {
 
         // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
         // This may need to be tuned to your individual robot
-        private static final double kCoupleRatio = 0;
+        private static final double kCoupleRatio = 3.7142857142857144; // Rough estimate: about one wheel rotation
+                                                                       // per full azimuth turn, expressed in drive
+                                                                       // motor turns through the 3.71:1 drive ratio.
+                                                                       // Measure on-hardware and replace this when
+                                                                       // you have the real module coupling.
 
         private static final double kDriveGearRatio = 3.7142857142857144; // WCP Swerve X2S/X2St, X3 21T - 3.71:1
         private static final double kSteerGearRatio = 25.9;
@@ -149,11 +153,15 @@ public class TunerConstants {
         private static final int kFrontLeftDriveMotorId = 1;
         private static final int kFrontLeftSteerMotorId = 21;
         private static final int kFrontLeftEncoderId = 31;
-        private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.528); // Absolute Position No Offset of
-                                                                                  // encoder in
-                                                                                  // phoenixTuner
+        private static final Angle kFrontLeftEncoderOffset = Rotations.one().minus(Rotations.of(-0.354004)); // Absolute
+                                                                                                             // Position
+                                                                                                             // No
+                                                                                                             // Offset
+                                                                                                             // of
+        // encoder in
+        // phoenixTuner
         private static final boolean kFrontLeftSteerMotorInverted = false;
-        private static final boolean kFrontLeftEncoderInverted = false;
+        private static final boolean kFrontLeftEncoderInverted = true;
 
         private static final Distance kFrontLeftXPos = Inches.of(11.375);
         private static final Distance kFrontLeftYPos = Inches.of(11.53125);
@@ -186,7 +194,7 @@ public class TunerConstants {
         private static final int kBackLeftDriveMotorId = 4;
         private static final int kBackLeftSteerMotorId = 24;
         private static final int kBackLeftEncoderId = 34;
-        private static final Angle kBackLeftEncoderOffset = Rotations.one().minus(Rotations.of(0.183838));
+        private static final Angle kBackLeftEncoderOffset = Rotations.one().minus(Rotations.of(0.189697));
         private static final boolean kBackLeftSteerMotorInverted = false;
         private static final boolean kBackLeftEncoderInverted = true;
 

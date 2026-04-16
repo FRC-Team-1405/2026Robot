@@ -71,7 +71,7 @@ public class Hopper extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (FeatureSwitches.ENABLE_SUBSYSTEM_LOGGING) {
+    if (FeatureSwitches.ENABLE_SUBSYSTEM_NT_LOGGING) {
       SmartDashboard.putNumber("Hopper/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
       SmartDashboard.putNumber("Hopper/Velocity", motor.getVelocity().getValueAsDouble());
       SmartDashboard.putNumber("Hopper/PIDError", motor.getClosedLoopError().getValueAsDouble());
@@ -85,8 +85,8 @@ public class Hopper extends SubsystemBase {
   public void simulationInit() {
     // Hopper roller: low inertia, light load, direct drive
     PhysicsSim_SJC.getInstance().addTalonFX(motor,
-        /*rotorInertia=*/0.001, /*loadMassKg=*/0.05, /*armMeters=*/0.05,
-        /*viscousCoeff=*/0.01, /*numberOfMotors=*/1, /*gearRatio=*/1.0);
+        /* rotorInertia= */0.001, /* loadMassKg= */0.05, /* armMeters= */0.05,
+        /* viscousCoeff= */0.01, /* numberOfMotors= */1, /* gearRatio= */1.0);
   }
 
   @Override
@@ -113,6 +113,16 @@ public class Hopper extends SubsystemBase {
   private void stopHopper() {
     motor.setControl(stop);
     fLogger.log("Stop Hopper");
+  }
+
+  /** Start feeding balls forward. For use by external commands. */
+  public void startFeeding() {
+    forwardHopper();
+  }
+
+  /** Stop feeding balls. For use by external commands. */
+  public void stopFeeding() {
+    stopHopper();
   }
 
   // ── Public Commands ──────────────────────────────────────────────────────

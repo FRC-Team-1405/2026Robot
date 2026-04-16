@@ -12,7 +12,6 @@ import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -79,18 +78,15 @@ public class Constants {
         public static final AngularVelocity LONG;
 
         static {
-            Preferences.initDouble("ShooterVelocities/Short", 38.0);
-            SHORT = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Short", 38.0));
+            SHORT = RotationsPerSecond.of(38.0);
 
             // Positions are a percentage of a full range of motion
             Preferences.initDouble("ShooterVelocities/Intermediate", 20.0);
             INTERMEDIATE = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Intermediate", 20.0));
 
-            Preferences.initDouble("ShooterVelocities/Medium", 42.0);
-            MEDIUM = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Medium", 42.0));
+            MEDIUM = RotationsPerSecond.of(42.0);
 
-            Preferences.initDouble("ShooterVelocities/Long", 75.0);
-            LONG = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Long", 75.0));
+            LONG = RotationsPerSecond.of(75.0);
         }
 
         // Shooting distances
@@ -120,14 +116,11 @@ public class Constants {
         static {
             // Indexer Velocities
             Preferences.initDouble("IndexerVelocities/IndexerVelocity", 35);
-            INDEXER_VELOCITY = RotationsPerSecond.of(30);
+            INDEXER_VELOCITY = RotationsPerSecond.of(50);
 
-            Preferences.initDouble("ShooterAccuracy/Tight", 3);
-            TIGHT = Preferences.getDouble("ShooterAccuracy/Tight", 3);
-            Preferences.initDouble("ShooterAccuracy/Wide", 5);
-            WIDE = Preferences.getDouble("ShooterAccuracy/Wide", 5);
-            Preferences.initInt("ShooterAccuracy/StableCount", 5);
-            STABLE_COUNT = Preferences.getInt("ShooterAccuracy/StableCount", 5);
+            TIGHT = 3;
+            WIDE = 5;
+            STABLE_COUNT = 5;
         }
     }
 
@@ -259,7 +252,8 @@ public class Constants {
 
         static {
             Preferences.initDouble("Hopper/Forward", 5.0);
-            HOPPER_FORWARD_SPEED = RotationsPerSecond.of(30);
+            HOPPER_FORWARD_SPEED = RotationsPerSecond.of(50); // TODO add a hopper forward speed for picking up and for
+                                                              // shooting. shooting=50 picking up=30
             Preferences.initDouble("Hopper/Reverse", -1.0);
             HOPPER_REVERSE_SPEED = RotationsPerSecond.of(Preferences.getDouble("Hopper/Reverse", -1.0));
 
@@ -285,26 +279,27 @@ public class Constants {
 
         // MotionMagic profile for intake deploy (faster deployment)
         public static final double DEPLOY_CRUISE_VELOCITY = 40.0; // rotations per second
-        public static final double DEPLOY_ACCELERATION = 20.0; // rotations per second^2
-        public static final double DEPLOY_JERK = 100.0; // rotations per second^3
+        public static final double DEPLOY_ACCELERATION = 80.0; // rotations per second^2
+        public static final double DEPLOY_JERK = 200.0; // rotations per second^3
 
         // PID gains for pickup roller motor (velocity control)
         public static final double PICKUP_KP = 0.5;
         public static final double PICKUP_KI = 0.0;
         public static final double PICKUP_KD = 0.0;
         public static final double PICKUP_KS = 0.25;
-        public static final double PICKUP_KV = 0.12;
+        public static final double PICKUP_KV = 0.105;
 
         // MotionMagic profile for pickup roller (velocity mode)
-        public static final double PICKUP_CRUISE_VELOCITY = 10.0; // rotations per second
-        public static final double PICKUP_ACCELERATION = 50.0; // rotations per second^2
+        // public static final double PICKUP_CRUISE_VELOCITY = 10.0; // rotations per
+        // second
+        public static final double PICKUP_ACCELERATION = 200.0; // rotations per second^2, flr acceleration = 50
         public static final double PICKUP_JERK = 0.0; // rotations per second^3
 
         // Current limits to protect the chain and detect hard stops
         public static final double DEPLOY_STATOR_LIMIT = 40.0; // amps
         public static final double DEPLOY_SUPPLY_LIMIT = 30.0; // amps
-        public static final double PICKUP_STATOR_LIMIT = 60.0; // amps
-        public static final double PICKUP_SUPPLY_LIMIT = 40.0; // amps
+        public static final double PICKUP_STATOR_LIMIT = 60.0; // amps flr limit = 60, testing 80
+        public static final double PICKUP_SUPPLY_LIMIT = 40.0; // amps flr limit = 40, testing 60
         public static final double STALL_CURRENT_THRESHOLD = 30.0; // amps — above this = likely stalled
         public static final int STALL_CYCLES_THRESHOLD = 10; // consecutive cycles before stall shutdown
 
@@ -312,8 +307,8 @@ public class Constants {
         public static final double SOFT_LIMIT_MARGIN = 2.0;
 
         // Voltage limits
-        public static final double PEAK_FORWARD_VOLTAGE = 10.0;
-        public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+        public static final double PEAK_FORWARD_VOLTAGE = 15.0;
+        public static final double PEAK_REVERSE_VOLTAGE = -15.0;
 
         static {
             Preferences.initDouble("Intake/Out", 70.0);
@@ -325,7 +320,10 @@ public class Constants {
             Preferences.initDouble("Pickup/Out", -25.0);
             PICKUP_MOTOR_OUT = Preferences.getDouble("Pickup/Out", -25.0);
             Preferences.initDouble("Pickup/In", 80.0);
-            PICKUP_MOTOR_IN = Preferences.getDouble("Pickup/In", 80.0);
+
+            // target pickup velocity (rps)
+            PICKUP_MOTOR_IN = 100;
+
             Preferences.initDouble("Intake/SettleCount", 5);
             SETTLE_COUNT = (int) Preferences.getDouble("Intake/SettleCount", 5);
             Preferences.initDouble("Intake/PositionTolerance", 1.0);

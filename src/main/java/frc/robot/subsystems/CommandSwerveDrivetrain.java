@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
+import frc.robot.commands.AutoPilot.AutoPilotV2Command;
 import frc.robot.commands.PidToPose.PidToPoseCommand;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -48,6 +49,7 @@ import frc.robot.lib.AllianceSymmetry;
  * https://v6.docs.ctr-electronics.com/en/stable/docs/tuner/tuner-swerve/index.html
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+    private boolean m_allowVisionOdometryUpdates = true;
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -319,6 +321,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
+        if (!m_allowVisionOdometryUpdates) {
+            return;
+        }
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
@@ -345,8 +350,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             Pose2d visionRobotPoseMeters,
             double timestampSeconds,
             Matrix<N3, N1> visionMeasurementStdDevs) {
+        if (!m_allowVisionOdometryUpdates) {
+            return;
+        }
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds),
                 visionMeasurementStdDevs);
+    }
+
+    public void setVisionOdometryUpdatesEnabled(boolean enabled) {
+        m_allowVisionOdometryUpdates = enabled;
+    }
+
+    public boolean areVisionOdometryUpdatesEnabled() {
+        return m_allowVisionOdometryUpdates;
     }
 
     /**
@@ -483,6 +499,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // .withFlipPoseForAlliance(flipPoseForRedAlliance).build());
         return new PidToPoseCommand.Builder(poseSupplier, this, "DriveToPose").withTolerance(2)
                 .withFlipPoseForAlliance(flipPoseForRedAlliance).withTolerance(0.5).build();
+    }
+
+    public Command driveToPoseAP(Supplier<Optional<Pose2d>> targetPoseSupplier, boolean flipPoseForRedAlliance) {
+        Supplier<Pose2d> poseSupplier = () -> (targetPoseSupplier.get().get());// TODO pass the real supplier in so it
+                                                                               // can constantly update its position,
+                                                                               // based on user input
+        return new AutoPilotV2Command.Builder(poseSupplier, this, "DriveToPose")
+                .withFlipPoseForAlliance(flipPoseForRedAlliance)
+                .withProfileThresholds(
+                        AutoPilotV2Command.DEFAULT_XY_THRESHOLD, 2.5, AutoPilotV2Command.DEFAULT_BEELINE_THRESHOLD)
+                .withVelocityThreshold(0.5)
+                .build();
     }
 
     public void publishDistanceToHub() {
