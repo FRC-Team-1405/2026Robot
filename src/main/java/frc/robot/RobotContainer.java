@@ -183,15 +183,19 @@ public class RobotContainer {
                 operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
 
                 operatorJoystick.y().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake));
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(new InstantCommand(
+                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "Normal"))));
                 operatorJoystick.b().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake));
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(new InstantCommand(
+                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "Normal"))));
                 operatorJoystick.a().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake));
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake)
+                                .andThen(new InstantCommand(
+                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "Normal"))));
 
                 operatorJoystick.x().onTrue(shootCommand = AutoFire.DynamicTeleop(shooter, indexer,
                                 () -> ShooterPreferences.INDEXER_VELOCITY, intake, () -> swerveFeatures
-                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION)));
+                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION)).andThen(new InstantCommand(() -> SmartDashboard.putString("Shooter/AutoFireMode", "dynamic"))));
 
                 // Stop Shooter
                 Command stopShooterAndDeployIntake = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer(),
