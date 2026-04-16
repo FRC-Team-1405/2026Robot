@@ -11,7 +11,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.AutoPilot.CommandsForAutos;
+import frc.robot.commands.Autos.AutoPoses;
+import frc.robot.commands.Autos.CommandsForAutos;
+import frc.robot.commands.Autos.Full_Autos;
 import frc.robot.commands.PidToPose.PidToPoseCommands;
 import frc.robot.subsystems.AdjustableHood;
 import frc.robot.subsystems.Climber;
@@ -31,13 +33,13 @@ public class AutoCommands {
                         Hopper hopper,
                         Indexer indexer,
                         Shooter shooter,
-                        AdjustableHood hood, SwerveFeatures swerveFeatures) {
+                        AdjustableHood hood,
+                        SwerveFeatures swerveFeatures,
+                        CommandsForAutos commandsForAutos) {
                 SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
                 SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
 
                 PidToPoseCommands.registerCommands(drivetrain);
-                CommandsForAutos.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood,
-                                swerveFeatures);
                 // this HAS to go after AutoPilotCommands
                 AutoCommands.configureAutos(autoChooser, drivetrain);
 
@@ -121,12 +123,12 @@ public class AutoCommands {
         public static SendableChooser<Supplier<Pose2d>> shootingPositions = new SendableChooser<>();
 
         public static void initShootPositions() {
-                shootingPositions.addOption("FrontHub", CommandsForAutos.FrontHubShoot);
-                shootingPositions.addOption("IntakeIN_FrontHub", CommandsForAutos.IntakeIN_FrontHubShoot);
-                shootingPositions.addOption("IntakeOUT_FrontHub", CommandsForAutos.IntakeOUT_FrontHubShoot);
-                shootingPositions.addOption("RightHub", CommandsForAutos.RightHubShoot);
+                shootingPositions.addOption("FrontHub", AutoPoses.FrontHubShoot);
+                shootingPositions.addOption("IntakeIN_FrontHub", AutoPoses.IntakeIN_FrontHubShoot);
+                shootingPositions.addOption("IntakeOUT_FrontHub", AutoPoses.IntakeOUT_FrontHubShoot);
+                shootingPositions.addOption("RightHub", AutoPoses.RightHubShoot);
 
-                shootingPositions.setDefaultOption("FrontHub", CommandsForAutos.FrontHubShoot);
+                shootingPositions.setDefaultOption("FrontHub", AutoPoses.FrontHubShoot);
                 SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + " Shooting Position", shootingPositions);
         }
 
@@ -142,8 +144,8 @@ public class AutoCommands {
                 if (DriverStation.isFMSAttached()
                                 || SmartDashboard.getBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false)) {
                         SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
-                        if (CommandsForAutos.OVERRIDE_AUTO_COMMAND != null) {
-                                return CommandsForAutos.OVERRIDE_AUTO_COMMAND;
+                        if (Full_Autos.OVERRIDE_AUTO_COMMAND != null) {
+                                return Full_Autos.OVERRIDE_AUTO_COMMAND;
                         }
                         return autoChooser.getSelected();
                 } else {

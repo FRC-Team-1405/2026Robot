@@ -33,6 +33,9 @@ import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
+import frc.robot.commands.Autos.AutoPoses;
+import frc.robot.commands.Autos.CommandsForAutos;
+import frc.robot.commands.Autos.Full_Autos;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FeatureSwitches;
 import frc.robot.constants.FieldConstants;
@@ -84,6 +87,13 @@ public class RobotContainer {
         private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
         private final SwerveFeatures swerveFeatures = new SwerveFeatures(drivetrain);
         MoveMode moveMode = new MoveMode();
+        public final CommandsForAutos commandsForAutos = new CommandsForAutos(drivetrain, climber,
+                        intake,
+                        hopper,
+                        indexer,
+                        shooter,
+                        hood);
+        public final Full_Autos full_Autos = new Full_Autos(commandsForAutos);
 
         // Default setting for AutoFire command
         Command shootCommand = AutoFire.teleop(shooter, indexer,
@@ -94,7 +104,8 @@ public class RobotContainer {
                 // configureBindings_CTReDefault();
 
                 AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood,
-                                swerveFeatures);
+                                swerveFeatures, commandsForAutos);
+                full_Autos.registerAutos(commandsForAutos);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
                 drivetrain.initOverridePose();
         }
