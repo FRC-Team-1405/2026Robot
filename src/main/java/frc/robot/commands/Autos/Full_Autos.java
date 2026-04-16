@@ -327,8 +327,8 @@ public class Full_Autos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: add window in Elastic
-                OVERRIDE_AUTO_COMMAND = LeftQuad;
+                // OVERRIDE_AUTO_COMMAND = LeftQuad;
 
-                SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND", OVERRIDE_AUTO_COMMAND.getName());
+                // SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND", OVERRIDE_AUTO_COMMAND.getName());
         }
 }

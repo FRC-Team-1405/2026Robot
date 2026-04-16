@@ -29,7 +29,7 @@ public class AutoCommands {
 
         private static final String AUTO_SMARTDASHBOARD_FOLDER = "Auto";
 
-        public static void registerCommands(CommandSwerveDrivetrain drivetrain, Climber climber, Intake intake,
+        public static void setupAutoChooser(CommandSwerveDrivetrain drivetrain, Climber climber, Intake intake,
                         Hopper hopper,
                         Indexer indexer,
                         Shooter shooter,
@@ -39,7 +39,6 @@ public class AutoCommands {
                 SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
                 SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
 
-                PidToPoseCommands.registerCommands(drivetrain);
                 // this HAS to go after AutoPilotCommands
                 AutoCommands.configureAutos(autoChooser, drivetrain);
 
