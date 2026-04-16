@@ -60,8 +60,10 @@ public class Indexer extends SubsystemBase {
         configs.MotionMagic.MotionMagicCruiseVelocity = Constants.IndexerPreferences.CRUISE_VELOCITY;
         configs.MotionMagic.MotionMagicAcceleration = Constants.IndexerPreferences.ACCELERATION;
 
-        configs.CurrentLimits.StatorCurrentLimit = Constants.IndexerPreferences.STATOR_CURRENT_LIMIT;
-        configs.CurrentLimits.SupplyCurrentLimit = Constants.IndexerPreferences.SUPPLY_CURRENT_LIMIT;
+        // configs.CurrentLimits.StatorCurrentLimit =
+        // Constants.IndexerPreferences.STATOR_CURRENT_LIMIT;
+        // configs.CurrentLimits.SupplyCurrentLimit =
+        // Constants.IndexerPreferences.SUPPLY_CURRENT_LIMIT;
 
         configs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
