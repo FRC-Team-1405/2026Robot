@@ -508,7 +508,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return new AutoPilotV2Command.Builder(poseSupplier, this, "DriveToPose")
                 .withFlipPoseForAlliance(flipPoseForRedAlliance)
                 .withProfileThresholds(
-                        AutoPilotV2Command.DEFAULT_XY_THRESHOLD, 2.5, AutoPilotV2Command.DEFAULT_BEELINE_THRESHOLD)
+                        AutoPilotV2Command.DEFAULT_XY_THRESHOLD, 2.0, AutoPilotV2Command.DEFAULT_BEELINE_THRESHOLD)
                 .withVelocityThreshold(0.5)
                 .build();
     }

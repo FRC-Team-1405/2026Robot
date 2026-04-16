@@ -48,15 +48,18 @@ public class AutoCommands {
         public static void configureAutos(SendableChooser<Command> chooser, CommandSwerveDrivetrain drivetrain) {
                 HashMap<String, Command> commandsToAddToChooser = new HashMap<>();
 
-                commandsToAddToChooser.put("FrontHubShoot", NamedCommands.getCommand("FrontHubShoot"));
+                commandsToAddToChooser.put("JUST_SHOOT_FROM_ANYWHERE",
+                                NamedCommands.getCommand("JUST_SHOOT_FROM_ANYWHERE"));
 
-                commandsToAddToChooser.put("blueCenterToDepot",
-                                NamedCommands.getCommand("blueCenterToDepot"));
-                // commandsToAddToChooser.put("DepotFaceIn",
+                // commandsToAddToChooser.put("blueCenterToDepot",
+                // NamedCommands.getCommand("blueCenterToDepot"));
+                // // commandsToAddToChooser.put("DepotFaceIn",
                 // NamedCommands.getCommand("DepotFaceIn"));
 
-                commandsToAddToChooser.put("JUSTSHOOT", NamedCommands.getCommand("JUSTSHOOT"));
-                commandsToAddToChooser.put("LeftStart_JUSTSHOOT", NamedCommands.getCommand("LeftStart_JUSTSHOOT"));
+                // commandsToAddToChooser.put("JUSTSHOOT",
+                // NamedCommands.getCommand("JUSTSHOOT"));
+                // commandsToAddToChooser.put("LeftStart_JUSTSHOOT",
+                // NamedCommands.getCommand("LeftStart_JUSTSHOOT"));
 
                 // TODO:BUMP AUTOS
                 // commandsToAddToChooser.put("rightBumpToField",
@@ -70,8 +73,8 @@ public class AutoCommands {
 
                 // commandsToAddToChooser.put("ShootFromDepot",
                 // NamedCommands.getCommand("ShootFromDepot"));
-                commandsToAddToChooser.put("TESTCenterHarvest",
-                                NamedCommands.getCommand("TESTCenterHarvest"));
+                // commandsToAddToChooser.put("TESTCenterHarvest",
+                // NamedCommands.getCommand("TESTCenterHarvest"));
                 // commandsToAddToChooser.put("LeftStartDepotScore",
                 // NamedCommands.getCommand("LeftStartDepotScore"));
                 // commandsToAddToChooser.put("RightStartDepotScore",
@@ -79,16 +82,17 @@ public class AutoCommands {
                 // commandsToAddToChooser.put("TheShowboater",
                 // NamedCommands.getCommand("TheShowboater"));
 
-                commandsToAddToChooser.put("TEST", NamedCommands.getCommand("TEST"));
-                commandsToAddToChooser.put("fourMeters", NamedCommands.getCommand("fourMeters"));
+                // commandsToAddToChooser.put("TEST", NamedCommands.getCommand("TEST"));
+                // commandsToAddToChooser.put("fourMeters",
+                // NamedCommands.getCommand("fourMeters"));
 
                 // Feeding station
-                commandsToAddToChooser.put("RightStartFeedingStationScore",
-                                NamedCommands.getCommand("RightStartFeedingStationScore"));
-                commandsToAddToChooser.put("CenterStartFeedingStationScore",
-                                NamedCommands.getCommand("CenterStartFeedingStationScore"));
-                commandsToAddToChooser.put("LeftStartFeedingStationScore",
-                                NamedCommands.getCommand("LeftStartFeedingStationScore"));
+                // commandsToAddToChooser.put("RightStartFeedingStationScore",
+                // NamedCommands.getCommand("RightStartFeedingStationScore"));
+                // commandsToAddToChooser.put("CenterStartFeedingStationScore",
+                // NamedCommands.getCommand("CenterStartFeedingStationScore"));
+                // commandsToAddToChooser.put("LeftStartFeedingStationScore",
+                // NamedCommands.getCommand("LeftStartFeedingStationScore"));
 
                 // NamedCommands.registerCommand("RightStartFeedingStationScore",
                 // RightStartFeedingStationScore);

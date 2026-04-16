@@ -66,7 +66,7 @@ public class Full_Autos {
                 // #endregion
 
                 Command JUST_SHOOT_FROM_ANYWHERE = Commands.sequence(cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
-                                cmds.mediumShoot.get()).withName("JUST_SHOOT_FROM_ANYWHERE!!!");
+                                cmds.mediumShoot.get()).withName("JUST_SHOOT_FROM_ANYWHERE");
 
                 Command LeftStart_JUSTSHOOT = new SequentialCommandGroup(
                                 cmds.MoveTo_LeftMidAlliance.get(),
@@ -186,8 +186,10 @@ public class Full_Autos {
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("LeftStartCenterHarvestInRight");
                 Command RightQuad = new SequentialCommandGroup(
+                                // Running start
                                 Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
                                                 cmds.intake.runIntakeOut()),
+                                // Cross bump
                                 Commands.parallel(
                                                 cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
                                                 cmds.intake.runIntakeOut()),
@@ -206,6 +208,10 @@ public class Full_Autos {
                                 cmds.mediumShoot.get()).withName("RightQuad");
 
                 Command LeftQuad = new SequentialCommandGroup(
+                                // Running start
+                                Commands.deadline(cmds.MoveTo_leftBump_AllianceToFieldStart.get(),
+                                                cmds.intake.runIntakeOut()),
+                                // Cross bump
                                 Commands.parallel(
                                                 cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
                                                 cmds.intake.runIntakeOut()),
@@ -327,8 +333,9 @@ public class Full_Autos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: add window in Elastic
-                OVERRIDE_AUTO_COMMAND = LeftQuad;
+                OVERRIDE_AUTO_COMMAND = JUST_SHOOT_FROM_ANYWHERE;
 
-                SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND", OVERRIDE_AUTO_COMMAND.getName());
+                SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
+                                OVERRIDE_AUTO_COMMAND.getName());
         }
 }
