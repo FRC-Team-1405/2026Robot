@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.commands.AutoPilot.AutoPilotV2Command;
 import frc.robot.commands.PidToPose.PidToPoseCommand;
+import frc.robot.constants.FeatureSwitches;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.lib.AllianceSymmetry;
@@ -455,14 +456,23 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void publishMotorCurrent() {
         SwerveModule<TalonFX, TalonFX, CANcoder>[] modules = this.getModules();
 
+        double supplyCurrentSum = 0;
+
         for (int j = 0; j < modules.length; j++) {
-            SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_StatorCurrent_" + j,
-                    modules[j].getDriveMotor().getStatorCurrent().getValueAsDouble());
-            SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_SupplyCurrent_" + j,
-                    modules[j].getDriveMotor().getSupplyCurrent().getValueAsDouble());
-            SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_TorqueCurrent_" + j,
-                    modules[j].getDriveMotor().getTorqueCurrent().getValueAsDouble());
+            if (FeatureSwitches.PUBLISH_INDIVIDUAL_DRIVE_CURRENTS) {
+                SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_StatorCurrent_" + j,
+                        modules[j].getDriveMotor().getStatorCurrent().getValueAsDouble());
+                SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_SupplyCurrent_" + j,
+                        modules[j].getDriveMotor().getSupplyCurrent().getValueAsDouble());
+                SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_TorqueCurrent_" + j,
+                        modules[j].getDriveMotor().getTorqueCurrent().getValueAsDouble());
+            }
+
+            supplyCurrentSum += modules[j].getDriveMotor().getSupplyCurrent().getValueAsDouble();
+
         }
+
+        SmartDashboard.putNumber(SWERVE_DRIVE + "DriveMotor_Cumulative_SupplyCurrents", supplyCurrentSum);
     }
 
     public void publishDrivePidErrors() {
