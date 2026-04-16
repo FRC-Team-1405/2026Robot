@@ -77,7 +77,7 @@ public class Constants {
         public static final AngularVelocity LONG = RotationsPerSecond.of(50);
         public static final AngularVelocity LUDICROUS_SPEED = RotationsPerSecond.of(75);
         public static final AngularVelocity DYNAMIC = RotationsPerSecond.of(20);
-        public static final AngularVelocity MAX = RotationsPerSecond.of(60);
+        public static final AngularVelocity MAX = RotationsPerSecond.of(75);
 
         // Shooting distances
         // desired robot distances for each shooting speed
