@@ -148,19 +148,20 @@ public class AutoPoses {
 
         // #region DEPOT Poses
         // wall pose is 0.40
-        public static Supplier<Pose2d> depotFaceIn = () -> new Pose2d(0.50, 6.5, Rotation2d.fromDegrees(270));
-        public static Supplier<Pose2d> leftOfDepotFaceIn = () -> new Pose2d(0.50, 7, Rotation2d.fromDegrees(270));
-        public static Supplier<Pose2d> midOfDepotFaceIn = () -> new Pose2d(0.50, 6, Rotation2d.fromDegrees(270));
-        public static Supplier<Pose2d> rightOfDepotFaceIn = () -> new Pose2d(0.50, 5.5, Rotation2d.fromDegrees(270));
-        public static Supplier<Pose2d> depotFaceOut = () -> new Pose2d(0.50, 6.5, Rotation2d.fromDegrees(90));
-        public static Supplier<Pose2d> leftOfDepotFaceOut = () -> new Pose2d(0.50, 7, Rotation2d.fromDegrees(90));
-        public static Supplier<Pose2d> rightOfDepotFaceOut = () -> new Pose2d(0.50, 5.5, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> leftOfDepot_Out = () -> new Pose2d(0.50, 7, Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> leftOfDepot_In = () -> new Pose2d(0.50, 6.6, Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> rightOfDepot_Out = () -> new Pose2d(0.50, 5, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> rightOfDepot_In = () -> new Pose2d(0.50, 5.4, Rotation2d.fromDegrees(90));
 
-        public static Supplier<Pose2d> depot_BackFace_Start = () -> new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(180));
-        public static Supplier<Pose2d> depot_BackFace_End = () -> new Pose2d(0.75, 5.5, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> depot_BackFace_Out = () -> new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> depot_BackFace_In = () -> new Pose2d(0.75, 5.5, Rotation2d.fromDegrees(180));
         public static Supplier<Pose2d> depot_BackFace_End_Dos = () -> new Pose2d(0.50, 5.5,
                         Rotation2d.fromDegrees(180));
         public static Supplier<Pose2d> midOfDepotFaceOut = () -> new Pose2d(0.50, 5.75, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> left_midOfDepot_In = () -> new Pose2d(0.75, 6.35, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> left_midOfDepot_Out = () -> new Pose2d(1.5, 6.35, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> midOfDepot_In = () -> new Pose2d(0.75, 5.75, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> midOfDepot_Out = () -> new Pose2d(1.5, 5.75, Rotation2d.fromDegrees(180));
 
         public static Supplier<Pose2d> towerDodge_Start = () -> new Pose2d(2, 4.85, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> towerDodge_End = () -> new Pose2d(0.40, 4.85, Rotation2d.fromDegrees(90));

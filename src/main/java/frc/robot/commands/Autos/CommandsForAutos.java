@@ -245,44 +245,41 @@ public class CommandsForAutos {
                         .withFlipPoseForAlliance(true)
                         .build();
         // Depot
-        Supplier<Command> MoveTo_depotFaceIn = () -> new AutoPilotV2Command.Builder(
-                        () -> depotFaceIn.get(), drivetrain, "MoveTo_depotFaceIn")
+        Supplier<Command> MoveTo_rightOfDepot_In = () -> new AutoPilotV2Command.Builder(
+                        () -> rightOfDepot_In.get(), drivetrain, "MoveTo_rightOfDepot_In")
                         .withFlipPoseForAlliance(true)
                         .build();
-        Supplier<Command> MoveTo_leftOfDepotFaceIn = () -> new AutoPilotV2Command.Builder(
-                        () -> leftOfDepotFaceIn.get(), drivetrain, "MoveTo_leftOfDepotFaceIn")
+        Supplier<Command> MoveTo_rightOfDepot_Out = () -> new AutoPilotV2Command.Builder(
+                        () -> rightOfDepot_Out.get(), drivetrain, "MoveTo_rightOfDepot_Out")
                         .withFlipPoseForAlliance(true)
                         .build();
-        Supplier<Command> MoveTo_midOfDepotFaceIn = () -> new AutoPilotV2Command.Builder(
-                        () -> midOfDepotFaceIn.get(), drivetrain, "MoveTo_midOfDepotFaceIn")
+        Supplier<Command> MoveTo_leftOfDepot_In = () -> new AutoPilotV2Command.Builder(
+                        () -> leftOfDepot_In.get(), drivetrain, "MoveTo_leftOfDepot_In")
                         .withFlipPoseForAlliance(true)
                         .build();
-        Supplier<Command> MoveTo_rightOfDepotFaceIn = () -> new AutoPilotV2Command.Builder(
-                        () -> rightOfDepotFaceIn.get(), drivetrain, "MoveTo_rightOfDepotFaceIn")
-                        .withFlipPoseForAlliance(true)
-                        .build();
-        Supplier<Command> MoveTo_depotFaceOut = () -> new AutoPilotV2Command.Builder(
-                        () -> depotFaceOut.get(), drivetrain, "MoveTo_depotFaceIn")
-                        .withFlipPoseForAlliance(true)
-                        .build();
-        Supplier<Command> MoveTo_leftOfDepotFaceOut = () -> new AutoPilotV2Command.Builder(
-                        () -> leftOfDepotFaceOut.get(), drivetrain, "MoveTo_leftOfDepotFaceOut")
+        Supplier<Command> MoveTo_leftOfDepot_Out = () -> new AutoPilotV2Command.Builder(
+                        () -> leftOfDepot_Out.get(), drivetrain, "MoveTo_leftOfDepot_Out")
                         .withFlipPoseForAlliance(true)
                         .build();
         Supplier<Command> MoveTo_midOfDepotFaceOut = () -> new AutoPilotV2Command.Builder(
                         () -> midOfDepotFaceOut.get(), drivetrain, "MoveTo_midOfDepotFaceOut")
                         .withFlipPoseForAlliance(true)
                         .build();
-        Supplier<Command> MoveTo_rightOfDepotFaceOut = () -> new AutoPilotV2Command.Builder(
-                        () -> rightOfDepotFaceOut.get(), drivetrain, "MoveTo_rightOfDepotFaceOut")
+        Supplier<Command> MoveTo_left_midOfDepot_In = () -> new AutoPilotV2Command.Builder(
+                        () -> left_midOfDepot_In.get(), drivetrain, "MoveTo_left_midOfDepot_In")
                         .withFlipPoseForAlliance(true)
                         .build();
-        Supplier<Command> MoveTo_depot_BackFace_Start = () -> new AutoPilotV2Command.Builder(
-                        () -> depot_BackFace_Start.get(), drivetrain, "MoveTo_depot_BackFace_Start")
+        Supplier<Command> MoveTo_left_midOfDepot_Out = () -> new AutoPilotV2Command.Builder(
+                        () -> left_midOfDepot_Out.get(), drivetrain, "MoveTo_left_midOfDepot_Out")
                         .withFlipPoseForAlliance(true)
                         .build();
-        Supplier<Command> MoveTo_depot_BackFace_End = () -> new AutoPilotV2Command.Builder(
-                        () -> depot_BackFace_End.get(), drivetrain, "MoveTo_depot_BackFace_End")
+
+        Supplier<Command> MoveTo_depot_BackFace_Out = () -> new AutoPilotV2Command.Builder(
+                        () -> depot_BackFace_Out.get(), drivetrain, "MoveTo_depot_BackFace_Out")
+                        .withFlipPoseForAlliance(true)
+                        .build();
+        Supplier<Command> MoveTo_depot_BackFace_In = () -> new AutoPilotV2Command.Builder(
+                        () -> depot_BackFace_In.get(), drivetrain, "MoveTo_depot_BackFace_In")
                         .withFlipPoseForAlliance(true)
                         .build();
         Supplier<Command> MoveTo_depot_BackFace_End_Dos = () -> new AutoPilotV2Command.Builder(
