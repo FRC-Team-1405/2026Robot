@@ -825,6 +825,6 @@ public class CommandsForAutos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: add window in Elastic
-                OVERRIDE_AUTO_COMMAND = RightQuad;
+                OVERRIDE_AUTO_COMMAND = LeftQuad;
         }
 }
