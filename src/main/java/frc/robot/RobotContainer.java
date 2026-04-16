@@ -7,33 +7,28 @@ package frc.robot;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
-import frc.robot.commands.Autos.AutoPoses;
 import frc.robot.commands.Autos.CommandsForAutos;
 import frc.robot.commands.Autos.Full_Autos;
 import frc.robot.commands.Shooter.AutoFire;
@@ -50,13 +45,13 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.MoveMode;
+import frc.robot.subsystems.ShootMode;
+import frc.robot.subsystems.ShootMode.Mode;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.SwerveFeatures;
 import frc.robot.subsystems.SwerveFeatures;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.commands.Shooter.AutoFire;
 
 public class RobotContainer {
         private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -87,6 +82,7 @@ public class RobotContainer {
         private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
         private final SwerveFeatures swerveFeatures = new SwerveFeatures(drivetrain);
         MoveMode moveMode = new MoveMode();
+        ShootMode shootMode = new ShootMode(drivetrain, swerveFeatures, intake, indexer, shooter, driverJoystick);
         public final CommandsForAutos commandsForAutos = new CommandsForAutos(drivetrain, climber,
                         intake,
                         hopper,
@@ -94,10 +90,6 @@ public class RobotContainer {
                         shooter,
                         hood);
         public final Full_Autos full_Autos = new Full_Autos(commandsForAutos);
-
-        // Default setting for AutoFire command
-        Command shootCommand = AutoFire.teleop(shooter, indexer,
-                        () -> ShooterPreferences.INDEXER_VELOCITY, intake);
 
         public RobotContainer() {
                 configureBindings();
@@ -193,26 +185,32 @@ public class RobotContainer {
                 operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
                 operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
 
-                operatorJoystick.y().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(
-                                                new InstantCommand(
-                                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
-                                                                                "Normal"))));
-                operatorJoystick.b().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(
-                                                new InstantCommand(
-                                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
-                                                                                "Normal"))));
-                operatorJoystick.a().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake)
-                                .andThen(new InstantCommand(
-                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "Normal"))));
+                // operatorJoystick.y().onTrue(new InstantCommand(() -> shootCommand =
+                // Commands.sequence(
+                // new InstantCommand(
+                // () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                // "Normal")),
+                // AutoFire.teleop(shooter, indexer,
+                // () -> ShooterPreferences.INDEXER_VELOCITY, intake))));
+                operatorJoystick.y().onTrue(new SequentialCommandGroup(new InstantCommand(
+                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                "Short")),
+                                new InstantCommand(() -> shootMode.setMode(Mode.SHORT))));
 
-                operatorJoystick.x().onTrue(shootCommand = AutoFire.DynamicTeleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake, () -> swerveFeatures
-                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION))
-                                .andThen(new InstantCommand(
-                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "dynamic"))));
+                operatorJoystick.b().onTrue(new SequentialCommandGroup(new InstantCommand(
+                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                "Medium")),
+                                new InstantCommand(() -> shootMode.setMode(Mode.MEDIUM))));
+
+                operatorJoystick.a().onTrue(new SequentialCommandGroup(new InstantCommand(
+                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                "Long")),
+                                new InstantCommand(() -> shootMode.setMode(Mode.LONG))));
+
+                operatorJoystick.x().onTrue(new SequentialCommandGroup(new InstantCommand(
+                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                "Dynamic")),
+                                new InstantCommand(() -> shootMode.setMode(Mode.DYNAMIC))));
 
                 // Stop Shooter
                 Command stopShooterAndDeployIntake = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer(),
@@ -339,6 +337,9 @@ public class RobotContainer {
                 // Shoot — continuous auto-fire while held, with drivetrain brake.
                 // Hopper is driven by hopperTrigger (follows indexer state).
 
+                final Command shootCommand = AutoFire.teleop(shooter, indexer,
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake);
+
                 // when you fix the brake mode not allowing driver to manually adjust while
                 // shooting bug,
                 // uncomment this and add brakeCommand back to the commands.parrallel
@@ -346,7 +347,8 @@ public class RobotContainer {
 
                 // TODO allow driver to override brake mode while shooting so they can manually
                 // adjust
-                driverJoystick.rightBumper()
+                driverJoystick.rightBumper().and(
+                                shootMode.isNonDynamicShootMode())
                                 .whileTrue(shootCommand);
 
                 //
