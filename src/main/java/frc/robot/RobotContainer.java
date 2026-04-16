@@ -183,11 +183,15 @@ public class RobotContainer {
                 operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
 
                 operatorJoystick.y().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(new InstantCommand(
-                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "Normal"))));
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(
+                                                new InstantCommand(
+                                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                                                "Normal"))));
                 operatorJoystick.b().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
-                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(new InstantCommand(
-                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "Normal"))));
+                                () -> ShooterPreferences.INDEXER_VELOCITY, intake).andThen(
+                                                new InstantCommand(
+                                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                                                "Normal"))));
                 operatorJoystick.a().onTrue(shootCommand = AutoFire.teleop(shooter, indexer,
                                 () -> ShooterPreferences.INDEXER_VELOCITY, intake)
                                 .andThen(new InstantCommand(
@@ -195,7 +199,9 @@ public class RobotContainer {
 
                 operatorJoystick.x().onTrue(shootCommand = AutoFire.DynamicTeleop(shooter, indexer,
                                 () -> ShooterPreferences.INDEXER_VELOCITY, intake, () -> swerveFeatures
-                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION)).andThen(new InstantCommand(() -> SmartDashboard.putString("Shooter/AutoFireMode", "dynamic"))));
+                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION))
+                                .andThen(new InstantCommand(
+                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "dynamic"))));
 
                 // Stop Shooter
                 Command stopShooterAndDeployIntake = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer(),
@@ -330,7 +336,7 @@ public class RobotContainer {
                 // TODO allow driver to override brake mode while shooting so they can manually
                 // adjust
                 driverJoystick.rightBumper()
-                                .whileTrue(Commands.parallel(shootCommand, Commands.none()));
+                                .whileTrue(shootCommand);
 
                 //
                 // Shooter Joystick (DEBUG) Controls
