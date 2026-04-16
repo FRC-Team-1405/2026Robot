@@ -210,9 +210,8 @@ public class RobotContainer {
 
                 operatorJoystick.x().onTrue(shootCommand = AutoFire.DynamicTeleop(shooter, indexer,
                                 () -> ShooterPreferences.INDEXER_VELOCITY, intake, () -> swerveFeatures
-                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION))
-                                .andThen(new InstantCommand(
-                                                () -> SmartDashboard.putString("Shooter/AutoFireMode", "dynamic"))));
+                                                .getDistanceToHub(drivetrain, FieldConstants.ALLIANCE_HUB_POSITION),
+                                driverJoystick.rightBumper()));
 
                 // Stop Shooter
                 Command stopShooterAndDeployIntake = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer(),
