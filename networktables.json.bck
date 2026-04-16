@@ -1,6 +1,62 @@
 [
   {
-    "name": "/Preferences/Hood/Servo Speed Seconds",
+    "name": "/Preferences/ShooterVelocities/Short",
+    "type": "double",
+    "value": 10.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/ShooterVelocities/Long",
+    "type": "double",
+    "value": 50.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/IndexerVelocities/IndexerVelocity",
+    "type": "double",
+    "value": 20.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/ShooterAccuracy/Tight",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/ShooterAccuracy/Wide",
+    "type": "double",
+    "value": 10.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/ShooterAccuracy/StableCount",
+    "type": "double",
+    "value": 5.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/ShooterVelocities/Medium",
+    "type": "double",
+    "value": 30.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Hood/Servo Full Range Seconds",
     "type": "double",
     "value": 0.5,
     "properties": {
@@ -8,15 +64,15 @@
     }
   },
   {
-    "name": "/Preferences/Hood/Servo Speed Short",
+    "name": "/Preferences/Hood/Servo Short Position",
     "type": "double",
-    "value": 0.3,
+    "value": 0.2,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/Preferences/Hood/Servo Speed Medium",
+    "name": "/Preferences/Hood/Servo Medium Position",
     "type": "double",
     "value": 0.6,
     "properties": {
@@ -24,7 +80,63 @@
     }
   },
   {
-    "name": "/Preferences/Hood/Servo Speed Long",
+    "name": "/Preferences/Hood/Servo Long Position",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake/Out",
+    "type": "double",
+    "value": 70.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake/In",
+    "type": "double",
+    "value": 3.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake/Center",
+    "type": "double",
+    "value": 57.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Pickup/Out",
+    "type": "double",
+    "value": -25.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Pickup/In",
+    "type": "double",
+    "value": 80.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake/SettleCount",
+    "type": "double",
+    "value": 5.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/Intake/PositionTolerance",
     "type": "double",
     "value": 1.0,
     "properties": {
@@ -88,63 +200,7 @@
     }
   },
   {
-    "name": "/Preferences/ShooterVelocities/Short",
-    "type": "double",
-    "value": 10.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/ShooterVelocities/Intermediate",
-    "type": "double",
-    "value": 20.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/ShooterVelocities/Medium",
-    "type": "double",
-    "value": 30.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/ShooterVelocities/Long",
-    "type": "double",
-    "value": 50.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/IndexerVelocities/IndexerVelocity",
-    "type": "double",
-    "value": 20.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/ShooterAccuracy/Tight",
-    "type": "double",
-    "value": 1.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/ShooterAccuracy/Wide",
-    "type": "double",
-    "value": 10.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/ShooterAccuracy/StableCount",
+    "name": "/Preferences/Hopper/Forward",
     "type": "double",
     "value": 5.0,
     "properties": {
@@ -152,57 +208,9 @@
     }
   },
   {
-    "name": "/Preferences/Intake/Out",
+    "name": "/Preferences/Hopper/Reverse",
     "type": "double",
-    "value": 70.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Intake/In",
-    "type": "double",
-    "value": 3.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Intake/Center",
-    "type": "double",
-    "value": 50.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Pickup/Out",
-    "type": "double",
-    "value": -25.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Pickup/In",
-    "type": "double",
-    "value": 50.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Intake/Settle Max",
-    "type": "double",
-    "value": 3.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/Intake/PositionTolerance",
-    "type": "double",
-    "value": 0.5,
+    "value": -1.0,
     "properties": {
       "persistent": true
     }

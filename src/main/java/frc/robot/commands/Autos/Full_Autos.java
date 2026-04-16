@@ -4,8 +4,11 @@
 
 package frc.robot.commands.Autos;
 
+import static frc.robot.commands.Autos.AutoPoses.fourMeters;
+
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -63,7 +66,7 @@ public class Full_Autos {
                 // #endregion
 
                 Command JUST_SHOOT_FROM_ANYWHERE = Commands.sequence(cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
-                                cmds.mediumShoot.get());
+                                cmds.mediumShoot.get()).withName("JUST_SHOOT_FROM_ANYWHERE!!!");
 
                 Command LeftStart_JUSTSHOOT = new SequentialCommandGroup(
                                 cmds.MoveTo_LeftMidAlliance.get(),
@@ -169,7 +172,7 @@ public class Full_Autos {
                                                 cmds.intake.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
-                                cmds.mediumShoot.get());
+                                cmds.mediumShoot.get()).withName("RightStartCenterHarvestInLeft");
 
                 Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
                                 Commands.parallel(cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
@@ -181,7 +184,7 @@ public class Full_Autos {
                                                 cmds.intake.runPickupIn()),
                                 cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
-                                cmds.mediumShoot.get());
+                                cmds.mediumShoot.get()).withName("LeftStartCenterHarvestInRight");
                 Command RightQuad = new SequentialCommandGroup(
                                 Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
                                                 cmds.intake.runIntakeOut()),
@@ -200,7 +203,7 @@ public class Full_Autos {
                                 cmds.MoveTo_rightBump_FieldToAllianceEnd.get(), // TODO run pickup while we move to this
                                                                                 // position?
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
-                                cmds.mediumShoot.get());
+                                cmds.mediumShoot.get()).withName("RightQuad");
 
                 Command LeftQuad = new SequentialCommandGroup(
                                 Commands.parallel(
@@ -213,7 +216,7 @@ public class Full_Autos {
                                                                 cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
                                                 cmds.intake.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
-                                cmds.mediumShoot.get());
+                                cmds.mediumShoot.get()).withName("LeftQuad");
 
                 Command Zac_RightQuad = new SequentialCommandGroup(
                                 // MoveTo_rightBump_AllianceToFieldStart.get(),
@@ -229,7 +232,7 @@ public class Full_Autos {
                                                 cmds.intake.runPickupIn()),
                                 cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
-                                cmds.mediumShoot.get());
+                                cmds.mediumShoot.get()).withName("Zac_RightQuad");
 
                 Command Zac_LeftQuad = new SequentialCommandGroup(
                                 // MoveTo_leftBump_AllianceToFieldStart.get(),
@@ -245,7 +248,7 @@ public class Full_Autos {
                                                 cmds.intake.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
-                                cmds.mediumShoot.get());
+                                cmds.mediumShoot.get()).withName("Zac_LeftQuad");
 
                 // Actual name: RightFeedShootCenterHarvest
                 Command Right_Yum_Middle = new SequentialCommandGroup(
@@ -280,7 +283,7 @@ public class Full_Autos {
                                 cmds.MoveTo_FrontHubShoot.get());
 
                 Command fourMeters = new SequentialCommandGroup(
-                                cmds.MoveTo_quadLeft.get());
+                                cmds.MoveTo_quadLeft.get()).withName("fourMeters");
                 Command TheShowboater = new SequentialCommandGroup(
                                 cmds.MoveTo_depot_BackFace_Start.get(),
                                 cmds.MoveTo_depot_BackFace_End.get(),
@@ -324,6 +327,8 @@ public class Full_Autos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: add window in Elastic
-                OVERRIDE_AUTO_COMMAND = RightStartFeedingStationScore;
+                OVERRIDE_AUTO_COMMAND = LeftQuad;
+
+                SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND", OVERRIDE_AUTO_COMMAND.getName());
         }
 }
