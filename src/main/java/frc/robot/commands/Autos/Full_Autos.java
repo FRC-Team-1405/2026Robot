@@ -30,10 +30,10 @@ public class Full_Autos {
 
                 // #region TEST AUTOS (All caps)
                 Command TEST = new SequentialCommandGroup(
-                                cmds.MoveTo_depot_BackFace_Start.get(),
-                                cmds.intake.runIntakeOut(),
-                                cmds.MoveTo_depot_BackFace_End.get(),
-                                cmds.MoveTo_depot_BackFace_Start.get(),
+                                // cmds.MoveTo_depot_BackFace_t.get(),
+                                // cmds.intake.runIntakeOut(),
+                                // cmds.MoveTo_depot_BackFace_In.get(),
+                                // cmds.MoveTo_depot_BackFace_Out.get(),
                                 cmds.MoveTo_New_FrontHubShoot.get());
 
                 Command JUSTSHOOT = new SequentialCommandGroup(
@@ -45,7 +45,7 @@ public class Full_Autos {
                                 Commands.parallel(cmds.MoveTo_IntakeIN_FrontHubShoot.get(),
                                                 cmds.intake.runPickupIn().withTimeout(3.0)),
                                 cmds.intake.runIntakeCenter(),
-                                // MoveTo_depot_BackFace_End.get(),
+                                // MoveTo_depot_BackFace_In.get(),
                                 cmds.MoveTo_IntakeOUT_FrontHubShoot.get());
 
                 Command TESTCenterHarvest = new SequentialCommandGroup(
@@ -73,29 +73,29 @@ public class Full_Autos {
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get());
 
-                // Depot
-                Command DepotFaceIn = new SequentialCommandGroup(
-                                cmds.MoveTo_leftOfDepotFaceIn.get(),
-                                cmds.MoveTo_depotFaceIn.get(),
-                                cmds.MoveTo_midOfDepotFaceIn.get(),
-                                cmds.MoveTo_rightOfDepotFaceIn.get());
+                // // Depot
+                // Command DepotFaceIn = new SequentialCommandGroup(
+                // cmds.MoveTo_leftOfDepotFaceIn.get(),
+                // cmds.MoveTo_depotFaceIn.get(),
+                // cmds.MoveTo_midOfDepotFaceIn.get(),
+                // cmds.MoveTo_rightOfDepotFaceIn.get());
                 Command LeftStart_ToDepot = new SequentialCommandGroup(
                                 // Commands.parallel(MoveTo_leftBump_AllianceToFieldStart.get(),
                                 // intake.runIntakeOut()),
                                 Commands.parallel(
                                                 cmds.intake.runIntakeOut(),
                                                 cmds.MoveTo_leftBump_AllianceToFieldStart.get()),
-                                cmds.MoveTo_depot_BackFace_Start.get(),
+                                cmds.MoveTo_depot_BackFace_Out.get(),
                                 Commands.deadline(
                                                 Commands.sequence(
-                                                                cmds.MoveTo_depot_BackFace_End.get(),
+                                                                cmds.MoveTo_depot_BackFace_In.get(),
                                                                 cmds.MoveTo_depot_BackFace_End_Dos.get(),
                                                                 cmds.MoveTo_midOfDepotFaceOut.get()),
                                                 cmds.intake.runPickupIn()),
 
-                                cmds.MoveTo_depot_BackFace_Start.get(),
-
-                                cmds.MoveTo_New_FrontHubShoot.get());
+                                cmds.MoveTo_depot_BackFace_Out.get(),
+                                cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                cmds.mediumShoot.get()).withName("LeftStart_ToDepot");
                 // #region Bumps
                 Command rightBumpToField = new SequentialCommandGroup(
                                 // MoveTo_rightBump_AllianceToFieldStart.get(),
@@ -120,22 +120,22 @@ public class Full_Autos {
                                 cmds.MoveTo_rightLoadInZone.get());
 
                 // Actual Full autos
-                Command LeftStartDepotScore = new SequentialCommandGroup(
-                                cmds.MoveTo_leftOfDepotFaceIn.get(),
-                                cmds.MoveTo_depotFaceIn.get(),
-                                cmds.MoveTo_midOfDepotFaceIn.get(),
-                                cmds.MoveTo_rightOfDepotFaceIn.get(),
-                                cmds.MoveTo_FrontHubShoot.get());
+                // Command LeftStartDepotScore = new SequentialCommandGroup(
+                // cmds.MoveTo_leftOfDepotFaceIn.get(),
+                // cmds.MoveTo_depotFaceIn.get(),
+                // cmds.MoveTo_midOfDepotFaceIn.get(),
+                // cmds.MoveTo_rightOfDepotFaceIn.get(),
+                // cmds.MoveTo_FrontHubShoot.get());
 
-                Command RightStartDepotScore = new SequentialCommandGroup(
-                                cmds.MoveTo_allianceCenter.get(),
-                                cmds.MoveTo_towerDodge_Start.get(),
-                                cmds.MoveTo_towerDodge_End.get(),
-                                cmds.MoveTo_rightOfDepotFaceOut.get(),
-                                cmds.MoveTo_midOfDepotFaceOut.get(),
-                                cmds.MoveTo_depotFaceOut.get(),
-                                cmds.MoveTo_leftOfDepotFaceOut.get(),
-                                cmds.MoveTo_FrontHubShoot.get());
+                // Command RightStartDepotScore = new SequentialCommandGroup(
+                // cmds.MoveTo_allianceCenter.get(),
+                // cmds.MoveTo_towerDodge_Start.get(),
+                // cmds.MoveTo_towerDodge_End.get(),
+                // cmds.MoveTo_rightOfDepotFaceOut.get(),
+                // cmds.MoveTo_midOfDepotFaceOut.get(),
+                // cmds.MoveTo_depotFaceOut.get(),
+                // cmds.MoveTo_leftOfDepotFaceOut.get(),
+                // cmds.MoveTo_FrontHubShoot.get());
 
                 Command CenterStartFeedingStationScore = new SequentialCommandGroup(
                                 // MoveTo_FrontHubShoot.get(),
@@ -274,10 +274,10 @@ public class Full_Autos {
                                 cmds.MoveTo_FrontHubShoot.get());
 
                 Command LeftDepotShootCenterHarvestInLeftShoot = new SequentialCommandGroup(
-                                cmds.MoveTo_leftOfDepotFaceIn.get(),
-                                cmds.MoveTo_depotFaceIn.get(),
-                                cmds.MoveTo_midOfDepotFaceIn.get(),
-                                cmds.MoveTo_rightOfDepotFaceIn.get(),
+                                // cmds.MoveTo_leftOfDepotFaceIn.get(),
+                                // cmds.MoveTo_depotFaceIn.get(),
+                                // cmds.MoveTo_midOfDepotFaceIn.get(),
+                                // cmds.MoveTo_rightOfDepotFaceIn.get(),
                                 cmds.MoveTo_FrontHubShoot.get(),
                                 cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
                                 cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
@@ -291,11 +291,20 @@ public class Full_Autos {
                 Command fourMeters = new SequentialCommandGroup(
                                 cmds.MoveTo_quadLeft.get()).withName("fourMeters");
                 Command TheShowboater = new SequentialCommandGroup(
-                                cmds.MoveTo_depot_BackFace_Start.get(),
-                                cmds.MoveTo_depot_BackFace_End.get(),
-                                cmds.MoveTo_midOfDepotFaceIn.get(),
-                                cmds.MoveTo_rightOfDepotFaceIn.get(),
-                                cmds.MoveTo_New_FrontHubShoot.get());
+                                cmds.MoveTo_leftOfDepot_Out.get(),
+                                cmds.MoveTo_leftOfDepot_In.get(),
+                                cmds.MoveTo_leftOfDepot_Out.get(),
+                                cmds.MoveTo_left_midOfDepot_Out.get(),
+                                cmds.MoveTo_left_midOfDepot_In.get(),
+                                cmds.MoveTo_left_midOfDepot_Out.get(),
+                                cmds.MoveTo_depot_BackFace_Out.get(),
+                                cmds.MoveTo_depot_BackFace_In.get(),
+                                cmds.MoveTo_depot_BackFace_Out.get(),
+                                cmds.MoveTo_rightOfDepot_Out.get(),
+                                cmds.MoveTo_rightOfDepot_In.get(),
+                                cmds.MoveTo_rightOfDepot_Out.get(),
+                                cmds.MoveTo_ClosestShootingPosition_LONG.get(),
+                                cmds.mediumShoot.get()).withName("TheShowboater");
 
                 NamedCommands.registerCommand("LeftStart_ToDepot", LeftStart_ToDepot);
 
@@ -312,8 +321,8 @@ public class Full_Autos {
                 NamedCommands.registerCommand("Zac_RightQuad", Zac_RightQuad);
                 NamedCommands.registerCommand("Zac_LeftQuad", Zac_LeftQuad);
 
-                NamedCommands.registerCommand("LeftStartDepotScore", LeftStartDepotScore);
-                NamedCommands.registerCommand("RightStartDepotScore", RightStartDepotScore);
+                // NamedCommands.registerCommand("LeftStartDepotScore", LeftStartDepotScore);
+                // NamedCommands.registerCommand("RightStartDepotScore", RightStartDepotScore);
 
                 // Feeding station
                 NamedCommands.registerCommand("RightStartFeedingStationScore", RightStartFeedingStationScore);
@@ -332,10 +341,9 @@ public class Full_Autos {
                 NamedCommands.registerCommand("TESTCenterHarvest", TESTCenterHarvest);
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
-                // TODO: add window in Elastic
-                OVERRIDE_AUTO_COMMAND = JUST_SHOOT_FROM_ANYWHERE;
+                // OVERRIDE_AUTO_COMMAND = LeftQuad;
 
-                SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
-                                OVERRIDE_AUTO_COMMAND.getName());
+                // SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
+                // OVERRIDE_AUTO_COMMAND.getName());
         }
 }
