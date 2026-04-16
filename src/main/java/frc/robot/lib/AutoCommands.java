@@ -32,16 +32,16 @@ public class AutoCommands {
                         Hopper hopper,
                         Indexer indexer,
                         Shooter shooter,
-                        AdjustableHood hood, 
+                        AdjustableHood hood,
                         CommandsForAutos commandsForAutos) {
-                                        SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
-                                        SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
-                        
-                                        PidToPoseCommands.registerCommands(drivetrain);
-                                        // CommandsForAutos.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
-                                        // this HAS to go after AutoPilotCommands
-                                        AutoCommands.configureAutos(autoChooser, drivetrain);
-                                        Full_Autos full_Autos = new Full_Autos(commandsForAutos);
+                SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
+                SmartDashboard.putData(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode", autoChooser);
+
+                PidToPoseCommands.registerCommands(drivetrain);
+                // CommandsForAutos.registerCommands(drivetrain, climber, intake, hopper,
+                // indexer, shooter, hood);
+                // this HAS to go after AutoPilotCommands
+                AutoCommands.configureAutos(autoChooser, drivetrain);
 
         }
 
