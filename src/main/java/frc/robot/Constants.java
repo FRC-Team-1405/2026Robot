@@ -72,27 +72,17 @@ public class Constants {
 
     public static class ShooterPreferences {
         // Shooter speeds
-        public static final AngularVelocity SHORT;
-        public static final AngularVelocity INTERMEDIATE;
-        public static final AngularVelocity MEDIUM;
-        public static final AngularVelocity LONG;
-
-        static {
-            SHORT = RotationsPerSecond.of(38.0);
-
-            // Positions are a percentage of a full range of motion
-            Preferences.initDouble("ShooterVelocities/Intermediate", 20.0);
-            INTERMEDIATE = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Intermediate", 20.0));
-
-            MEDIUM = RotationsPerSecond.of(42.0);
-
-            LONG = RotationsPerSecond.of(75.0);
-        }
+        public static final AngularVelocity SHORT = RotationsPerSecond.of(38);
+        public static final AngularVelocity MEDIUM = RotationsPerSecond.of(42);
+        public static final AngularVelocity LONG = RotationsPerSecond.of(50);
+        public static final AngularVelocity LUDICROUS_SPEED = RotationsPerSecond.of(75);
+        public static final AngularVelocity DYNAMIC = RotationsPerSecond.of(20);
+        public static final AngularVelocity MAX = RotationsPerSecond.of(75);
 
         // Shooting distances
         // desired robot distances for each shooting speed
         public static Supplier<Double> SHORT_DISTANCE = () -> 1.4;
-        public static Supplier<Double> MEDIUM_DISTANCE = () -> 1.9542;// was 2.2082
+        public static Supplier<Double> MEDIUM_DISTANCE = () -> 1.9542;
         public static Supplier<Double> LONG_DISTANCE = () -> 2.5;
 
         public static final HashMap<AngularVelocity, Supplier<Double>> SHOOTER_SPEED_TO_DISTANCE = new HashMap<>();
