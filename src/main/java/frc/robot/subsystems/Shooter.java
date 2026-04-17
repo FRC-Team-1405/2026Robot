@@ -296,10 +296,15 @@ public class Shooter extends SubsystemBase {
       ceilingDistance = ShooterPreferences.LONG_DISTANCE.get();
       floorSpeed = ShooterPreferences.MEDIUM;
       ceilingSpeed = ShooterPreferences.LONG;
-    } else {
+    } else if (distanceToHub.getAsDouble() <= ShooterPreferences.LONGER_DISTANCE.get()) {
       floorDistance = ShooterPreferences.LONG_DISTANCE.get();
-      ceilingDistance = 4.02844;
+      ceilingDistance = ShooterPreferences.LONGER_DISTANCE.get();
       floorSpeed = ShooterPreferences.LONG;
+      ceilingSpeed = ShooterPreferences.LONGER;
+    } else {
+      floorDistance = ShooterPreferences.LONGER_DISTANCE.get();
+      ceilingDistance = 4.02844;
+      floorSpeed = ShooterPreferences.LONGER;
       ceilingSpeed = ShooterPreferences.LUDICROUS_SPEED;
     }
     setRequestedSpeedWithoutShooting(() -> {
