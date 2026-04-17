@@ -2,21 +2,15 @@ package frc.robot.commands.Autos;
 
 import java.util.function.Supplier;
 
-import com.pathplanner.lib.auto.NamedCommands;
 import com.therekrab.autopilot.APConstraints;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.Constants;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.AutoPilot.AutoPilotV2Command;
-import frc.robot.commands.AutoPilot.AutoPilotV2Command.Builder;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
 import frc.robot.lib.AutoCommands;
@@ -26,6 +20,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Pickup;
 import frc.robot.subsystems.Shooter;
 import static frc.robot.commands.AutoPilot.AutoPilotV2Command.DEFAULT_XY_THRESHOLD;
 import static frc.robot.commands.AutoPilot.AutoPilotV2Command.DEFAULT_THETA_THRESHOLD;
@@ -67,6 +62,7 @@ public class CommandsForAutos {
         CommandSwerveDrivetrain drivetrain;
         Climber climber;
         Intake intake;
+        Pickup pickup;
         Hopper hopper;
         Indexer indexer;
         Shooter shooter;
@@ -74,6 +70,7 @@ public class CommandsForAutos {
 
         public CommandsForAutos(CommandSwerveDrivetrain drivetrain, Climber climber,
                         Intake intake,
+                        Pickup pickup,
                         Hopper hopper,
                         Indexer indexer,
                         Shooter shooter,
@@ -82,6 +79,7 @@ public class CommandsForAutos {
                 this.drivetrain = drivetrain;
                 this.climber = climber;
                 this.intake = intake;
+                this.pickup = pickup;
                 this.hopper = hopper;
                 this.indexer = indexer;
                 this.shooter = shooter;

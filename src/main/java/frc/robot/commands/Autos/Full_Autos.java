@@ -4,11 +4,7 @@
 
 package frc.robot.commands.Autos;
 
-import static frc.robot.commands.Autos.AutoPoses.fourMeters;
-
 import com.pathplanner.lib.auto.NamedCommands;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -41,9 +37,9 @@ public class Full_Autos {
                                 // MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.MoveTo_FrontHubShoot.get(),
                                 cmds.intake.runIntakeOut(),
-                                // intake.runPickupIn().withTimeout(0.5),
+                                // pickup.runPickupIn().withTimeout(0.5),
                                 Commands.parallel(cmds.MoveTo_IntakeIN_FrontHubShoot.get(),
-                                                cmds.intake.runPickupIn().withTimeout(3.0)),
+                                                cmds.pickup.runPickupIn().withTimeout(3.0)),
                                 cmds.intake.runIntakeCenter(),
                                 // MoveTo_depot_BackFace_In.get(),
                                 cmds.MoveTo_IntakeOUT_FrontHubShoot.get());
@@ -53,7 +49,7 @@ public class Full_Autos {
                                 cmds.MoveTo_rightBump_AllianceToFieldStart_LOOK_HUB.get(),
                                 cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
                                 Commands.parallel(cmds.MoveTo_centerRightIntakeStart.get(), cmds.intake.runIntakeOut()),
-                                Commands.deadline(cmds.MoveTo_centerRightIntakeEnd.get(), cmds.intake.runPickupIn()),
+                                Commands.deadline(cmds.MoveTo_centerRightIntakeEnd.get(), cmds.pickup.runPickupIn()),
                                 Commands.parallel(cmds.MoveTo_centerRightIntakeEndLookHub.get(),
                                                 cmds.intake.runIntakeCenter()),
                                 // MoveTo_centerRightIntakeEndLookHub.get(),
@@ -91,7 +87,7 @@ public class Full_Autos {
                                                                 cmds.MoveTo_depot_BackFace_In.get(),
                                                                 cmds.MoveTo_depot_BackFace_End_Dos.get(),
                                                                 cmds.MoveTo_midOfDepotFaceOut.get()),
-                                                cmds.intake.runPickupIn()),
+                                                cmds.pickup.runPickupIn()),
 
                                 cmds.MoveTo_depot_BackFace_Out.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
@@ -165,11 +161,11 @@ public class Full_Autos {
                 Command RightStartCenterHarvestInLeft = new SequentialCommandGroup(
                                 Commands.parallel(cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
                                                 cmds.intake.runIntakeOut()),
-                                Commands.deadline(cmds.MoveTo_centerRightIntakeStart.get(), cmds.intake.runPickupIn()),
-                                Commands.deadline(cmds.MoveTo_centerRightIntakeEnd.get(), cmds.intake.runPickupIn()),
+                                Commands.deadline(cmds.MoveTo_centerRightIntakeStart.get(), cmds.pickup.runPickupIn()),
+                                Commands.deadline(cmds.MoveTo_centerRightIntakeEnd.get(), cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_centerRightIntakeEndLookHub.get(),
                                 Commands.deadline(cmds.MoveTo_leftBump_FieldToAllianceStart.get(),
-                                                cmds.intake.runPickupIn()),
+                                                cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("RightStartCenterHarvestInLeft");
@@ -177,11 +173,11 @@ public class Full_Autos {
                 Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
                                 Commands.parallel(cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
                                                 cmds.intake.runIntakeOut()),
-                                Commands.deadline(cmds.MoveTo_centerLeftIntakeStart.get(), cmds.intake.runPickupIn()),
-                                Commands.deadline(cmds.MoveTo_centerLeftIntakeEnd.get(), cmds.intake.runPickupIn()),
+                                Commands.deadline(cmds.MoveTo_centerLeftIntakeStart.get(), cmds.pickup.runPickupIn()),
+                                Commands.deadline(cmds.MoveTo_centerLeftIntakeEnd.get(), cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_centerLeftIntakeEndLookHub.get(),
                                 Commands.deadline(cmds.MoveTo_rightBump_FieldToAllianceStart.get(),
-                                                cmds.intake.runPickupIn()),
+                                                cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("LeftStartCenterHarvestInRight");
@@ -201,7 +197,7 @@ public class Full_Autos {
                                                 // MoveTo_rightBump_FieldToAllianceStart.get() // move to the start of
                                                 // the bump before crossing
                                                 ),
-                                                cmds.intake.runPickupIn()),
+                                                cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_rightBump_FieldToAllianceEnd.get(), // TODO run pickup while we move to this
                                                                                 // position?
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
@@ -220,7 +216,7 @@ public class Full_Autos {
                                                                 cmds.MoveTo_centerLeftIntakeStart.get(),
                                                                 cmds.MoveTo_quadLeft.get(),
                                                                 cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
-                                                cmds.intake.runPickupIn()),
+                                                cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 cmds.mediumShoot.get()).withName("LeftQuad");
 
@@ -235,7 +231,7 @@ public class Full_Autos {
                                                                 cmds.MoveTo_rightQuadSecondSweep_Start.get(),
                                                                 // MoveTo_rightQuadSecondSweep_End.get(),
                                                                 cmds.MoveTo_rightBump_FieldToAllianceStart.get()),
-                                                cmds.intake.runPickupIn()),
+                                                cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("Zac_RightQuad");
@@ -251,7 +247,7 @@ public class Full_Autos {
                                                                 cmds.MoveTo_leftQuadSecondSweep_Start.get(),
                                                                 // MoveTo_leftQuadSecondSweep_End.get(),
                                                                 cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
-                                                cmds.intake.runPickupIn()),
+                                                cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("Zac_LeftQuad");
@@ -266,7 +262,7 @@ public class Full_Autos {
                                 cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
                                 Commands.deadline(cmds.MoveTo_centerRightIntakeStart.get(),
                                                 cmds.intake.runIntakeOut()),
-                                Commands.deadline(cmds.MoveTo_centerRightIntakeEnd.get(), cmds.intake.runPickupIn()),
+                                Commands.deadline(cmds.MoveTo_centerRightIntakeEnd.get(), cmds.pickup.runPickupIn()),
                                 Commands.parallel(cmds.MoveTo_centerRightIntakeEndLookHub.get(),
                                                 cmds.intake.runIntakeCenter()),
                                 cmds.MoveTo_leftBump_FieldToAllianceStart.get(),
