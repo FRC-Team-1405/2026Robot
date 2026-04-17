@@ -159,6 +159,8 @@ public class Full_Autos {
 
                 // TODO: Fix this
                 Command RightStartCenterHarvestInLeft = new SequentialCommandGroup(
+                                Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
+                                                cmds.intake.runIntakeOut()),
                                 Commands.parallel(cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
                                                 cmds.intake.runIntakeOut()),
                                 Commands.deadline(cmds.MoveTo_centerRightIntakeStart.get(), cmds.pickup.runPickupIn()),
@@ -168,7 +170,8 @@ public class Full_Autos {
                                                 cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
-                                cmds.mediumShoot.get()).withName("RightStartCenterHarvestInLeft");
+                                cmds.mediumShoot.get())
+                                .withName("RightStartCenterHarvestInLeft");
 
                 Command LeftStartCenterHarvestInRight = new SequentialCommandGroup(
                                 Commands.parallel(cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
@@ -221,7 +224,8 @@ public class Full_Autos {
                                 cmds.mediumShoot.get()).withName("LeftQuad");
 
                 Command Zac_RightQuad = new SequentialCommandGroup(
-                                // MoveTo_rightBump_AllianceToFieldStart.get(),
+                                Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
+                                                cmds.intake.runIntakeOut()),
                                 Commands.parallel(cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
                                                 cmds.intake.runIntakeOut()),
                                 Commands.deadline(
@@ -237,7 +241,8 @@ public class Full_Autos {
                                 cmds.mediumShoot.get()).withName("Zac_RightQuad");
 
                 Command Zac_LeftQuad = new SequentialCommandGroup(
-                                // MoveTo_leftBump_AllianceToFieldStart.get(),
+                                cmds.MoveTo_leftBump_AllianceToFieldStart.get(), // TODO add deadline run deploy intake
+                                                                                 // out
                                 Commands.parallel(cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
                                                 cmds.intake.runIntakeOut()),
                                 Commands.deadline(
@@ -337,9 +342,9 @@ public class Full_Autos {
                 NamedCommands.registerCommand("TESTCenterHarvest", TESTCenterHarvest);
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
-                // OVERRIDE_AUTO_COMMAND = LeftQuad;
+                OVERRIDE_AUTO_COMMAND = Zac_RightQuad;
 
-                // SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
-                // OVERRIDE_AUTO_COMMAND.getName());
+                SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
+                                OVERRIDE_AUTO_COMMAND.getName());
         }
 }
