@@ -417,7 +417,7 @@ public class MoveMode {
      * @return the right stick's value capped by maxAngularRate
      */
     private double standardMode(final CommandXboxController joystick, final double maxAngularRate) {
-        return -applyDeadband(joystick.getRightX()) * maxAngularRate;
+        return -applyDeadband(joystick.getRightX()) * (maxAngularRate / (1 + joystick.getLeftTriggerAxis()));
     }
 
     /**
