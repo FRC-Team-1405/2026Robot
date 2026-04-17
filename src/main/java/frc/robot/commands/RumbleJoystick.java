@@ -91,4 +91,23 @@ public class RumbleJoystick extends SequentialCommandGroup {
         new RumbleJoystick(joystick, RumbleType.kLeftRumble, 1.0, 0.15),
         new RumbleJoystick(joystick, RumbleType.kRightRumble, 1.0, 0.15));
   }
+
+  /**
+   * Rumbles continously, remember to call stopRumble!
+   */
+  public static Command continousRumble(CommandXboxController joystick) {
+    return Commands.runOnce(() -> {
+      if (joystick != null) {
+        joystick.setRumble(RumbleType.kBothRumble, 0.5);
+      }
+    });
+  }
+
+  public static Command stopRumble(CommandXboxController joystick) {
+    return Commands.runOnce(() -> {
+      if (joystick != null) {
+        joystick.setRumble(RumbleType.kBothRumble, 0);
+      }
+    });
+  }
 }
