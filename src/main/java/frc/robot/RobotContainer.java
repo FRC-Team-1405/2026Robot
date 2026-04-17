@@ -45,6 +45,7 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.MoveMode;
+import frc.robot.subsystems.Pickup;
 import frc.robot.subsystems.ShootMode;
 import frc.robot.subsystems.ShootMode.Mode;
 import frc.robot.subsystems.Shooter;
@@ -79,12 +80,14 @@ public class RobotContainer {
         public final AdjustableHood hood = new AdjustableHood();
         public final Hopper hopper = new Hopper();
         public final Intake intake = new Intake();
+        public final Pickup pickup = new Pickup();
         private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
         private final SwerveFeatures swerveFeatures = new SwerveFeatures(drivetrain);
         MoveMode moveMode = new MoveMode();
         ShootMode shootMode = new ShootMode(drivetrain, swerveFeatures, intake, indexer, shooter, driverJoystick);
         public final CommandsForAutos commandsForAutos = new CommandsForAutos(drivetrain, climber,
                         intake,
+                        pickup,
                         hopper,
                         indexer,
                         shooter,
@@ -332,7 +335,7 @@ public class RobotContainer {
 
                 // Run Intake (Pickup)
                 // driverJoystick.leftBumper().onFalse(intake.runPickupStop());
-                driverJoystick.leftBumper().whileTrue(intake.runPickupIn());
+                driverJoystick.leftBumper().whileTrue(pickup.runPickupIn());
 
                 // Shoot — continuous auto-fire while held, with drivetrain brake.
                 // Hopper is driven by hopperTrigger (follows indexer state).

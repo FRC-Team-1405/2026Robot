@@ -125,12 +125,23 @@ public class AutoPoses {
 
         public static Supplier<Pose2d> centerLeftIntakeEndLookHub = () -> new Pose2d(7.75,
                         LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(160));
-
+        // Center Harvest Second Sweep
+        public static Supplier<Pose2d> centerRightIntake_SecondSweep = () -> new Pose2d(6,
+                        LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
+        public static Supplier<Pose2d> centerLeftIntake_SecondSweep = () -> new Pose2d(6,
+                        RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
         // Quads
-        public static Supplier<Pose2d> quadRight = () -> new Pose2d(7.75, 3.25, Rotation2d.fromDegrees(90)); // was 7.5,
-                                                                                                             // 3.5
-        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(7.75, 4.5, Rotation2d.fromDegrees(270)); // was 7.5,
-                                                                                                            // 6.5
+
+        // centerRightIntakeStart was (7.75, 7, 270)
+        public static Supplier<Pose2d> quadRightIntakeStart = () -> new Pose2d(7.95,
+                        RIGHT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> quadLeftIntakeStart = () -> new Pose2d(7.95,
+                        LEFT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
+
+        public static Supplier<Pose2d> quadRight = () -> new Pose2d(8, 3.25, Rotation2d.fromDegrees(120)); // was 7.5,
+                                                                                                           // 3.5
+        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(8, 4.5, Rotation2d.fromDegrees(230)); // was 7.5,
+                                                                                                         // 6.5
         // Second Sweeps
         public static Supplier<Pose2d> rightQuadSecondSweep_Start = () -> new Pose2d(6.95,
                         RIGHT_START_SECOND_SWEEP_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));

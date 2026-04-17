@@ -7,3 +7,6 @@
 
 ## ls with file sizes
 `ls -lh`
+
+## Download all folders
+`scp -r lvuser@roboRIO-1405-FRC.local:/home/lvuser/logs/ C:\Users\FinneyRobotics\Downloads`

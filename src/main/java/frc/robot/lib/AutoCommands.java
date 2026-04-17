@@ -104,6 +104,10 @@ public class AutoCommands {
                                 NamedCommands.getCommand("RightStartCenterHarvestInLeft"));
                 commandsToAddToChooser.put("LeftStartCenterHarvestInRight",
                                 NamedCommands.getCommand("LeftStartCenterHarvestInRight"));
+                commandsToAddToChooser.put("RightStartCenterHarvest_SecondSweep",
+                                NamedCommands.getCommand("RightStartCenterHarvest_SecondSweep"));
+                commandsToAddToChooser.put("LeftStartCenterHarvest_SecondSweep",
+                                NamedCommands.getCommand("LeftStartCenterHarvest_SecondSweep"));
 
                 // commandsToAddToChooser.put("LeftDepotShootCenterHarvestInLeftShoot",
                 // NamedCommands.getCommand("LeftDepotShootCenterHarvestInLeftShoot"));
@@ -111,7 +115,10 @@ public class AutoCommands {
                                 NamedCommands.getCommand("RightQuad"));
                 commandsToAddToChooser.put("LeftQuad",
                                 NamedCommands.getCommand("LeftQuad"));
-
+                commandsToAddToChooser.put("Zac_RightQuad",
+                                NamedCommands.getCommand("Zac_RightQuad"));
+                commandsToAddToChooser.put("Zac_LeftQuad",
+                                NamedCommands.getCommand("Zac_LeftQuad"));
                 // commandsToAddToChooser.put("Right_Yum_Middle",
                 // NamedCommands.getCommand("Right_Yum_Middle"));
 

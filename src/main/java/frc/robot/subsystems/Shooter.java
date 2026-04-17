@@ -147,6 +147,8 @@ public class Shooter extends SubsystemBase {
     // Follower Motors
     TalonFXConfiguration followerMotorsCfg = new TalonFXConfiguration();
     followerMotorsCfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    followerMotorsCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
+        .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
 
     StatusCode status2 = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
@@ -364,6 +366,8 @@ public class Shooter extends SubsystemBase {
     double motor1SupplyCurrent = shooterMotor1.getSupplyCurrent().getValueAsDouble();
     double motor2SupplyCurrent = shooterMotor2.getSupplyCurrent().getValueAsDouble();
     double motor3SupplyCurrent = shooterMotor3.getSupplyCurrent().getValueAsDouble();
+    double cumulativeMotorSupplyCurrent = motor1SupplyCurrent + motor2SupplyCurrent + motor3SupplyCurrent;
+
     double motor1TorqueCurrent = shooterMotor1.getTorqueCurrent().getValueAsDouble();
     double motor2TorqueCurrent = shooterMotor2.getTorqueCurrent().getValueAsDouble();
     double motor3TorqueCurrent = shooterMotor3.getTorqueCurrent().getValueAsDouble();
@@ -477,12 +481,12 @@ public class Shooter extends SubsystemBase {
       // SmartDashboard.putNumber("Shooter/Motor1SupplyCurrent", motor1SupplyCurrent);
       // SmartDashboard.putNumber("Shooter/Motor2SupplyCurrent", motor2SupplyCurrent);
       // SmartDashboard.putNumber("Shooter/Motor3SupplyCurrent", motor3SupplyCurrent);
-      // SmartDashboard.putNumber("Shooter/DifferentialCurrent",
-      // differentialCurrentDraw);
+      SmartDashboard.putNumber("Shooter/DifferentialCurrent", differentialCurrentDraw);
+      SmartDashboard.putNumber("Shooter/CumulativeSupplyCurrent", cumulativeMotorSupplyCurrent);
+
       SmartDashboard.putNumber("Shooter/Motor1TorqueCurrent", motor1TorqueCurrent);
       SmartDashboard.putNumber("Shooter/Motor2TorqueCurrent", motor2TorqueCurrent);
       SmartDashboard.putNumber("Shooter/Motor3TorqueCurrent", motor3TorqueCurrent);
-      SmartDashboard.putNumber("Shooter/CumulativeStatorCurrent", cumulativeMotorStatorCurrent);
 
       // Temperature
       // SmartDashboard.putNumber("Shooter/Motor1Temp", motor1Temp);
