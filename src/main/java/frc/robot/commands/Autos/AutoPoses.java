@@ -24,8 +24,13 @@ public class AutoPoses {
         // off blue center only used for Right Start Depot Score
 
         public static Supplier<Pose2d> feedingStation = () -> FieldConstants.BLUE_FEED_ROBOT_POSITION;
-        public static Supplier<Pose2d> rightLoadInZone = () -> new Pose2d(5.75, 2.5, Rotation2d.fromDegrees(180));
-        public static Supplier<Pose2d> leftLoadInZone = () -> new Pose2d(5.75, 5.5, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> rightLoadInZone = () -> new Pose2d(0, 0, Rotation2d.fromDegrees(90)); // was
+                                                                                                             // 5.75,
+                                                                                                             // 2.5,
+                                                                                                             // Rotation2d.fromDegrees(180)
+        public static Supplier<Pose2d> leftLoadInZone = () -> new Pose2d(0, 0, Rotation2d.fromDegrees(180)); // 5.75,
+                                                                                                             // 5.5,
+                                                                                                             // Rotation2d.fromDegrees(180)
 
         // #region START Poses
         public static Supplier<Pose2d> startRightFaceIn = () -> new Pose2d(BUMP_X_ALLIANCE_SIDE, 5,
@@ -186,5 +191,5 @@ public class AutoPoses {
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
         // #endregion
 
-        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(2, 0, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 }

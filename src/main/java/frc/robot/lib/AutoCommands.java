@@ -104,10 +104,14 @@ public class AutoCommands {
                                 NamedCommands.getCommand("RightStartCenterHarvestInLeft"));
                 commandsToAddToChooser.put("LeftStartCenterHarvestInRight",
                                 NamedCommands.getCommand("LeftStartCenterHarvestInRight"));
-                commandsToAddToChooser.put("RightStartCenterHarvest_SecondSweep",
-                                NamedCommands.getCommand("RightStartCenterHarvest_SecondSweep"));
-                commandsToAddToChooser.put("LeftStartCenterHarvest_SecondSweep",
-                                NamedCommands.getCommand("LeftStartCenterHarvest_SecondSweep"));
+                commandsToAddToChooser.put("RightStartCenterHarvest_SecondSweep_TOP_FIRST",
+                                NamedCommands.getCommand("RightStartCenterHarvest_SecondSweep_TOP_FIRST"));
+                commandsToAddToChooser.put("LeftStartCenterHarvest_SecondSweep_TOP_FIRST",
+                                NamedCommands.getCommand("LeftStartCenterHarvest_SecondSweep_TOP_FIRST"));
+                commandsToAddToChooser.put("RightStartCenterHarvest_SecondSweep_LOW_FIRST",
+                                NamedCommands.getCommand("RightStartCenterHarvest_SecondSweep_LOW_FIRST"));
+                commandsToAddToChooser.put("LeftStartCenterHarvest_SecondSweep_LOW_FIRST",
+                                NamedCommands.getCommand("LeftStartCenterHarvest_SecondSweep_LOW_FIRST"));
 
                 // commandsToAddToChooser.put("LeftDepotShootCenterHarvestInLeftShoot",
                 // NamedCommands.getCommand("LeftDepotShootCenterHarvestInLeftShoot"));

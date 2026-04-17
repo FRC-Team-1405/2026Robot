@@ -120,7 +120,7 @@ public class AutoPilotV2Command extends FinneyCommand {
         private double errorXYCentimeters = DEFAULT_XY_THRESHOLD;
         private double errorThetaDegrees = DEFAULT_THETA_THRESHOLD;
         private double beelineRadiusCentimeters = DEFAULT_BEELINE_THRESHOLD;
-        private double headingKP = 2.0;
+        private double headingKP = 8.0; // was 2
         private double headingKD = 0.0;
         private double headingDeadbandDegrees = 1.0;
         private boolean isVelocityThresholdActive = false;

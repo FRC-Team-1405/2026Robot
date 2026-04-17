@@ -48,6 +48,7 @@ public class CommandsForAutos {
         private static final double BUMP_NARROW_XY_THRESHOLD_CM = 12;
         private static final double BUMP_WIDE_XY_THRESHOLD_CM = 30;
         private static final double BUMP_THETA_THRESHOLD_DEG = 12;
+        private static final double BUMP_headingKp = 2;
 
         // TODO: Adjust
         private static final APConstraints fullFieldConstraints = new APConstraints()
@@ -230,10 +231,12 @@ public class CommandsForAutos {
         Supplier<Command> MoveTo_quadRight = () -> new AutoPilotV2Command.Builder(
                         () -> quadRight.get(), drivetrain, "MoveTo_quadRight")
                         .withFlipPoseForAlliance(true)
+                        .withProfileThresholds(8, DEFAULT_THETA_THRESHOLD, DEFAULT_BEELINE_THRESHOLD)
                         .build();
         Supplier<Command> MoveTo_quadLeft = () -> new AutoPilotV2Command.Builder(
                         () -> quadLeft.get(), drivetrain, "MoveTo_quadLeft")
                         .withFlipPoseForAlliance(true)
+                        .withProfileThresholds(8, DEFAULT_THETA_THRESHOLD, DEFAULT_BEELINE_THRESHOLD)
                         .build();
         // #endregion
         Supplier<Command> MoveTo_centerRightIntakeEndLookHub = () -> new AutoPilotV2Command.Builder(
@@ -320,6 +323,8 @@ public class CommandsForAutos {
                         "MoveTo_leftBump_AllianceToFieldStart")
                         .withFlipPoseForAlliance(true)
                         // .withConstraints(bumpConstraints)
+                        .withProfileThresholds(16, DEFAULT_THETA_THRESHOLD, DEFAULT_BEELINE_THRESHOLD)
+                        .withHeadingPID(BUMP_headingKp, 0)
                         .build();
         Supplier<Command> MoveTo_leftBump_AllianceToFieldStart_LOOK_HUB = () -> new AutoPilotV2Command.Builder(
                         () -> leftBump_AllianceToFieldStart_LOOK_HUB.get(), drivetrain,
@@ -332,6 +337,7 @@ public class CommandsForAutos {
                         "MoveTo_leftBump_AllianceToFieldEnd")
                         .withFlipPoseForAlliance(true)
                         .withConstraints(bumpConstraints)
+                        .withHeadingPID(BUMP_headingKp, 0)
                         .build();
 
         Supplier<Command> MoveTo_rightBump_AllianceToFieldStart = () -> new AutoPilotV2Command.Builder(
@@ -340,6 +346,7 @@ public class CommandsForAutos {
                         .withFlipPoseForAlliance(true)
                         .withProfileThresholds(BUMP_NARROW_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
                                         DEFAULT_BEELINE_THRESHOLD)
+                        .withHeadingPID(BUMP_headingKp, 0)
                         // .withConstraints(bumpConstraints)
                         .build();
         Supplier<Command> MoveTo_rightBump_AllianceToFieldStart_LOOK_HUB = () -> new AutoPilotV2Command.Builder(
@@ -349,13 +356,6 @@ public class CommandsForAutos {
                         // .withConstraints(bumpConstraints)
                         .build();
 
-        // Supplier<Command> MoveTo_rightBump_AllianceToFieldEnd = () -> new
-        // AutoPilotV2Command.Builder(
-        // () -> rightBump_AllianceToFieldEnd.get(), drivetrain,
-        // "MoveTo_rightBump_AllianceToFieldEnd")
-        // .withFlipPoseForAlliance(true)
-        // .build();
-
         Supplier<Command> MoveTo_rightBump_AllianceToFieldEnd = () -> new AutoPilotV2Command.Builder(
                         () -> rightBump_AllianceToFieldEnd.get(), drivetrain,
                         "MoveTo_rightBump_AllianceToFieldEnd")
@@ -364,6 +364,7 @@ public class CommandsForAutos {
                         .withProfileThresholds(
                                         BUMP_WIDE_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
                                         DEFAULT_BEELINE_THRESHOLD)
+                        .withHeadingPID(BUMP_headingKp, 0)
                         .build();
 
         Supplier<Command> MoveTo_leftBump_FieldToAllianceStart = () -> new AutoPilotV2Command.Builder(
@@ -371,6 +372,7 @@ public class CommandsForAutos {
                         "MoveTo_leftBump_FieldToAllianceStart")
                         .withFlipPoseForAlliance(true)
                         // .withConstraints(bumpConstraints)
+                        .withHeadingPID(BUMP_headingKp, 0)
                         .build();
 
         Supplier<Command> MoveTo_leftBump_FieldToAllianceEnd = () -> new AutoPilotV2Command.Builder(
@@ -379,6 +381,7 @@ public class CommandsForAutos {
                         .withFlipPoseForAlliance(true)
                         .withProfileThresholds(6, 12, DEFAULT_BEELINE_THRESHOLD)
                         .withConstraints(bumpConstraints)
+                        .withHeadingPID(BUMP_headingKp, 0)
                         .build();
         Supplier<Command> MoveTo_rightBump_FieldToAllianceStart = () -> new AutoPilotV2Command.Builder(
                         () -> rightBump_FieldToAllianceStart.get(), drivetrain,
@@ -386,16 +389,20 @@ public class CommandsForAutos {
                         .withFlipPoseForAlliance(true)
                         .withProfileThresholds(BUMP_NARROW_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
                                         DEFAULT_BEELINE_THRESHOLD)
+                        .withHeadingPID(BUMP_headingKp, 0)
                         .build();
         Supplier<Command> MoveTo_rightBump_FieldToAllianceEnd = () -> new AutoPilotV2Command.Builder(
                         () -> rightBump_FieldToAllianceEnd.get(), drivetrain,
                         "MoveTo_rightBump_FieldToAllianceEnd")
                         .withFlipPoseForAlliance(true)
+                        .withHeadingPID(BUMP_headingKp, 0)
                         .build();
         Supplier<Command> MoveTo_rightBump_FieldToAllianceEndDos = () -> new AutoPilotV2Command.Builder(
                         () -> rightBump_FieldToAllianceEndDos.get(), drivetrain,
                         "MoveTo_rightBump_FieldToAllianceEndDos")
                         .withFlipPoseForAlliance(true)
+                        // TODO:This may not be necessary
+                        .withHeadingPID(BUMP_headingKp, 0)
                         .build();
         Supplier<Command> MoveTo_startRightFaceIn = () -> new AutoPilotV2Command.Builder(
                         () -> startRightFaceIn.get(), drivetrain,
@@ -415,6 +422,16 @@ public class CommandsForAutos {
 
         Supplier<Command> mediumShoot = () -> Commands.sequence(
                         shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM),
+                        AutoFire.autonomous(shooter, indexer,
+                                        () -> ShooterPreferences.INDEXER_VELOCITY))
+                        .withTimeout(10)
+                        .andThen(Commands.sequence(
+                                        indexer.runStopIndexer(),
+                                        shooter.stopShooter(),
+                                        indexer.runStopIndexer()));
+
+        Supplier<Command> longShoot = () -> Commands.sequence(
+                        shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG),
                         AutoFire.autonomous(shooter, indexer,
                                         () -> ShooterPreferences.INDEXER_VELOCITY))
                         .withTimeout(10)

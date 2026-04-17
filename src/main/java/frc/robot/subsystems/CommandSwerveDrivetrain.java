@@ -519,7 +519,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 .withFlipPoseForAlliance(flipPoseForRedAlliance)
                 .withProfileThresholds(
                         AutoPilotV2Command.DEFAULT_XY_THRESHOLD, 2.0, AutoPilotV2Command.DEFAULT_BEELINE_THRESHOLD)
-                .withVelocityThreshold(0.5)
+                .withVelocityThreshold(0.1)// was 5
                 .build();
     }
 
