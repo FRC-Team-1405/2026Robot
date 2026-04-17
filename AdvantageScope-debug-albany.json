@@ -7,7 +7,7 @@
       "height": 926,
       "state": {
         "sidebar": {
-          "width": 285,
+          "width": 500,
           "expanded": [
             "/Drivetrain",
             "/DriveState",
@@ -22,7 +22,13 @@
             "/NT/SmartDashboard/Intake",
             "/NT/SmartDashboard/Shooter",
             "/NT/SmartDashboard/SwerveDrive",
-            "/NT/SmartDashboard/Battery"
+            "/NT/SmartDashboard/Battery",
+            "/DSLog",
+            "/SmartDashboard/Intake",
+            "/NT/SmartDashboard/Vision",
+            "/NT/photonvision",
+            "/NT/photonvision/Right",
+            "/NT/photonvision/Left"
           ]
         },
         "tabs": {
@@ -76,6 +82,24 @@
                     "options": {
                       "position": "center"
                     }
+                  },
+                  {
+                    "type": "arrow",
+                    "logKey": "NT:/photonvision/Right/targetPose",
+                    "logType": "Transform3d",
+                    "visible": true,
+                    "options": {
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "arrow",
+                    "logKey": "NT:/photonvision/Left/targetPose",
+                    "logType": "Transform3d",
+                    "visible": true,
+                    "options": {
+                      "position": "center"
+                    }
                   }
                 ],
                 "field": "FRC:2026 Field",
@@ -84,7 +108,62 @@
               },
               "controllerUUID": "m803oq7wzltvbockv0kqvox8w5r12ye1",
               "renderer": null,
-              "controlsHeight": 250
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/DSLog/CANUtilization",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/Intake/PickupVelocity",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/SmartDashboard/Pickup/PickupButtonPressed",
+                    "logType": "Boolean",
+                    "visible": false,
+                    "options": {
+                      "color": "#e5b31b"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "nqpg9vtoo7moztmnn0w2d4qeb3h94opb",
+              "renderer": null,
+              "controlsHeight": 200
             },
             {
               "type": 1,
@@ -113,21 +192,31 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "NT:/SmartDashboard/Intake/PickupVelocity",
-                    "logType": "Number",
-                    "visible": false,
-                    "options": {
-                      "color": "#e48b32",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
                     "logKey": "NT:/SmartDashboard/VisionWeight",
                     "logType": "Number",
                     "visible": true,
                     "options": {
                       "color": "#c0b487",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/photonvision/Right/latencyMillis",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#5f4528",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/photonvision/Left/latencyMillis",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#d993aa",
                       "size": "normal"
                     }
                   }
@@ -275,7 +364,7 @@
                     "type": "stepped",
                     "logKey": "NT:/SmartDashboard/Intake/PickupStatorCurrent",
                     "logType": "Number",
-                    "visible": false,
+                    "visible": true,
                     "options": {
                       "color": "#e5b31b",
                       "size": "normal"
@@ -283,7 +372,17 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "NT:/SmartDashboard/Shooter/CumulativeStatorCurrent",
+                    "logKey": "NT:/SmartDashboard/SwerveDrive/DriveMotor_Cumulative_SupplyCurrents",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#5f4528",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/Shooter/CumulativeSupplyCurrent",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -293,41 +392,11 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "NT:/SmartDashboard/SwerveDrive/DriveMotor_StatorCurrent_0",
+                    "logKey": "NT:/SmartDashboard/Intake/PickupSupplyCurrent",
                     "logType": "Number",
-                    "visible": false,
+                    "visible": true,
                     "options": {
                       "color": "#80588e",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/SmartDashboard/SwerveDrive/DriveMotor_StatorCurrent_1",
-                    "logType": "Number",
-                    "visible": false,
-                    "options": {
-                      "color": "#e48b32",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/SmartDashboard/SwerveDrive/DriveMotor_StatorCurrent_2",
-                    "logType": "Number",
-                    "visible": false,
-                    "options": {
-                      "color": "#c0b487",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "NT:/SmartDashboard/SwerveDrive/DriveMotor_StatorCurrent_3",
-                    "logType": "Number",
-                    "visible": false,
-                    "options": {
-                      "color": "#858584",
                       "size": "normal"
                     }
                   }
@@ -370,25 +439,13 @@
               },
               "controllerUUID": "urwyhsirfms29gbozmpcqt5xjp59obhy",
               "renderer": null,
-              "controlsHeight": 291
+              "controlsHeight": 320
             }
           ]
         }
       }
     }
   ],
-  "satellites": [
-    {
-      "x": 794,
-      "y": 0,
-      "width": 748,
-      "height": 918,
-      "state": {
-        "type": 2,
-        "visualizer": null
-      },
-      "uuid": "m803oq7wzltvbockv0kqvox8w5r12ye1"
-    }
-  ],
+  "satellites": [],
   "version": "26.0.1"
 }
