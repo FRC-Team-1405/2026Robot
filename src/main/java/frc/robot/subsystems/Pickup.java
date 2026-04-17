@@ -27,6 +27,10 @@ public class Pickup extends SubsystemBase {
 
     private final NeutralOut neutralRequest = new NeutralOut();
 
+    public Pickup() {
+        setupMotors();
+    }
+
     /** Run the pickup rollers inward (intaking game pieces). */
     // public Command runPickupIn() {
     // return startEnd(() -> pickupRollIn(), () -> stopPickupMotor())
