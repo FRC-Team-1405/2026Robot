@@ -86,6 +86,7 @@ public class Shooter extends SubsystemBase {
   private boolean wasLocked = false;
 
   private CommandXboxController operatorJoystick;
+  private Command setToStandardPointMode;
 
   private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.LONG;
 
@@ -180,8 +181,9 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Creates a new Shooter. */
-  public Shooter(CommandXboxController operatorJoystick) {
+  public Shooter(CommandXboxController operatorJoystick, Command setToStandardPointMode) {
     this.operatorJoystick = operatorJoystick;
+    this.setToStandardPointMode = setToStandardPointMode;
     setupMotors();
     simulationInit();
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
@@ -206,6 +208,10 @@ public class Shooter extends SubsystemBase {
   private void shooterStop() {
     if (operatorJoystick != null) {
       CommandScheduler.getInstance().schedule(RumbleJoystick.stopRumble(operatorJoystick));
+    }
+
+    if (setToStandardPointMode != null) {
+      CommandScheduler.getInstance().schedule(setToStandardPointMode);
     }
 
     shooterTarget = 0.0;
