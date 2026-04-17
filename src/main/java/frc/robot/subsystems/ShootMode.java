@@ -1,12 +1,14 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FieldConstants;
-import frc.robot.subsystems.ShootMode.Mode;
 
 public class ShootMode {
     private SwerveFeatures swerveFeatures;
@@ -15,6 +17,9 @@ public class ShootMode {
     private Indexer indexer;
     private Shooter shooter;
     private CommandXboxController joystick;
+
+    private Mode activeMode = Mode.MEDIUM;
+    private Command dynamicShootCommand;
 
     public ShootMode(CommandSwerveDrivetrain drivetrain, SwerveFeatures swerveFeatures, Intake intake, Indexer indexer,
             Shooter shooter,
@@ -25,32 +30,44 @@ public class ShootMode {
         this.indexer = indexer;
         this.drivetrain = drivetrain;
         this.swerveFeatures = swerveFeatures;
+
+        dynamicShootCommand = AutoFire.DynamicTeleop(shooter, indexer,
+                () -> ShooterPreferences.INDEXER_VELOCITY, intake, () -> swerveFeatures
+                        .getDistanceToHub(drivetrain,
+                                FieldConstants.ALLIANCE_HUB_POSITION),
+                joystick.rightBumper());
     }
 
     public enum Mode {
         SHORT,
         MEDIUM,
         LONG,
+        LUDICROUS,
         DYNAMIC
     }
 
-    private Mode activeMode = Mode.MEDIUM;
-
-    public void setMode(Mode mode) {
+    public Command setMode(Mode mode) {
         if (mode.equals(Mode.SHORT)) {
-            shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT);
+            // dynamicShootCommand.end(false);
+            // shooter.stopShooter();
+            return shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT)
+                    .finallyDo(() -> dynamicShootCommand.end(false));
         } else if (mode.equals(Mode.MEDIUM)) {
-            shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM);
+            return shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM)
+                    .finallyDo(() -> dynamicShootCommand.end(false));
+            // dynamicShootCommand.end(false);
         } else if (mode.equals(Mode.LONG)) {
-            shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG);
+            return shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG)
+                    .finallyDo(() -> dynamicShootCommand.end(false));
+            // dynamicShootCommand.end(false);
+        } else if (mode.equals(Mode.LUDICROUS)) {
+            return shooter.runSetRequestedSpeed(() -> ShooterPreferences.LUDICROUS_SPEED)
+                    .finallyDo(() -> dynamicShootCommand.end(false));
+            // dynamicShootCommand.end(false);
         } else if (mode.equals(Mode.DYNAMIC)) {
-            CommandScheduler.getInstance().schedule(AutoFire.DynamicTeleop(shooter, indexer,
-                    () -> ShooterPreferences.INDEXER_VELOCITY, intake, () -> swerveFeatures
-                            .getDistanceToHub(drivetrain,
-                                    FieldConstants.ALLIANCE_HUB_POSITION),
-                    joystick.rightBumper()));
+            return dynamicShootCommand;
         } else {
-            shooter.stopShooter();
+            return Commands.none();
         }
     }
 

@@ -184,36 +184,40 @@ public class RobotContainer {
                 operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));
                 operatorJoystick.a().onTrue(new SetHoodPosition(hood, HoodAngles.LONG));
 
-                operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
-                operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
-                operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                // Set Shooter Speeds
 
-                // operatorJoystick.y().onTrue(new InstantCommand(() -> shootCommand =
-                // Commands.sequence(
-                // new InstantCommand(
-                // () -> SmartDashboard.putString("Shooter/AutoFireMode",
-                // "Normal")),
-                // AutoFire.teleop(shooter, indexer,
-                // () -> ShooterPreferences.INDEXER_VELOCITY, intake))));
+                // SHORT
                 operatorJoystick.y().onTrue(new SequentialCommandGroup(new InstantCommand(
                                 () -> SmartDashboard.putString("Shooter/AutoFireMode",
                                                 "Short")),
-                                new InstantCommand(() -> shootMode.setMode(Mode.SHORT))));
+                                shootMode.setMode(Mode.SHORT)));
 
+                // MEDIUM
                 operatorJoystick.b().onTrue(new SequentialCommandGroup(new InstantCommand(
                                 () -> SmartDashboard.putString("Shooter/AutoFireMode",
                                                 "Medium")),
-                                new InstantCommand(() -> shootMode.setMode(Mode.MEDIUM))));
+                                shootMode.setMode(Mode.MEDIUM)));
 
-                operatorJoystick.a().onTrue(new SequentialCommandGroup(new InstantCommand(
-                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
-                                                "Long")),
-                                new InstantCommand(() -> shootMode.setMode(Mode.LONG))));
+                // LONG
+                operatorJoystick.a().and(operatorJoystick.back()
+                                .negate()).onTrue(new SequentialCommandGroup(
+                                                new InstantCommand(
+                                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                                                "Long")),
+                                                shootMode.setMode(Mode.LONG)));
 
+                // LUDICROUS
+                operatorJoystick.a().and(operatorJoystick.back()).onTrue(new SequentialCommandGroup(
+                                new InstantCommand(
+                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                                "LUDICROUS")),
+                                shootMode.setMode(Mode.LUDICROUS)));
+
+                // DYNAMIC
                 operatorJoystick.x().onTrue(new SequentialCommandGroup(new InstantCommand(
                                 () -> SmartDashboard.putString("Shooter/AutoFireMode",
                                                 "Dynamic")),
-                                new InstantCommand(() -> shootMode.setMode(Mode.DYNAMIC))));
+                                shootMode.setMode(Mode.DYNAMIC)));
 
                 // Stop Shooter
                 Command stopShooterAndDeployIntake = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer(),
@@ -335,7 +339,12 @@ public class RobotContainer {
 
                 // Run Intake (Pickup)
                 // driverJoystick.leftBumper().onFalse(intake.runPickupStop());
-                driverJoystick.leftBumper().whileTrue(pickup.runPickupIn());
+                driverJoystick.leftBumper()
+                                .whileTrue(new SequentialCommandGroup(new InstantCommand(
+                                                () -> SmartDashboard.putBoolean("Pickup/PickupButtonPressed", true)),
+                                                pickup.runPickupIn()))
+                                .onFalse(new InstantCommand(
+                                                () -> SmartDashboard.putBoolean("Pickup/PickupButtonPressed", false)));
 
                 // Shoot — continuous auto-fire while held, with drivetrain brake.
                 // Hopper is driven by hopperTrigger (follows indexer state).
