@@ -127,8 +127,8 @@ public class AutoPoses {
                         LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(160));
 
         // Quads
-        public static Supplier<Pose2d> quadRight = () -> new Pose2d(7.75, 3.5, Rotation2d.fromDegrees(90)); // was 7.5,
-                                                                                                            // 3.5
+        public static Supplier<Pose2d> quadRight = () -> new Pose2d(7.75, 3.25, Rotation2d.fromDegrees(90)); // was 7.5,
+                                                                                                             // 3.5
         public static Supplier<Pose2d> quadLeft = () -> new Pose2d(7.75, 4.5, Rotation2d.fromDegrees(270)); // was 7.5,
                                                                                                             // 6.5
         // Second Sweeps
@@ -165,6 +165,7 @@ public class AutoPoses {
 
         public static Supplier<Pose2d> towerDodge_Start = () -> new Pose2d(2, 4.85, Rotation2d.fromDegrees(90));
         public static Supplier<Pose2d> towerDodge_End = () -> new Pose2d(0.40, 4.85, Rotation2d.fromDegrees(90));
+        public static Supplier<Pose2d> towerDodge_DUCK = () -> new Pose2d(0.40, 4.85, Rotation2d.fromDegrees(90));
         // #endregion
 
         public static Supplier<Pose2d> LeftMidAlliance = () -> new Pose2d(2, 6, Rotation2d.kZero);

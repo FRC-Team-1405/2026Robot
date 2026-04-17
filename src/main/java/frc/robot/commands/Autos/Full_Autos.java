@@ -165,10 +165,13 @@ public class Full_Autos {
                 Command RightStartCenterHarvestInLeft = new SequentialCommandGroup(
                                 Commands.parallel(cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
                                                 cmds.intake.runIntakeOut()),
-                                Commands.deadline(cmds.MoveTo_centerRightIntakeStart.get(), cmds.intake.runPickupIn()),
-                                Commands.deadline(cmds.MoveTo_centerRightIntakeEnd.get(), cmds.intake.runPickupIn()),
-                                cmds.MoveTo_centerRightIntakeEndLookHub.get(),
-                                Commands.deadline(cmds.MoveTo_leftBump_FieldToAllianceStart.get(),
+                                Commands.deadline(
+                                                Commands.sequence(
+                                                                cmds.MoveTo_centerRightIntakeStart.get(),
+                                                                cmds.MoveTo_centerRightIntakeEnd.get(),
+                                                                cmds.MoveTo_centerRightIntakeEndLookHub.get(),
+                                                                cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
+
                                                 cmds.intake.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
@@ -185,6 +188,33 @@ public class Full_Autos {
                                 cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("LeftStartCenterHarvestInRight");
+
+                // Center Harvest Secondary Sweep
+
+                Command RightStartCenterHarvest_SecondSweep = new SequentialCommandGroup(
+                                Commands.parallel(cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
+                                                cmds.intake.runIntakeOut()),
+                                Commands.deadline(cmds.MoveTo_centerRightIntakeStart.get(), cmds.intake.runPickupIn()),
+                                Commands.deadline(cmds.MoveTo_centerRightIntakeEnd.get(), cmds.intake.runPickupIn()),
+                                cmds.MoveTo_centerRightIntakeEndLookHub.get(),
+                                Commands.deadline(cmds.MoveTo_leftBump_FieldToAllianceStart.get(),
+                                                cmds.intake.runPickupIn()),
+                                cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
+                                cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                cmds.mediumShoot.get()).withName("RightStartCenterHarvest_SecondSweep");
+
+                Command LeftStartCenterHarvest_SecondSweep = new SequentialCommandGroup(
+                                Commands.parallel(cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
+                                                cmds.intake.runIntakeOut()),
+                                Commands.deadline(cmds.MoveTo_centerLeftIntakeStart.get(), cmds.intake.runPickupIn()),
+                                Commands.deadline(cmds.MoveTo_centerLeftIntakeEnd.get(), cmds.intake.runPickupIn()),
+                                cmds.MoveTo_centerLeftIntakeEndLookHub.get(),
+                                Commands.deadline(cmds.MoveTo_rightBump_FieldToAllianceStart.get(),
+                                                cmds.intake.runPickupIn()),
+                                cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
+                                cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                cmds.mediumShoot.get()).withName("LeftStartCenterHarvest_SecondSweep");
+                // Quads
                 Command RightQuad = new SequentialCommandGroup(
                                 // Running start
                                 Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
@@ -226,6 +256,8 @@ public class Full_Autos {
 
                 Command Zac_RightQuad = new SequentialCommandGroup(
                                 // MoveTo_rightBump_AllianceToFieldStart.get(),
+                                Commands.parallel(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
+                                                cmds.intake.runIntakeOut()),
                                 Commands.parallel(cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
                                                 cmds.intake.runIntakeOut()),
                                 Commands.deadline(
@@ -233,7 +265,7 @@ public class Full_Autos {
                                                                 cmds.MoveTo_centerRightIntakeStart.get(),
                                                                 cmds.MoveTo_quadRight.get(),
                                                                 cmds.MoveTo_rightQuadSecondSweep_Start.get(),
-                                                                // MoveTo_rightQuadSecondSweep_End.get(),
+                                                                cmds.MoveTo_rightQuadSecondSweep_End.get(),
                                                                 cmds.MoveTo_rightBump_FieldToAllianceStart.get()),
                                                 cmds.intake.runPickupIn()),
                                 cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
@@ -334,14 +366,15 @@ public class Full_Autos {
                                 LeftDepotShootCenterHarvestInLeftShoot);
                 NamedCommands.registerCommand("TheShowboater", TheShowboater);
                 NamedCommands.registerCommand("TEST", TEST);
-                // TODO: use DepoFaceIn
+                // TODO: use DepotFaceIn
                 // NamedCommands.registerCommand("DepotFaceIn", DepotFaceIn);
                 NamedCommands.registerCommand("JUSTSHOOT", JUSTSHOOT);
                 NamedCommands.registerCommand("LeftStart_JUSTSHOOT", LeftStart_JUSTSHOOT);
                 NamedCommands.registerCommand("TESTCenterHarvest", TESTCenterHarvest);
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
-                // OVERRIDE_AUTO_COMMAND = LeftQuad;
+                // TODO: Actually cook in autos
+                OVERRIDE_AUTO_COMMAND = RightStartCenterHarvestInLeft;
 
                 // SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
                 // OVERRIDE_AUTO_COMMAND.getName());
