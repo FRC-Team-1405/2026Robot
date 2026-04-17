@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
 
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -30,6 +32,11 @@ public class Robot extends TimedRobot {
     private static Timer autoTimer = new Timer();
 
     public Robot() {
+        // Start WPILib data logging to /home/lvuser/logs so .wpilog files are created
+        // for every match. Also mirror NetworkTables entries into the log file.
+        DataLogManager.start("/home/lvuser/logs");
+        DriverStation.startDataLog(DataLogManager.getLog());
+
         m_robotContainer = new RobotContainer();
 
         GamePeriod.elasticInit();
@@ -63,6 +70,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
+        // Flush the data log so all buffered entries are written to disk at end of match
+        DataLogManager.getLog().flush();
         // Resetting subsystems here doesn't work
         resetSubsystems_disable();
     }
