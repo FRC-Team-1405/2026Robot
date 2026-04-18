@@ -29,6 +29,7 @@ public class Pickup extends SubsystemBase {
 
     public Pickup() {
         setupMotors();
+        simulationInit();
     }
 
     /** Run the pickup rollers inward (intaking game pieces). */
@@ -82,7 +83,7 @@ public class Pickup extends SubsystemBase {
     public void simulationInit() {
         // Pickup roller: small inertia, light load, direct drive
         PhysicsSim_SJC.getInstance().addTalonFX(pickupMotor,
-                /* rotorInertia= */0.0002, /* loadMassKg= */0.05, /* armMeters= */0.05,
+                /* rotorInertia= */0.0002, /* loadMassKg= */0.5, /* armMeters= */0.05,
                 /* viscousCoeff= */0.01, /* numberOfMotors= */1, /* gearRatio= */0.5);
     }
 
@@ -176,5 +177,9 @@ public class Pickup extends SubsystemBase {
 
     public void publishMotorCurrents() {
         SmartDashboard.putNumber("Intake/PickupCurrent", pickupMotor.getStatorCurrent().getValueAsDouble());
+    }
+
+    public double getPidError() {
+        return pickupMotor.getClosedLoopError().getValueAsDouble();
     }
 }

@@ -172,6 +172,7 @@ public class CommandsForAutos {
         Supplier<Command> MoveTo_centerRightIntakeEnd = () -> new AutoPilotV2Command.Builder(
                         () -> centerRightIntakeEnd.get(), drivetrain, "MoveTo_centerRightIntakeEnd")
                         .withFlipPoseForAlliance(true)
+                        .withMaxVelocity(() -> Math.min(Math.min((1 - (pickup.getPidError() / 20)) * 5, 20), 1.5))
                         // TODO: .withConstraints(fullFieldConstraints)
                         .build();
 

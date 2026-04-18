@@ -540,7 +540,7 @@ public class Full_Autos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: Actually cook in autos
-                OVERRIDE_AUTO_COMMAND = LeftQuad;
+                OVERRIDE_AUTO_COMMAND = RightStartCenterHarvest_SecondSweep_TOP_FIRST;
 
                 SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
                                 OVERRIDE_AUTO_COMMAND.getName());

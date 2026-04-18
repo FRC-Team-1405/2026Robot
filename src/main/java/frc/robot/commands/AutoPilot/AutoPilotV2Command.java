@@ -81,7 +81,7 @@ public class AutoPilotV2Command extends FinneyCommand {
 
     private final APConstraints kConstraints;
     private final APProfile kProfile;
-    private final Autopilot kAutopilot;
+    private Autopilot kAutopilot;
 
     // --- Instance state ---
     private APTarget m_target;
@@ -97,6 +97,8 @@ public class AutoPilotV2Command extends FinneyCommand {
 
     private boolean isVelocityThresholdActive = false;
     private double velocityThreshold = 0.5;
+
+    private Supplier<Double> maxVelocity = null;
 
     // Single swerve request for every cycle
     private final SwerveRequest.FieldCentricFacingAngle m_request;
@@ -126,6 +128,8 @@ public class AutoPilotV2Command extends FinneyCommand {
         private boolean isVelocityThresholdActive = false;
         private double velocityThreshold = 0.5;
 
+        private Supplier<Double> maxVelocity = null;
+
         public Builder(Supplier<Pose2d> targetSupplier, CommandSwerveDrivetrain drivetrain, String commandName) {
             this.targetSupplier = targetSupplier;
             this.drivetrain = drivetrain;
@@ -150,6 +154,11 @@ public class AutoPilotV2Command extends FinneyCommand {
         public Builder withVelocityThreshold(double velocityThreshold) {
             this.isVelocityThresholdActive = true;
             this.velocityThreshold = velocityThreshold;
+            return this;
+        }
+
+        public Builder withMaxVelocity(Supplier<Double> maxVelocity) {
+            this.maxVelocity = maxVelocity;
             return this;
         }
 
@@ -198,6 +207,7 @@ public class AutoPilotV2Command extends FinneyCommand {
 
         this.isVelocityThresholdActive = b.isVelocityThresholdActive;
         this.velocityThreshold = b.velocityThreshold;
+        this.maxVelocity = b.maxVelocity;
 
         kConstraints = b.constraints;
         kProfile = new APProfile(kConstraints)
@@ -265,6 +275,13 @@ public class AutoPilotV2Command extends FinneyCommand {
         // --- 3. Compute AutoPilot result ---
         Optional<Rotation2d> fieldEntryAngle = m_entryAngle
                 .map(a -> a.plus(m_target.getReference().getRotation()));
+
+        if (maxVelocity != null) {
+            SmartDashboard.putNumber(NT + "maxVelocity", maxVelocity.get());
+            APConstraints newConstraints = kConstraints.withVelocity(maxVelocity.get());
+            APProfile newProfile = kProfile.withConstraints(newConstraints);
+            kAutopilot = new Autopilot(newProfile);
+        }
 
         APResult out;
         if (fieldEntryAngle.isPresent()) {
