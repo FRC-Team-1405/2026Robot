@@ -135,7 +135,20 @@ public class AutoPoses {
                         LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
         public static Supplier<Pose2d> centerLeftIntake_SecondSweep = () -> new Pose2d(6,
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
-        // Quads
+
+        public static Supplier<Pose2d> centerLine_RightIntakeStart = () -> new Pose2d(8.5,
+                        RIGHT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
+
+        public static Supplier<Pose2d> centerLine_RightIntakeEnd = () -> new Pose2d(8.5,
+                        RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
+
+        public static Supplier<Pose2d> centerLine_LeftIntakeStart = () -> new Pose2d(8.5,
+                        LEFT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
+
+        public static Supplier<Pose2d> centerLine_LeftIntakeEnd = () -> new Pose2d(8.5,
+                        LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
+        // #endregion
+        // #region Quads
 
         // centerRightIntakeStart was (7.75, 7, 270)
         public static Supplier<Pose2d> quadRightIntakeStart = () -> new Pose2d(7.95,
@@ -186,6 +199,7 @@ public class AutoPoses {
 
         public static Supplier<Pose2d> LeftMidAlliance = () -> new Pose2d(2, 6, Rotation2d.kZero);
 
+        public static Supplier<Pose2d> behindHub = () -> new Pose2d(7, 4, Rotation2d.fromDegrees(180));
         // #region FIELD CONSTANT Poses
         // Center Pose is 8,4, Blue Center Pose is 2,4,90
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));

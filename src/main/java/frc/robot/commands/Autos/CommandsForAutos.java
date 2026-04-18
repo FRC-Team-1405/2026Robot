@@ -125,7 +125,10 @@ public class CommandsForAutos {
                         // .withConstraints(fullFieldConstraints)
                         .build();
         // #endregion
-
+        Supplier<Command> MoveTo_behindHub = () -> new AutoPilotV2Command.Builder(
+                        () -> behindHub.get(), drivetrain, "MoveTo_behindHub")
+                        .withFlipPoseForAlliance(true)
+                        .build();
         // Shooter
         Supplier<Command> MoveTo_FrontHubShoot = () -> new DriveToHubDistance(drivetrain,
                         FieldConstants.ALLIANCE_HUB_POSITION,
@@ -172,7 +175,8 @@ public class CommandsForAutos {
         Supplier<Command> MoveTo_centerRightIntakeEnd = () -> new AutoPilotV2Command.Builder(
                         () -> centerRightIntakeEnd.get(), drivetrain, "MoveTo_centerRightIntakeEnd")
                         .withFlipPoseForAlliance(true)
-                        // .withConstraints(fullFieldConstraints)
+                        .withMaxVelocity(() -> Math.min(Math.min((1 - (pickup.getPidError() / 20)) * 5, 20), 1.5))
+                        // TODO: .withConstraints(fullFieldConstraints)
                         .build();
 
         Supplier<Command> MoveTo_centerLeftIntakeStart = () -> new AutoPilotV2Command.Builder(
@@ -224,6 +228,28 @@ public class CommandsForAutos {
                         // .withConstraints(centerHarvestConstraint)
                         .build();
 
+        Supplier<Command> MoveTo_centerLine_RightIntakeStart = () -> new AutoPilotV2Command.Builder(
+                        () -> centerLine_RightIntakeStart.get(), drivetrain, "MoveTo_centerLine_RightIntakeStart")
+                        .withFlipPoseForAlliance(true)
+                        .build();
+
+        Supplier<Command> MoveTo_centerLine_RightIntakeEnd = () -> new AutoPilotV2Command.Builder(
+                        () -> centerLine_RightIntakeEnd.get(), drivetrain, "MoveTo_centerLine_RightIntakeEnd")
+                        .withFlipPoseForAlliance(true)
+                        .withMaxVelocity(() -> Math.min(Math.min((1 - (pickup.getPidError() / 20)) * 5, 20), 1.5))
+                        // TODO: .withConstraints(fullFieldConstraints)
+                        .build();
+
+        Supplier<Command> MoveTo_centerLine_LeftIntakeStart = () -> new AutoPilotV2Command.Builder(
+                        () -> centerLine_LeftIntakeStart.get(), drivetrain, "MoveTo_centerLine_LeftIntakeStart")
+                        .withFlipPoseForAlliance(true)
+                        .build();
+
+        Supplier<Command> MoveTo_centerLine_LeftIntakeEnd = () -> new AutoPilotV2Command.Builder(
+                        () -> centerLine_LeftIntakeEnd.get(), drivetrain, "MoveTo_centerLine_RightIntakeEnd")
+                        .withFlipPoseForAlliance(true)
+                        // .withConstraints(centerHarvestConstraint)
+                        .build();
         // deadline runs in
         // parrallel until the
         // first command
