@@ -133,7 +133,7 @@ public class AutoPoses {
         // Center Harvest Second Sweep
         public static Supplier<Pose2d> centerRightIntake_SecondSweep = () -> new Pose2d(6,
                         LEFT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
-        public static Supplier<Pose2d> centerLeftIntake_SecondSweep = () -> new Pose2d(6,
+        public static Supplier<Pose2d> centerLeftIntake_SecondSweep = () -> new Pose2d(6.5,
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
 
         public static Supplier<Pose2d> centerLine_RightIntakeStart = () -> new Pose2d(8.5,

@@ -49,6 +49,7 @@ public class CommandsForAutos {
         private static final double BUMP_WIDE_XY_THRESHOLD_CM = 30;
         private static final double BUMP_THETA_THRESHOLD_DEG = 12;
         private static final double BUMP_headingKp = 2;
+        private static final double FAST_BUMP_headingKp = 16;
 
         // TODO: Adjust
         private static final APConstraints fullFieldConstraints = new APConstraints()
@@ -352,8 +353,8 @@ public class CommandsForAutos {
                         "MoveTo_leftBump_AllianceToFieldStart")
                         .withFlipPoseForAlliance(true)
                         // .withConstraints(bumpConstraints)
-                        .withProfileThresholds(16, DEFAULT_THETA_THRESHOLD, DEFAULT_BEELINE_THRESHOLD)
-                        .withHeadingPID(BUMP_headingKp, 0)
+                        .withProfileThresholds(32, DEFAULT_THETA_THRESHOLD, DEFAULT_BEELINE_THRESHOLD)
+                        // .withHeadingPID(BUMP_headingKp, 0)
                         .build();
         Supplier<Command> MoveTo_leftBump_AllianceToFieldStart_LOOK_HUB = () -> new AutoPilotV2Command.Builder(
                         () -> leftBump_AllianceToFieldStart_LOOK_HUB.get(), drivetrain,
@@ -401,7 +402,7 @@ public class CommandsForAutos {
                         "MoveTo_leftBump_FieldToAllianceStart")
                         .withFlipPoseForAlliance(true)
                         // .withConstraints(bumpConstraints)
-                        .withHeadingPID(BUMP_headingKp, 0)
+                        .withHeadingPID(FAST_BUMP_headingKp, 0)
                         .withProfileThresholds(40, DEFAULT_THETA_THRESHOLD, DEFAULT_BEELINE_THRESHOLD)
                         .build();
 
