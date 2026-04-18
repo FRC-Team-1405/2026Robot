@@ -199,7 +199,7 @@ public class AutoPoses {
 
         public static Supplier<Pose2d> LeftMidAlliance = () -> new Pose2d(2, 6, Rotation2d.kZero);
 
-        public static Supplier<Pose2d> behindHub = () -> new Pose2d(7, 4, Rotation2d.fromDegrees(180));
+        public static Supplier<Pose2d> behindHub = () -> new Pose2d(10, 4, Rotation2d.fromDegrees(0));
         // #region FIELD CONSTANT Poses
         // Center Pose is 8,4, Blue Center Pose is 2,4,90
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
