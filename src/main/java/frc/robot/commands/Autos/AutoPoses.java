@@ -68,21 +68,21 @@ public class AutoPoses {
                         Rotation2d.fromDegrees(315)); // was 180
         // Right Bump
         public static Supplier<Pose2d> rightBump_AllianceToFieldStart = () -> new Pose2d(
-                        BUMP_X_ALLIANCE_SIDE, 2.5, // was 2.5
+                        BUMP_X_ALLIANCE_SIDE, 2.25, // was 2.5
                         Rotation2d.fromDegrees(RIGHT_BUMP_ALLIANCE_ANGLE)); // rotation was 0
 
         public static Supplier<Pose2d> rightBump_AllianceToFieldStart_LOOK_HUB = () -> new Pose2d(
                         BUMP_X_FIELD_SIDE, 2.5, // was 2.5
                         Rotation2d.fromDegrees(90)); // rotation was 0
         public static Supplier<Pose2d> rightBump_AllianceToFieldEnd = () -> new Pose2d(
-                        BUMP_X_FIELD_SIDE, 2.5, // was 2.5
+                        BUMP_X_FIELD_SIDE, 2.25, // was 2.5
                         Rotation2d.fromDegrees(RIGHT_BUMP_FIELD_ANGLE)); // rotation was 0
 
         public static Supplier<Pose2d> rightBump_FieldToAllianceStart = () -> new Pose2d(
-                        BUMP_X_FIELD_SIDE, 2.5,
+                        BUMP_X_FIELD_SIDE, 2.25,
                         Rotation2d.fromDegrees(RIGHT_BUMP_FIELD_ANGLE)); // was 180
         public static Supplier<Pose2d> rightBump_FieldToAllianceEnd = () -> new Pose2d(
-                        BUMP_X_ALLIANCE_SIDE, 2.5,
+                        BUMP_X_ALLIANCE_SIDE, 2.25,
                         Rotation2d.fromDegrees(RIGHT_BUMP_ALLIANCE_ANGLE)); // was 180
         public static Supplier<Pose2d> rightBump_FieldToAllianceEndDos = () -> new Pose2d(
                         BUMP_X_ALLIANCE_SIDE, 2.5,
@@ -113,10 +113,10 @@ public class AutoPoses {
         private static double LEFT_END_SECOND_SWEEP_HORIZONTAL_POINT = 4.5;
 
         // centerRightIntakeStart was (7.75, 1, 90)
-        public static Supplier<Pose2d> centerRightIntakeStart = () -> new Pose2d(7.45,
+        public static Supplier<Pose2d> centerRightIntakeStart = () -> new Pose2d(7.95,
                         RIGHT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
         // centerRightIntakeEnd was (7.75, 6, 90)
-        public static Supplier<Pose2d> centerRightIntakeEnd = () -> new Pose2d(7.45,
+        public static Supplier<Pose2d> centerRightIntakeEnd = () -> new Pose2d(7.95,
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
         // centerRightIntakeStart was (7.75, 7, 270)
         public static Supplier<Pose2d> centerLeftIntakeStart = () -> new Pose2d(7.75,
@@ -191,5 +191,5 @@ public class AutoPoses {
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
         // #endregion
 
-        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(0, 2, Rotation2d.fromDegrees(0));
 }

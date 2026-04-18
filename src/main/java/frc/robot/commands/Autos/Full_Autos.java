@@ -470,11 +470,7 @@ public class Full_Autos {
                                 cmds.MoveTo_FrontHubShoot.get());
                 // #endregion
                 Command fourMeters = new SequentialCommandGroup(
-                                cmds.MoveTo_rightLoadInZone.get(),
-                                cmds.MoveTo_leftLoadInZone.get(),
-                                cmds.MoveTo_rightLoadInZone.get(),
-                                cmds.MoveTo_fourMeters.get(),
-                                cmds.MoveTo_rightLoadInZone.get()).withName("fourMeters");
+                                cmds.MoveTo_fourMeters.get()).withName("fourMeters");
                 Command TheShowboater = new SequentialCommandGroup(
                                 cmds.MoveTo_leftOfDepot_Out.get(),
                                 cmds.MoveTo_leftOfDepot_In.get(),
@@ -540,7 +536,7 @@ public class Full_Autos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: Actually cook in autos
-                OVERRIDE_AUTO_COMMAND = LeftQuad;
+                OVERRIDE_AUTO_COMMAND = RightQuad;
 
                 SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
                                 OVERRIDE_AUTO_COMMAND.getName());
