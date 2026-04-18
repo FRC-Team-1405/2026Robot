@@ -171,7 +171,7 @@ public class MoveMode {
     private static BooleanEntry velocityCompPointEntry;
 
     // TODO: Tune rotationController for physical robot
-    public static final PIDController rotationController = new PIDController(12, 0, 0);
+    public static final PIDController rotationController = new PIDController(20, 0, 0.85);
 
     /** Separate PID controller used exclusively for bump-mode heading hold. */
     // TODO: Tune bumpRotationController for physical robot
@@ -474,6 +474,8 @@ public class MoveMode {
         double currentAngle = drivetrain.getState().Pose.getRotation().getRadians();
 
         double rateToRotate = rotationController.calculate(currentAngle);
+
+        SmartDashboard.putNumber("MoveMode/PointMode_error", rotationController.getError());
         // System.out.printf("PID error: %.3f, target: %.3f, current: %.3f,
         // rateToRotate: %.3f\n",
         // rotationController.getError(),
@@ -541,6 +543,8 @@ public class MoveMode {
         // rate: %.3f\n",
         // rotationController.getError(),
         // rotationController.getSetpoint(), currentRad, rateToRotate);
+
+        SmartDashboard.putNumber("MoveMode/VelComp_error", rotationController.getError());
 
         return rateToRotate;
     }
