@@ -205,5 +205,5 @@ public class AutoPoses {
         public static Supplier<Pose2d> centerOfField = () -> new Pose2d(8, 4, Rotation2d.fromDegrees(0));
         // #endregion
 
-        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(0, 2, Rotation2d.fromDegrees(0));
+        public static Supplier<Pose2d> fourMeters = () -> new Pose2d(2, 0, Rotation2d.fromDegrees(0));
 }

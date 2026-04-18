@@ -123,6 +123,7 @@ public class CommandsForAutos {
                         () -> fourMeters.get(), drivetrain, "MoveTo_fourMeters")
                         .withFlipPoseForAlliance(true)
                         // .withConstraints(fullFieldConstraints)
+                        .withMaxVelocity(() -> Math.min(Math.min((1 - (pickup.getPidError() / 20)) * 5, 20), 1.5))
                         .build();
         // #endregion
         Supplier<Command> MoveTo_behindHub = () -> new AutoPilotV2Command.Builder(

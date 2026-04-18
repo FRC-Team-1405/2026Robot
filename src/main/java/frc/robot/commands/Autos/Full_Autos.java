@@ -589,7 +589,7 @@ public class Full_Autos {
                 // TODO:Get some sleep
                 // TODO: Score more than channing in auto
                 // TODO: Win Comp!
-                OVERRIDE_AUTO_COMMAND = GET_THOSE_LEFTOVERS;
+                OVERRIDE_AUTO_COMMAND = fourMeters;
 
                 SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
                                 OVERRIDE_AUTO_COMMAND.getName());
