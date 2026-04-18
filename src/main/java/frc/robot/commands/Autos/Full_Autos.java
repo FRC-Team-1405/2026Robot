@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
+import frc.robot.subsystems.Pickup;
 
 public class Full_Autos {
         private CommandsForAutos cmds;
@@ -508,7 +509,8 @@ public class Full_Autos {
                                 cmds.MoveTo_FrontHubShoot.get());
                 // #endregion
                 Command fourMeters = new SequentialCommandGroup(
-                                cmds.MoveTo_fourMeters.get()).withName("fourMeters");
+                                Commands.deadline(cmds.MoveTo_fourMeters.get(), cmds.pickup.runPickupIn()))
+                                .withName("fourMeters");
                 Command TheShowboater = new SequentialCommandGroup(
                                 cmds.MoveTo_leftOfDepot_Out.get(),
                                 cmds.MoveTo_leftOfDepot_In.get(),
@@ -589,7 +591,7 @@ public class Full_Autos {
                 // TODO:Get some sleep
                 // TODO: Score more than channing in auto
                 // TODO: Win Comp!
-                OVERRIDE_AUTO_COMMAND = fourMeters;
+                OVERRIDE_AUTO_COMMAND = LeftQuad;
 
                 SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
                                 OVERRIDE_AUTO_COMMAND.getName());
