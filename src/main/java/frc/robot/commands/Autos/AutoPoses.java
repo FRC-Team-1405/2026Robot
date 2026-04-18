@@ -61,10 +61,10 @@ public class AutoPoses {
                         Rotation2d.fromDegrees(225)); // was 0
 
         public static Supplier<Pose2d> leftBump_FieldToAllianceStart = () -> new Pose2d(
-                        BUMP_X_FIELD_SIDE, 5.5,
+                        BUMP_X_FIELD_SIDE, 5.65,
                         Rotation2d.fromDegrees(225)); // was 180
         public static Supplier<Pose2d> leftBump_FieldToAllianceEnd = () -> new Pose2d(
-                        BUMP_X_ALLIANCE_SIDE, 5.5,
+                        BUMP_X_ALLIANCE_SIDE, 5.7,
                         Rotation2d.fromDegrees(315)); // was 180
         // Right Bump
         public static Supplier<Pose2d> rightBump_AllianceToFieldStart = () -> new Pose2d(

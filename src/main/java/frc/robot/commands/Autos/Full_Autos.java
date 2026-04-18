@@ -108,7 +108,7 @@ public class Full_Autos {
                                 cmds.MoveTo_leftBump_AllianceToFieldEnd.get());
 
                 Command rightBumpToAlliance = new SequentialCommandGroup(
-                                // MoveTo_rightBump_FieldToAllianceStart.get(),
+                                cmds.MoveTo_rightBump_FieldToAllianceStart.get(),
                                 cmds.MoveTo_rightBump_FieldToAllianceEnd.get());
 
                 Command leftBumpToAlliance = new SequentialCommandGroup(
