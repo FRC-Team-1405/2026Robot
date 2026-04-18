@@ -42,8 +42,8 @@ public class SwerveFeatures {
     public static double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
                                                                                               // top
     // speed
-    public static double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per
-                                                                                            // second
+    public static double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per
+                                                                                           // second
     // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */

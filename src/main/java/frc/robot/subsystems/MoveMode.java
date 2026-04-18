@@ -110,20 +110,28 @@ public class MoveMode {
             }
 
             if (Speed.BUMP.equals(currentSpeedMode) && drivetrain != null) {
-                if (inAllianceZone(drivetrain).getAsBoolean()) {
-                    // Alliance side: face 0 deg (blue) or 180 deg (red) — i.e. always face away
-                    // from
-                    // the bump toward the alliance wall so the robot crosses backwards.
-                    bumpTargetRotation = AllianceSymmetry.isRed()
-                            ? Rotation2d.k180deg
-                            : Rotation2d.kZero;
+                double currentRobotRotationDeg = drivetrain.getState().Pose.getRotation().getDegrees();
+                if (Math.abs(currentRobotRotationDeg) >= 90) {
+                    bumpTargetRotation = Rotation2d.k180deg;
                 } else {
-                    // Neutral zone side: face 180 deg (blue) or 0 deg (red) — again, backwards into
-                    // bump.
-                    bumpTargetRotation = AllianceSymmetry.isRed()
-                            ? Rotation2d.k180deg
-                            : Rotation2d.kZero;
+                    bumpTargetRotation = Rotation2d.kZero;
                 }
+
+                // if (inAllianceZone(drivetrain).getAsBoolean()) {
+                // // Alliance side: face 0 deg (blue) or 180 deg (red) — i.e. always face away
+                // // from
+                // // the bump toward the alliance wall so the robot crosses backwards.
+                // bumpTargetRotation = AllianceSymmetry.isRed()
+                // ? Rotation2d.k180deg
+                // : Rotation2d.kZero;
+                // } else {
+                // // Neutral zone side: face 180 deg (blue) or 0 deg (red) — again, backwards
+                // into
+                // // bump.
+                // bumpTargetRotation = AllianceSymmetry.isRed()
+                // ? Rotation2d.k180deg
+                // : Rotation2d.kZero;
+                // }
             }
 
             elasticUpdate();
@@ -417,7 +425,7 @@ public class MoveMode {
      * @return the right stick's value capped by maxAngularRate
      */
     private double standardMode(final CommandXboxController joystick, final double maxAngularRate) {
-        return -applyDeadband(joystick.getRightX()) * maxAngularRate;
+        return -applyDeadband(joystick.getRightX()) * (maxAngularRate / (1 + joystick.getLeftTriggerAxis()));
     }
 
     /**

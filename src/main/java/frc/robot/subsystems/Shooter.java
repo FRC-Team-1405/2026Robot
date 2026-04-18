@@ -86,8 +86,7 @@ public class Shooter extends SubsystemBase {
   private boolean wasLocked = false;
 
   private CommandXboxController operatorJoystick;
-
-  private Command vibrate;
+  private Command setToStandardPointMode;
 
   private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.LONG;
 
@@ -182,18 +181,22 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Creates a new Shooter. */
-  public Shooter(CommandXboxController operatorJoystick) {
+  public Shooter(CommandXboxController operatorJoystick, Command setToStandardPointMode) {
     this.operatorJoystick = operatorJoystick;
+    this.setToStandardPointMode = setToStandardPointMode;
     setupMotors();
     simulationInit();
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     SmartDashboard.putNumber("Shooter/TestTargetRPS", 10.0);
     shooterStop();
-    vibrate = new RumbleJoystick(operatorJoystick, RumbleType.kBothRumble, 0.5, 1.0);
   }
 
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
+    if (operatorJoystick != null) {
+      CommandScheduler.getInstance().schedule(RumbleJoystick.continousRumble(operatorJoystick));
+    }
+
     AngularVelocity target = speed.get();
     shooterMotor1.setControl(velocityVoltage.withVelocity(target));
     shooterTarget = target.in(RotationsPerSecond);
@@ -203,6 +206,14 @@ public class Shooter extends SubsystemBase {
   }
 
   private void shooterStop() {
+    if (operatorJoystick != null) {
+      CommandScheduler.getInstance().schedule(RumbleJoystick.stopRumble(operatorJoystick));
+    }
+
+    if (setToStandardPointMode != null) {
+      CommandScheduler.getInstance().schedule(setToStandardPointMode);
+    }
+
     shooterTarget = 0.0;
     shooterMotor1.setControl(brake);
     fLogger.log("shooterStop called");
@@ -518,10 +529,6 @@ public class Shooter extends SubsystemBase {
       // Shooter Distance
       SmartDashboard.putNumber("Shooter/Requested Speed", requestedSpeed.get().in(RotationsPerSecond));
       SmartDashboard.putNumber("Shooter/Desired Distance", getDistanceFromSpeed().get().get());
-
-      if (isShooterSpinning()) {
-        CommandScheduler.getInstance().schedule(vibrate);
-      }
     }
   }
 

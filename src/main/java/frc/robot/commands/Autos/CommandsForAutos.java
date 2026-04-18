@@ -52,8 +52,8 @@ public class CommandsForAutos {
 
         // TODO: Adjust
         private static final APConstraints fullFieldConstraints = new APConstraints()
-                        .withAcceleration(1.0) // TUNE THIS TO YOUR ROBOT!
-                        .withVelocity(4.0)
+                        .withAcceleration(4.0) // TUNE THIS TO YOUR ROBOT!
+                        .withVelocity(1.5)
                         .withJerk(67);
 
         private static final TrapezoidProfile.Constraints centerHarvestConstraint = new TrapezoidProfile.Constraints(
@@ -125,7 +125,10 @@ public class CommandsForAutos {
                         // .withConstraints(fullFieldConstraints)
                         .build();
         // #endregion
-
+        Supplier<Command> MoveTo_behindHub = () -> new AutoPilotV2Command.Builder(
+                        () -> behindHub.get(), drivetrain, "MoveTo_behindHub")
+                        .withFlipPoseForAlliance(true)
+                        .build();
         // Shooter
         Supplier<Command> MoveTo_FrontHubShoot = () -> new DriveToHubDistance(drivetrain,
                         FieldConstants.ALLIANCE_HUB_POSITION,
@@ -172,6 +175,7 @@ public class CommandsForAutos {
         Supplier<Command> MoveTo_centerRightIntakeEnd = () -> new AutoPilotV2Command.Builder(
                         () -> centerRightIntakeEnd.get(), drivetrain, "MoveTo_centerRightIntakeEnd")
                         .withFlipPoseForAlliance(true)
+                        .withMaxVelocity(() -> Math.min(Math.min((1 - (pickup.getPidError() / 20)) * 5, 20), 1.5))
                         // TODO: .withConstraints(fullFieldConstraints)
                         .build();
 
@@ -224,6 +228,28 @@ public class CommandsForAutos {
                         // .withConstraints(centerHarvestConstraint)
                         .build();
 
+        Supplier<Command> MoveTo_centerLine_RightIntakeStart = () -> new AutoPilotV2Command.Builder(
+                        () -> centerLine_RightIntakeStart.get(), drivetrain, "MoveTo_centerLine_RightIntakeStart")
+                        .withFlipPoseForAlliance(true)
+                        .build();
+
+        Supplier<Command> MoveTo_centerLine_RightIntakeEnd = () -> new AutoPilotV2Command.Builder(
+                        () -> centerLine_RightIntakeEnd.get(), drivetrain, "MoveTo_centerLine_RightIntakeEnd")
+                        .withFlipPoseForAlliance(true)
+                        .withMaxVelocity(() -> Math.min(Math.min((1 - (pickup.getPidError() / 20)) * 5, 20), 1.5))
+                        // TODO: .withConstraints(fullFieldConstraints)
+                        .build();
+
+        Supplier<Command> MoveTo_centerLine_LeftIntakeStart = () -> new AutoPilotV2Command.Builder(
+                        () -> centerLine_LeftIntakeStart.get(), drivetrain, "MoveTo_centerLine_LeftIntakeStart")
+                        .withFlipPoseForAlliance(true)
+                        .build();
+
+        Supplier<Command> MoveTo_centerLine_LeftIntakeEnd = () -> new AutoPilotV2Command.Builder(
+                        () -> centerLine_LeftIntakeEnd.get(), drivetrain, "MoveTo_centerLine_RightIntakeEnd")
+                        .withFlipPoseForAlliance(true)
+                        // .withConstraints(centerHarvestConstraint)
+                        .build();
         // deadline runs in
         // parrallel until the
         // first command
@@ -389,7 +415,7 @@ public class CommandsForAutos {
                         .withFlipPoseForAlliance(true)
                         .withProfileThresholds(BUMP_NARROW_XY_THRESHOLD_CM, BUMP_THETA_THRESHOLD_DEG,
                                         DEFAULT_BEELINE_THRESHOLD)
-                        .withHeadingPID(BUMP_headingKp, 0)
+                        // .withHeadingPID(BUMP_headingKp, 0)
                         .build();
         Supplier<Command> MoveTo_rightBump_FieldToAllianceEnd = () -> new AutoPilotV2Command.Builder(
                         () -> rightBump_FieldToAllianceEnd.get(), drivetrain,

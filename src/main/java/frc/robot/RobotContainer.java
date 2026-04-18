@@ -74,7 +74,6 @@ public class RobotContainer {
         List<StructPublisher<Pose2d>> cameraEstimatedPosesPublisher = Arrays.asList(cameraEstimatedPosePublisher1,
                         cameraEstimatedPosePublisher2);
 
-        public Shooter shooter = new Shooter(operatorJoystick);
         public Indexer indexer = new Indexer();
         public final Climber climber = new Climber();
         public final AdjustableHood hood = new AdjustableHood();
@@ -84,6 +83,7 @@ public class RobotContainer {
         private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
         private final SwerveFeatures swerveFeatures = new SwerveFeatures(drivetrain);
         MoveMode moveMode = new MoveMode();
+        public Shooter shooter = new Shooter(operatorJoystick, moveMode.setToStandardMode());
         ShootMode shootMode = new ShootMode(drivetrain, swerveFeatures, intake, indexer, shooter, driverJoystick);
         public final CommandsForAutos commandsForAutos = new CommandsForAutos(drivetrain, climber,
                         intake,

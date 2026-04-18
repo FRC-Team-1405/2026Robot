@@ -436,6 +436,44 @@ public class Full_Autos {
                 Command LEFT_THIS_WAS_LEELANDS_IDEA = new SequentialCommandGroup(
 
                 );
+                // TODO: ASK LEELAND IF HE WANTS IT THAT HIGH (BOTH AUTOS)
+                Command RIGHT_BUMP_THIS_MAY_BE_ILLEGAL = new SequentialCommandGroup(
+                                cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                cmds.mediumShoot.get(),
+                                Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
+                                                cmds.intake.runIntakeOut()),
+                                Commands.parallel(cmds.MoveTo_rightBump_AllianceToFieldEnd.get(),
+                                                cmds.intake.runIntakeOut()),
+                                Commands.deadline(
+                                                Commands.sequence(
+                                                                cmds.MoveTo_centerLine_RightIntakeStart.get(),
+                                                                cmds.MoveTo_centerLine_RightIntakeEnd.get(),
+                                                                cmds.MoveTo_centerRightIntakeEndLookHub.get(),
+                                                                cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
+
+                                                cmds.pickup.runPickupIn()),
+                                cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
+                                cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                cmds.mediumShoot.get()).withName("RIGHT_BUMP_THIS_MAY_BE_ILLEGAL");
+
+                Command LEFT_BUMP_THIS_MAY_BE_ILLEGAL = new SequentialCommandGroup(
+                                cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                cmds.mediumShoot.get(),
+                                Commands.parallel(cmds.MoveTo_leftBump_AllianceToFieldStart.get(),
+                                                cmds.intake.runIntakeOut()),
+                                Commands.parallel(cmds.MoveTo_leftBump_AllianceToFieldEnd.get(),
+                                                cmds.intake.runIntakeOut()),
+                                Commands.deadline(
+                                                Commands.sequence(
+                                                                cmds.MoveTo_centerLine_LeftIntakeStart.get(),
+                                                                cmds.MoveTo_centerLine_LeftIntakeEnd.get(),
+                                                                cmds.MoveTo_centerLeftIntakeEndLookHub.get(),
+                                                                cmds.MoveTo_rightBump_FieldToAllianceStart.get()),
+
+                                                cmds.pickup.runPickupIn()),
+                                cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
+                                cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                cmds.mediumShoot.get()).withName("LEFT_BUMP_THIS_MAY_BE_ILLEGAL");
                 // #region Useless Autos
                 // Actual name: RightFeedShootCenterHarvest
                 Command Right_Yum_Middle = new SequentialCommandGroup(
@@ -470,11 +508,7 @@ public class Full_Autos {
                                 cmds.MoveTo_FrontHubShoot.get());
                 // #endregion
                 Command fourMeters = new SequentialCommandGroup(
-                                cmds.MoveTo_rightLoadInZone.get(),
-                                cmds.MoveTo_leftLoadInZone.get(),
-                                cmds.MoveTo_rightLoadInZone.get(),
-                                cmds.MoveTo_fourMeters.get(),
-                                cmds.MoveTo_rightLoadInZone.get()).withName("fourMeters");
+                                cmds.MoveTo_fourMeters.get()).withName("fourMeters");
                 Command TheShowboater = new SequentialCommandGroup(
                                 cmds.MoveTo_leftOfDepot_Out.get(),
                                 cmds.MoveTo_leftOfDepot_In.get(),
@@ -490,6 +524,12 @@ public class Full_Autos {
                                 cmds.MoveTo_rightOfDepot_Out.get(),
                                 cmds.MoveTo_ClosestShootingPosition_LONG.get(),
                                 cmds.mediumShoot.get()).withName("TheShowboater");
+                Command GET_THOSE_LEFTOVERS = new SequentialCommandGroup(
+                                // cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
+                                // cmds.mediumShoot.get(),
+                                cmds.MoveTo_behindHub.get()
+
+                ).withName("GET_THOSE_LEFTOVERS");
 
                 NamedCommands.registerCommand("LeftStart_ToDepot", LeftStart_ToDepot);
 
@@ -499,8 +539,12 @@ public class Full_Autos {
                 // NamedCommands.registerCommand("leftBumpToAlliance", leftBumpToAlliance);
 
                 NamedCommands.registerCommand("JUST_SHOOT_FROM_ANYWHERE", JUST_SHOOT_FROM_ANYWHERE);
+                NamedCommands.registerCommand("GET_THOSE_LEFTOVERS", GET_THOSE_LEFTOVERS);
+
                 NamedCommands.registerCommand("RightStartCenterHarvestInLeft", RightStartCenterHarvestInLeft);
                 NamedCommands.registerCommand("LeftStartCenterHarvestInRight", LeftStartCenterHarvestInRight);
+                NamedCommands.registerCommand("RIGHT_BUMP_THIS_MAY_BE_ILLEGAL", RIGHT_BUMP_THIS_MAY_BE_ILLEGAL);
+                NamedCommands.registerCommand("LEFT_BUMP_THIS_MAY_BE_ILLEGAL", LEFT_BUMP_THIS_MAY_BE_ILLEGAL);
                 NamedCommands.registerCommand("RightStartCenterHarvest_SecondSweep_TOP_FIRST",
                                 RightStartCenterHarvest_SecondSweep_TOP_FIRST);
                 NamedCommands.registerCommand("LeftStartCenterHarvest_SecondSweep_TOP_FIRST",
@@ -540,7 +584,12 @@ public class Full_Autos {
                 NamedCommands.registerCommand("fourMeters", fourMeters);
 
                 // TODO: Actually cook in autos
-                OVERRIDE_AUTO_COMMAND = LeftQuad;
+                // TODO: Random circle auto, Ask leeland about get those leftovers, tweak get
+                // those leftovers
+                // TODO:Get some sleep
+                // TODO: Score more than channing in auto
+                // TODO: Win Comp!
+                OVERRIDE_AUTO_COMMAND = GET_THOSE_LEFTOVERS;
 
                 SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
                                 OVERRIDE_AUTO_COMMAND.getName());
