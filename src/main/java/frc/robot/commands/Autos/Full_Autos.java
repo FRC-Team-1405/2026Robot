@@ -591,8 +591,8 @@ public class Full_Autos {
                 // TODO:Get some sleep
                 // TODO: Score more than channing in auto
                 // TODO: Win Comp!
-                OVERRIDE_AUTO_COMMAND = LeftQuad;
-
+                OVERRIDE_AUTO_COMMAND = Zac_LeftQuad;
+                // LeftStartCenterHarvest_SecondSweep_TOP_FIRST
                 SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
                                 OVERRIDE_AUTO_COMMAND.getName());
         }

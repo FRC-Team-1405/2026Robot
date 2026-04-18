@@ -402,6 +402,7 @@ public class CommandsForAutos {
                         .withFlipPoseForAlliance(true)
                         // .withConstraints(bumpConstraints)
                         .withHeadingPID(BUMP_headingKp, 0)
+                        .withProfileThresholds(40, DEFAULT_THETA_THRESHOLD, DEFAULT_BEELINE_THRESHOLD)
                         .build();
 
         Supplier<Command> MoveTo_leftBump_FieldToAllianceEnd = () -> new AutoPilotV2Command.Builder(
