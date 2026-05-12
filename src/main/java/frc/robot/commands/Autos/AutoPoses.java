@@ -119,7 +119,7 @@ public class AutoPoses {
         public static Supplier<Pose2d> centerRightIntakeEnd = () -> new Pose2d(7.95,
                         RIGHT_END_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(90));
         // centerRightIntakeStart was (7.75, 7, 270)
-        public static Supplier<Pose2d> centerLeftIntakeStart = () -> new Pose2d(7.75,
+        public static Supplier<Pose2d> centerLeftIntakeStart = () -> new Pose2d(6.5,
                         LEFT_START_HARVEST_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
         // centerLeftIntakeEnd was (7.75, 2, 270)
         public static Supplier<Pose2d> centerLeftIntakeEnd = () -> new Pose2d(7.75,
@@ -158,8 +158,8 @@ public class AutoPoses {
 
         public static Supplier<Pose2d> quadRight = () -> new Pose2d(8, 3.25, Rotation2d.fromDegrees(120)); // was 7.5,
                                                                                                            // 3.5
-        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(8, 4.5, Rotation2d.fromDegrees(230)); // was 7.5,
-                                                                                                         // 6.5
+        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(6.5, 4.5, Rotation2d.fromDegrees(230)); // was 7.5,
+                                                                                                           // 6.5
         // Second Sweeps
         public static Supplier<Pose2d> rightQuadSecondSweep_Start = () -> new Pose2d(6.95,
                         RIGHT_START_SECOND_SWEEP_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));
