@@ -509,7 +509,8 @@ public class Full_Autos {
                                 cmds.MoveTo_FrontHubShoot.get());
                 // #endregion
                 Command fourMeters = new SequentialCommandGroup(
-                                Commands.deadline(cmds.MoveTo_fourMeters.get(), cmds.pickup.runPickupIn()))
+                                // Commands.deadline(cmds.MoveTo_fourMeters.get(), cmds.pickup.runPickupIn()))
+                                cmds.MoveTo_fourMeters.get())
                                 .withName("fourMeters");
                 Command TheShowboater = new SequentialCommandGroup(
                                 cmds.MoveTo_leftOfDepot_Out.get(),
@@ -590,7 +591,7 @@ public class Full_Autos {
                 // those leftovers
                 // TODO:Get some sleep
                 // TODO: Score more than channing in auto
-                // TODO: Win Comp!
+                // TODO: Win Comp
                 OVERRIDE_AUTO_COMMAND = LeftQuad;
                 // LeftStartCenterHarvest_SecondSweep_TOP_FIRST
                 SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
