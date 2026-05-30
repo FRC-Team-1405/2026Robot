@@ -314,8 +314,6 @@ public class Full_Autos {
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("LeftSuperSweep");
                 // Quads
-                // TODO: Ask Stephen about curve
-                // TODO: Is it high enough and is the angle good?
                 Command RightQuad = new SequentialCommandGroup(
                                 // Running start
                                 Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
@@ -329,8 +327,12 @@ public class Full_Autos {
                                                                 cmds.MoveTo_quadRightIntakeStart.get(),
                                                                 cmds.MoveTo_quadRight.get(),
                                                                 cmds.MoveTo_centerLeftIntakeEnd.get(),
-                                                                cmds.MoveTo_centerLeftIntakeEndLookHub.get()// ,
-                                                // MoveTo_rightBump_FieldToAllianceStart.get() // move to the start of
+                                                                cmds.MoveTo_centerLeftIntakeEndLookHub.get(),
+                                                                cmds.MoveTo_rightBump_FieldToAllianceStart.get() // move
+                                                                                                                 // to
+                                                                                                                 // the
+                                                                                                                 // start
+                                                                                                                 // of
                                                 // the bump before crossing
                                                 ),
                                                 cmds.pickup.runPickupIn()),
@@ -352,6 +354,7 @@ public class Full_Autos {
                                                                 cmds.MoveTo_quadLeftIntakeStart.get(),
                                                                 cmds.MoveTo_quadLeft.get(),
                                                                 cmds.MoveTo_centerRightIntakeEnd.get(),
+                                                                cmds.MoveTo_centerRightIntakeEndLookHub.get(),
                                                                 cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
                                                 cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),

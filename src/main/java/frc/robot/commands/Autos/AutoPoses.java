@@ -101,10 +101,10 @@ public class AutoPoses {
         // #region Center Harvest Poses
         // y position to start center harvesting on the right side
         // TODO: Change for actual field
-        private static double RIGHT_START_HARVEST_HORIZONTAL_POINT = 1; // was 1
-        private static double RIGHT_END_HARVEST_HORIZONTAL_POINT = 6; // was 6
-        private static double LEFT_START_HARVEST_HORIZONTAL_POINT = 7; // was 7 //was 6 at Finney
-        private static double LEFT_END_HARVEST_HORIZONTAL_POINT = 2; // was 2
+        private static double RIGHT_START_HARVEST_HORIZONTAL_POINT = 3; // was 1
+        private static double RIGHT_END_HARVEST_HORIZONTAL_POINT = 5; // was 6
+        private static double LEFT_START_HARVEST_HORIZONTAL_POINT = 6; // was 7 //was 6 at Finney
+        private static double LEFT_END_HARVEST_HORIZONTAL_POINT = 2.5; // was 2
         private static double LEFT_QUAD_HARVEST_END_POINT = 3; // was 7
         private static double RIGHT_QUAD_HARVEST_END_POINT = 4.75; // was 7
         private static double RIGHT_START_SECOND_SWEEP_HORIZONTAL_POINT = 1;
@@ -158,8 +158,8 @@ public class AutoPoses {
 
         public static Supplier<Pose2d> quadRight = () -> new Pose2d(8, 3.25, Rotation2d.fromDegrees(120)); // was 7.5,
                                                                                                            // 3.5
-        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(6.5, 4.5, Rotation2d.fromDegrees(230)); // was 7.5,
-                                                                                                           // 6.5
+        public static Supplier<Pose2d> quadLeft = () -> new Pose2d(8, 4.5, Rotation2d.fromDegrees(230)); // was 4.5,
+                                                                                                         // 6.5
         // Second Sweeps
         public static Supplier<Pose2d> rightQuadSecondSweep_Start = () -> new Pose2d(6.95,
                         RIGHT_START_SECOND_SWEEP_HORIZONTAL_POINT, Rotation2d.fromDegrees(270));

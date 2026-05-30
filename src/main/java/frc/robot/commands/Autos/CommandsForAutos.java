@@ -266,7 +266,8 @@ public class CommandsForAutos {
                         () -> quadLeft.get(), drivetrain, "MoveTo_quadLeft")
                         .withFlipPoseForAlliance(true)
                         .withProfileThresholds(8, DEFAULT_THETA_THRESHOLD, DEFAULT_BEELINE_THRESHOLD)
-                        .withMaxVelocity(() -> Math.min(Math.min((1 - (pickup.getPidError() / 20)) * 5, 20), 1.5))
+                        // .withMaxVelocity(() -> Math.min(Math.min((1 - (pickup.getPidError() / 20)) *
+                        // 5, 20), 1.5))
                         .build();
         // #endregion
         Supplier<Command> MoveTo_centerRightIntakeEndLookHub = () -> new AutoPilotV2Command.Builder(
