@@ -158,9 +158,9 @@ public class AutoCommands {
                 if (DriverStation.isFMSAttached()
                                 || SmartDashboard.getBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false)) {
                         SmartDashboard.putBoolean(AUTO_SMARTDASHBOARD_FOLDER + "/Auto Mode Enable", false);
-                        if (Full_Autos.OVERRIDE_AUTO_COMMAND != null) {
-                                return Full_Autos.OVERRIDE_AUTO_COMMAND;
-                        }
+                        // if (Full_Autos.OVERRIDE_AUTO_COMMAND != null) {
+                        // return Full_Autos.OVERRIDE_AUTO_COMMAND;
+                        // }
                         return autoChooser.getSelected();
                 } else {
                         return Commands.print("Auto Disabled");

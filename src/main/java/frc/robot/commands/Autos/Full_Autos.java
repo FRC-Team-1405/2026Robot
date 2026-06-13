@@ -15,7 +15,7 @@ import frc.robot.subsystems.Pickup;
 
 public class Full_Autos {
         private CommandsForAutos cmds;
-        public static Command OVERRIDE_AUTO_COMMAND = null;
+        // public static Command OVERRIDE_AUTO_COMMAND = null;
 
         public Full_Autos(CommandsForAutos cmds) {
                 this.cmds = cmds;
@@ -595,9 +595,9 @@ public class Full_Autos {
                 // TODO:Get some sleep
                 // TODO: Score more than channing in auto
                 // TODO: Win Comp
-                OVERRIDE_AUTO_COMMAND = LeftQuad;
+                // OVERRIDE_AUTO_COMMAND = null;
                 // LeftStartCenterHarvest_SecondSweep_TOP_FIRST
-                SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
-                                OVERRIDE_AUTO_COMMAND.getName());
+                // SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
+                // OVERRIDE_AUTO_COMMAND.getName());
         }
 }
