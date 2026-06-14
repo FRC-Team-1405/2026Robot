@@ -27,6 +27,7 @@
 - Ethernet cables
 - Power strip / Extension cords
 - April Tags
+- hdmi cable for scouting meeting
 
 ### Good Spares to have
 - Two spare controllers

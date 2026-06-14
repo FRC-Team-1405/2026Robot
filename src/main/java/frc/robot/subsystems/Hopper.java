@@ -53,6 +53,11 @@ public class Hopper extends SubsystemBase {
     configs.MotionMagic.MotionMagicCruiseVelocity = Constants.HopperPreferences.CRUISE_VELOCITY;
     configs.MotionMagic.MotionMagicAcceleration = Constants.HopperPreferences.ACCELERATION;
 
+    // configs.CurrentLimits.StatorCurrentLimit =
+    // Constants.HopperPreferences.STATOR_CURRENT_LIMIT;
+    // configs.CurrentLimits.SupplyCurrentLimit =
+    // Constants.HopperPreferences.SUPPLY_CURRENT_LIMIT;
+
     configs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     StatusCode status = StatusCode.StatusCodeNotInitialized;

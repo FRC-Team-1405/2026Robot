@@ -4,6 +4,7 @@
 
 package frc.robot.commands.Shooter;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.commands.DynamicWaitCommand;
 import frc.robot.constants.FeatureSwitches;
@@ -44,6 +46,14 @@ public class AutoFire {
     return new TeleopFireCommand(shooter, indexer, indexerVelocity, intake);
   }
 
+  public static Command DynamicTeleop(
+      Shooter shooter,
+      Indexer indexer,
+      Supplier<AngularVelocity> indexerVelocity, Intake intake, DoubleSupplier distanceToHub,
+      Trigger activateShooting) {
+    return new DynamicTeleopFireCommand(shooter, indexer, indexerVelocity, intake, distanceToHub, activateShooting);
+  }
+
   public static Command autonomous(
       Shooter shooter,
       Indexer indexer,
@@ -57,6 +67,21 @@ public class AutoFire {
             new DynamicWaitCommand(
                 () -> Math.min(requestedDuration, Robot.getAutonomousTimeLeft() - 1.0)),
             new TeleopFireCommand(shooter, indexer, indexerVelocity)));
+  }
+
+  public static Command dynamicAutonomous(
+      Shooter shooter,
+      Indexer indexer,
+      Supplier<AngularVelocity> indexerVelocity, DoubleSupplier distanceToHub) {
+
+    double requestedDuration = 5.0;
+
+    return Commands.sequence(
+        Commands.waitUntil(() -> Robot.getAutonomousTimeLeft() > 1.0),
+        Commands.deadline(
+            new DynamicWaitCommand(
+                () -> Math.min(requestedDuration, Robot.getAutonomousTimeLeft() - 1.0)),
+            new DynamicTeleopFireCommand(shooter, indexer, indexerVelocity, distanceToHub, new Trigger(() -> true))));
   }
 
   /**
@@ -123,9 +148,105 @@ public class AutoFire {
 
     @Override
     public void execute() {
+      shooter.updateSpeed();
       if (!feeding && shooter.isReadyToFire()) {
         indexer.startFeeding(indexerVelocity);
         feeding = true;
+        // System.out.println("[AutoFire] locked - feeding started");
+      } else if (!shooter.isReadyToFire() && feeding) {
+        indexer.stopFeeding();
+        feeding = false;
+        // System.out.println("[AutoFire] unlocked - feeding stopped");
+
+      }
+
+      // retract intake after 3 seconds
+      if (this.intake != null) {
+        if (FeatureSwitches.RETRACT_INTAKE_WITH_TIME) {
+          double currentTimeShooting = Timer.getFPGATimestamp() - shooterStartTimestamp;
+          if (currentTimeShooting > 3) {
+            CommandScheduler.getInstance().schedule(intake.runIntakeCenter()); // TODO are you rescheduling every loop?
+          }
+        }
+
+        if (FeatureSwitches.RETRACT_INTAKE_USING_INDEXER_ROTATIONS) {
+          // current rotations minus rotation in beginning
+          double currentRotations = indexer.getRotations() - startRotation;
+          SmartDashboard.putNumber("AutoFire/IndexerRotations", currentRotations);
+          if (currentRotations > INDEXER_ROTATION_THRESHOLD) {
+            CommandScheduler.getInstance().schedule(intake.runIntakeCenter()); // TODO are you rescheduling every loop?
+          }
+        }
+      }
+
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+      indexer.stopFeeding();
+      shooter.stopShooter(); // TODO maybe remove this or make it only on autonomous
+      System.out.println("[AutoFire] end: interrupted=" + interrupted);
+    }
+
+    @Override
+    public boolean isFinished() {
+      return false;
+    }
+  }
+
+  // Teleop command for dynamic shooting
+
+  private static class DynamicTeleopFireCommand extends Command {
+    private final Shooter shooter;
+    private final Indexer indexer;
+    private Intake intake = null;
+    private final Supplier<AngularVelocity> indexerVelocity;
+    private boolean feeding;
+    private double shooterStartTimestamp = 0.0;
+    private double startRotation;
+    DoubleSupplier distanceToHub;
+
+    private Trigger activateShooting;
+
+    DynamicTeleopFireCommand(Shooter shooter, Indexer indexer,
+        Supplier<AngularVelocity> indexerVelocity, DoubleSupplier distanceToHub, Trigger activateShooting) {
+      this.shooter = shooter;
+      this.indexer = indexer;
+      this.indexerVelocity = indexerVelocity;
+      this.distanceToHub = distanceToHub;
+      this.activateShooting = activateShooting;
+      addRequirements(shooter, indexer);
+      setName("AutoFire_Dynamic_Teleop");
+    }
+
+    DynamicTeleopFireCommand(Shooter shooter, Indexer indexer,
+        Supplier<AngularVelocity> indexerVelocity, Intake intake, DoubleSupplier distanceToHub,
+        Trigger activateShooting) {
+      this(shooter, indexer, indexerVelocity, distanceToHub, activateShooting);
+      this.intake = intake;
+    }
+
+    @Override
+    public void initialize() {
+      shooter.setDynamicShooterSpeed(distanceToHub);
+      shooter.spinUp();
+      feeding = false;
+      shooterStartTimestamp = Timer.getFPGATimestamp();
+      System.out.println("[AutoFire] initialize: spinning up");
+
+      indexer.getRotations();
+      startRotation = indexer.getRotations();
+    }
+
+    @Override
+    public void execute() {
+      shooter.setDynamicShooterSpeed(distanceToHub);
+      shooter.updateSpeed();
+      if (!feeding && shooter.isReadyToFire()) {
+        if (activateShooting.getAsBoolean()) {
+          indexer.startFeeding(indexerVelocity);
+          feeding = true;
+        }
         // System.out.println("[AutoFire] locked - feeding started");
       } else if (!shooter.isReadyToFire() && feeding) {
         indexer.stopFeeding();

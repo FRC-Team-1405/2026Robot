@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -85,8 +86,7 @@ public class Shooter extends SubsystemBase {
   private boolean wasLocked = false;
 
   private CommandXboxController operatorJoystick;
-
-  private Command vibrate;
+  private Command setToStandardPointMode;
 
   private Supplier<AngularVelocity> requestedSpeed = () -> Constants.ShooterPreferences.LONG;
 
@@ -146,6 +146,8 @@ public class Shooter extends SubsystemBase {
     // Follower Motors
     TalonFXConfiguration followerMotorsCfg = new TalonFXConfiguration();
     followerMotorsCfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    followerMotorsCfg.Voltage.withPeakForwardVoltage(Volts.of(ShooterPIDConfig.PEAK_FORWARD_VOLTAGE))
+        .withPeakReverseVoltage(Volts.of(ShooterPIDConfig.PEAK_REVERSE_VOLTAGE));
 
     StatusCode status2 = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
@@ -179,18 +181,22 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Creates a new Shooter. */
-  public Shooter(CommandXboxController operatorJoystick) {
+  public Shooter(CommandXboxController operatorJoystick, Command setToStandardPointMode) {
     this.operatorJoystick = operatorJoystick;
+    this.setToStandardPointMode = setToStandardPointMode;
     setupMotors();
     simulationInit();
     shooterMotor2.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     shooterMotor3.setControl(new Follower(Constants.CANBus.SHOOTER_MOTOR_1, MotorAlignmentValue.Opposed));
     SmartDashboard.putNumber("Shooter/TestTargetRPS", 10.0);
     shooterStop();
-    vibrate = new RumbleJoystick(operatorJoystick, RumbleType.kBothRumble, 0.5, 1.0);
   }
 
   private void setShooterSpeed(Supplier<AngularVelocity> speed) {
+    if (operatorJoystick != null) {
+      CommandScheduler.getInstance().schedule(RumbleJoystick.continousRumble(operatorJoystick));
+    }
+
     AngularVelocity target = speed.get();
     shooterMotor1.setControl(velocityVoltage.withVelocity(target));
     shooterTarget = target.in(RotationsPerSecond);
@@ -200,6 +206,14 @@ public class Shooter extends SubsystemBase {
   }
 
   private void shooterStop() {
+    if (operatorJoystick != null) {
+      CommandScheduler.getInstance().schedule(RumbleJoystick.stopRumble(operatorJoystick));
+    }
+
+    if (setToStandardPointMode != null) {
+      CommandScheduler.getInstance().schedule(setToStandardPointMode);
+    }
+
     shooterTarget = 0.0;
     shooterMotor1.setControl(brake);
     fLogger.log("shooterStop called");
@@ -208,6 +222,17 @@ public class Shooter extends SubsystemBase {
   /** Spin up the flywheel to the currently requested speed. */
   public void spinUp() {
     setShooterSpeed(requestedSpeed);
+  }
+
+  /**
+   * Update the motor control to the current requested speed without resetting
+   * settle tracking state. Use this for continuous speed updates (e.g. dynamic
+   * distance-based shooting) to avoid disrupting the lock/settle logic.
+   */
+  public void updateSpeed() {
+    AngularVelocity target = requestedSpeed.get();
+    shooterMotor1.setControl(velocityVoltage.withVelocity(target));
+    shooterTarget = target.in(RotationsPerSecond);
   }
 
   /** Stop the flywheel motors. */
@@ -262,6 +287,56 @@ public class Shooter extends SubsystemBase {
     ShooterPreferences.SHOOTER_SPEED_TO_DISTANCE.put(requestedSpeed.get(), () -> value - 0.1);
   }
 
+  public void setDynamicShooterSpeed(DoubleSupplier distanceToHub) {
+    double floorDistance;
+    double ceilingDistance;
+    AngularVelocity floorSpeed;
+    AngularVelocity ceilingSpeed;
+    if (distanceToHub.getAsDouble() <= ShooterPreferences.SHORT_DISTANCE.get()) {
+      floorDistance = 0.0;
+      ceilingDistance = ShooterPreferences.SHORT_DISTANCE.get();
+      floorSpeed = RotationsPerSecond.of(0);
+      ceilingSpeed = ShooterPreferences.SHORT;
+    } else if (distanceToHub.getAsDouble() <= ShooterPreferences.MEDIUM_DISTANCE.get()) {
+      floorDistance = ShooterPreferences.SHORT_DISTANCE.get();
+      ceilingDistance = ShooterPreferences.MEDIUM_DISTANCE.get();
+      floorSpeed = ShooterPreferences.SHORT;
+      ceilingSpeed = ShooterPreferences.MEDIUM;
+    } else if (distanceToHub.getAsDouble() <= ShooterPreferences.LONG_DISTANCE.get()) {
+      floorDistance = ShooterPreferences.MEDIUM_DISTANCE.get();
+      ceilingDistance = ShooterPreferences.LONG_DISTANCE.get();
+      floorSpeed = ShooterPreferences.MEDIUM;
+      ceilingSpeed = ShooterPreferences.LONG;
+    } else if (distanceToHub.getAsDouble() <= ShooterPreferences.LONGER_DISTANCE.get()) {
+      floorDistance = ShooterPreferences.LONG_DISTANCE.get();
+      ceilingDistance = ShooterPreferences.LONGER_DISTANCE.get();
+      floorSpeed = ShooterPreferences.LONG;
+      ceilingSpeed = ShooterPreferences.LONGER;
+    } else {
+      floorDistance = ShooterPreferences.LONGER_DISTANCE.get();
+      ceilingDistance = 4.02844;
+      floorSpeed = ShooterPreferences.LONGER;
+      ceilingSpeed = ShooterPreferences.LUDICROUS_SPEED;
+    }
+    setRequestedSpeedWithoutShooting(() -> {
+      return AngularVelocity.ofBaseUnits(
+          dynamicShooterRPS(floorDistance, ceilingDistance, floorSpeed, ceilingSpeed, distanceToHub),
+          RotationsPerSecond);
+    });
+  }
+
+  public double dynamicShooterRPS(Double floorDistance, Double ceilingDistance, AngularVelocity floorSpeed,
+      AngularVelocity ceilingSpeed, DoubleSupplier distanceToHub) {
+    double dynamicRPS;
+    dynamicRPS = (floorSpeed.baseUnitMagnitude() * (ceilingDistance - distanceToHub.getAsDouble())
+        + (ceilingSpeed.baseUnitMagnitude() * (distanceToHub.getAsDouble() - floorDistance)))
+        / (ceilingDistance - floorDistance);
+    if (dynamicRPS >= ShooterPreferences.MAX.baseUnitMagnitude()) {
+      dynamicRPS = ShooterPreferences.MAX.baseUnitMagnitude();
+    }
+    return dynamicRPS;
+  }
+
   public Command runShooter(Supplier<AngularVelocity> speed) {
     return Commands.runOnce(() -> setShooterSpeed(speed), this);
   }
@@ -307,6 +382,8 @@ public class Shooter extends SubsystemBase {
     double motor1SupplyCurrent = shooterMotor1.getSupplyCurrent().getValueAsDouble();
     double motor2SupplyCurrent = shooterMotor2.getSupplyCurrent().getValueAsDouble();
     double motor3SupplyCurrent = shooterMotor3.getSupplyCurrent().getValueAsDouble();
+    double cumulativeMotorSupplyCurrent = motor1SupplyCurrent + motor2SupplyCurrent + motor3SupplyCurrent;
+
     double motor1TorqueCurrent = shooterMotor1.getTorqueCurrent().getValueAsDouble();
     double motor2TorqueCurrent = shooterMotor2.getTorqueCurrent().getValueAsDouble();
     double motor3TorqueCurrent = shooterMotor3.getTorqueCurrent().getValueAsDouble();
@@ -402,6 +479,10 @@ public class Shooter extends SubsystemBase {
       // SmartDashboard.putNumber("Shooter/Motor1StdDev", stdDev);
       // SmartDashboard.putNumber("Shooter/BallExitVelocityFPS", exitVelocityFPS);
 
+      // Dynamice Shooter
+      // SmartDashboard.putNumber("Shooter/DynamicRPS", ); //TODO ben needs to finish
+      // writing this
+
       // Follower sync
       SmartDashboard.putNumber("Shooter/Motor2RPSDelta", motor2RPSDelta);
       SmartDashboard.putNumber("Shooter/Motor3RPSDelta", motor3RPSDelta);
@@ -416,12 +497,12 @@ public class Shooter extends SubsystemBase {
       // SmartDashboard.putNumber("Shooter/Motor1SupplyCurrent", motor1SupplyCurrent);
       // SmartDashboard.putNumber("Shooter/Motor2SupplyCurrent", motor2SupplyCurrent);
       // SmartDashboard.putNumber("Shooter/Motor3SupplyCurrent", motor3SupplyCurrent);
-      // SmartDashboard.putNumber("Shooter/DifferentialCurrent",
-      // differentialCurrentDraw);
+      SmartDashboard.putNumber("Shooter/DifferentialCurrent", differentialCurrentDraw);
+      SmartDashboard.putNumber("Shooter/CumulativeSupplyCurrent", cumulativeMotorSupplyCurrent);
+
       SmartDashboard.putNumber("Shooter/Motor1TorqueCurrent", motor1TorqueCurrent);
       SmartDashboard.putNumber("Shooter/Motor2TorqueCurrent", motor2TorqueCurrent);
       SmartDashboard.putNumber("Shooter/Motor3TorqueCurrent", motor3TorqueCurrent);
-      SmartDashboard.putNumber("Shooter/CumulativeStatorCurrent", cumulativeMotorStatorCurrent);
 
       // Temperature
       // SmartDashboard.putNumber("Shooter/Motor1Temp", motor1Temp);
@@ -448,10 +529,6 @@ public class Shooter extends SubsystemBase {
       // Shooter Distance
       SmartDashboard.putNumber("Shooter/Requested Speed", requestedSpeed.get().in(RotationsPerSecond));
       SmartDashboard.putNumber("Shooter/Desired Distance", getDistanceFromSpeed().get().get());
-
-      if (isShooterSpinning()) {
-        CommandScheduler.getInstance().schedule(vibrate);
-      }
     }
   }
 

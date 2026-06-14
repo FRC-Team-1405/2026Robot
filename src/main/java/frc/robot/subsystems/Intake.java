@@ -40,17 +40,16 @@ public class Intake extends SubsystemBase {
   private final TalonFX pickupMotor = new TalonFX(Constants.CANBus.PICKUP_MOTOR);
 
   private final MotorSim_Mech_SJC intake_motorSimMech = new MotorSim_Mech_SJC("Intake/DeployMech");
-  private final MotorSim_Mech_SJC pickup_motorSimMech = new MotorSim_Mech_SJC("Intake/PickupMech");
+  // private final MotorSim_Mech_SJC pickup_motorSimMech = new
+  // MotorSim_Mech_SJC("Intake/PickupMech");
 
   private final MotionMagicVoltage intakePositionRequest = new MotionMagicVoltage(0);
-  private final MotionMagicVelocityVoltage pickupVelocityRequest = new MotionMagicVelocityVoltage(0);
   private final NeutralOut neutralRequest = new NeutralOut();
 
   private int settleCount = 0;
   private int stallCount = 0;
   private double intakePositionTarget = 0;
   private boolean isIntakeDeployed = false;
-  private boolean isPickupActive = false;
 
   // Mechanical protection
   private boolean isIntakeMovementDisabled = false;
@@ -193,7 +192,8 @@ public class Intake extends SubsystemBase {
     publishTelemetry();
 
     intake_motorSimMech.update(intakeMotor.getPosition(), intakeMotor.getVelocity());
-    pickup_motorSimMech.update(pickupMotor.getPosition(), pickupMotor.getVelocity());
+    // pickup_motorSimMech.update(pickupMotor.getPosition(),
+    // pickupMotor.getVelocity());
   }
 
   // ── Simulation ───────────────────────────────────────────────────────────
@@ -233,10 +233,6 @@ public class Intake extends SubsystemBase {
     return isIntakeDeployed;
   }
 
-  public boolean isPickupRunning() {
-    return isPickupActive;
-  }
-
   // ── Low-Level Motor Actions ──────────────────────────────────────────────
 
   private void setIntakePosition(double position) {
@@ -252,16 +248,6 @@ public class Intake extends SubsystemBase {
     intakePositionTarget = position;
     settleCount = 0;
     stallCount = 0;
-  }
-
-  private void setPickupVelocity(double velocity) {
-    pickupMotor.setControl(pickupVelocityRequest.withVelocity(velocity));
-    isPickupActive = true;
-  }
-
-  private void stopPickupMotor() {
-    pickupMotor.setControl(neutralRequest);
-    isPickupActive = false;
   }
 
   // ── Intake Deploy Positions ──────────────────────────────────────────────
@@ -282,18 +268,6 @@ public class Intake extends SubsystemBase {
     isIntakeDeployed = true;
     setIntakePosition(IntakePreferences.INTAKE_MOTOR_CENTER);
     fLogger.log("Intake CENTER (%.1f)", IntakePreferences.INTAKE_MOTOR_CENTER);
-  }
-
-  // ── Pickup Roller Speeds ─────────────────────────────────────────────────
-
-  private void pickupRollIn() {
-    setPickupVelocity(IntakePreferences.PICKUP_MOTOR_IN);
-    fLogger.log("Pickup IN (%.1f rps)", IntakePreferences.PICKUP_MOTOR_IN);
-  }
-
-  private void pickupRollOut() {
-    setPickupVelocity(IntakePreferences.PICKUP_MOTOR_OUT);
-    fLogger.log("Pickup OUT (%.1f rps)", IntakePreferences.PICKUP_MOTOR_OUT);
   }
 
   // ── Public Commands ──────────────────────────────────────────────────────
@@ -328,57 +302,6 @@ public class Intake extends SubsystemBase {
         runOnce(() -> deployCenter()),
         Commands.waitUntil(this::isAtTarget))
         .withName("Run Intake Center");
-  }
-
-  /** Run the pickup rollers inward (intaking game pieces). */
-  // public Command runPickupIn() {
-  // return startEnd(() -> pickupRollIn(), () -> stopPickupMotor())
-  // .withName("Run Pickup In");
-  // }
-
-  public Command runPickupIn() {
-    return run(() -> pickupRollIn())
-        .finallyDo(() -> stopPickupMotor())
-        .withName("Run Pickup In");
-  }
-
-  /** Run the pickup rollers outward (ejecting game pieces). */
-  public Command runPickupOut() {
-    return runOnce(() -> pickupRollOut())
-        .withName("Run Pickup Out");
-  }
-
-  /** Stop the pickup rollers. */
-  public Command runPickupStop() {
-    return runOnce(() -> stopPickupMotor())
-        .withName("Run Pickup Stop");
-  }
-
-  // Named/SmartDashboard-publishing overloads
-  public Command runPickupOut(String name) {
-    Command cmd = runPickupOut().withName(name);
-    SmartDashboard.putData(cmd);
-    return cmd;
-  }
-
-  public Command runPickupIn(String name) {
-    Command cmd = runPickupIn().withName(name);
-    SmartDashboard.putData(cmd);
-    return cmd;
-  }
-
-  public Command runPickupStop(String name) {
-    Command cmd = runPickupStop().withName(name);
-    SmartDashboard.putData(cmd);
-    return cmd;
-  }
-
-  /** Stop pickup then retract intake. */
-  public Command runRetractIntake() {
-    return Commands.sequence(
-        runPickupStop(),
-        runIntakeIn())
-        .withName("Retract Intake");
   }
 
   public void checkForResetEncoder() {
@@ -416,7 +339,6 @@ public class Intake extends SubsystemBase {
       SmartDashboard.putNumber("Intake/PickupVelocity", pickupMotor.getVelocity().getValueAsDouble());
       SmartDashboard.putNumber("Intake/PickupError", pickupMotor.getClosedLoopError().getValueAsDouble());
       SmartDashboard.putBoolean("Intake/IsDeployed", isIntakeDeployed);
-      SmartDashboard.putBoolean("Intake/IsPickupActive", isPickupActive);
       SmartDashboard.putBoolean("Intake/AtTarget", isAtTarget());
       SmartDashboard.putNumber("Intake/SettleCount", settleCount);
       SmartDashboard.putNumber("Intake/StallCount", stallCount);

@@ -14,3 +14,8 @@
 # Photon Vision Local URL
 
 http://photonvision.local:5800/
+
+# DS Log Folder
+Stored on the driverstation computer, not the Rio!
+
+`C:\Users\Public\Documents\FRC\Log Files\DSLogs`

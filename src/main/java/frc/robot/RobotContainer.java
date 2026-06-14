@@ -13,25 +13,24 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.HoodPreferences.HoodAngles;
 import frc.robot.Constants.ShooterPreferences;
 import frc.robot.commands.DriveToHubDistance;
 import frc.robot.commands.RumbleJoystick;
 import frc.robot.commands.SetHoodPosition;
+import frc.robot.commands.Autos.CommandsForAutos;
+import frc.robot.commands.Autos.Full_Autos;
 import frc.robot.commands.Shooter.AutoFire;
 import frc.robot.constants.FeatureSwitches;
 import frc.robot.constants.FieldConstants;
@@ -46,12 +45,14 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.MoveMode;
+import frc.robot.subsystems.Pickup;
+import frc.robot.subsystems.ShootMode;
+import frc.robot.subsystems.ShootMode.Mode;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.SwerveFeatures;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.Vision.VisionSample;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.commands.Shooter.AutoFire;
 
 public class RobotContainer {
         private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -73,20 +74,33 @@ public class RobotContainer {
         List<StructPublisher<Pose2d>> cameraEstimatedPosesPublisher = Arrays.asList(cameraEstimatedPosePublisher1,
                         cameraEstimatedPosePublisher2);
 
-        public Shooter shooter = new Shooter(operatorJoystick);
         public Indexer indexer = new Indexer();
         public final Climber climber = new Climber();
         public final AdjustableHood hood = new AdjustableHood();
         public final Hopper hopper = new Hopper();
         public final Intake intake = new Intake();
+        public final Pickup pickup = new Pickup();
         private final Vision vision = new Vision(Vision.camerasFromConfigs(VisionConstants.CONFIGS));
+        private final SwerveFeatures swerveFeatures = new SwerveFeatures(drivetrain);
         MoveMode moveMode = new MoveMode();
+        public Shooter shooter = new Shooter(operatorJoystick, moveMode.setToStandardMode());
+        ShootMode shootMode = new ShootMode(drivetrain, swerveFeatures, intake, indexer, shooter, driverJoystick);
+        public final CommandsForAutos commandsForAutos = new CommandsForAutos(drivetrain, climber,
+                        intake,
+                        pickup,
+                        hopper,
+                        indexer,
+                        shooter,
+                        hood);
+        public final Full_Autos full_Autos = new Full_Autos(commandsForAutos);
 
         public RobotContainer() {
                 configureBindings();
                 // configureBindings_CTReDefault();
 
-                AutoCommands.registerCommands(drivetrain, climber, intake, hopper, indexer, shooter, hood);
+                full_Autos.registerAutos(commandsForAutos);
+                AutoCommands.setupAutoChooser(drivetrain, climber, intake, hopper, indexer, shooter, hood,
+                                swerveFeatures, commandsForAutos);
                 AprilTags.publishTags(AprilTags.getAprilTagFieldLayout());
                 drivetrain.initOverridePose();
         }
@@ -170,9 +184,40 @@ public class RobotContainer {
                 operatorJoystick.b().onTrue(new SetHoodPosition(hood, HoodAngles.MEDIUM));
                 operatorJoystick.a().onTrue(new SetHoodPosition(hood, HoodAngles.LONG));
 
-                operatorJoystick.y().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.SHORT));
-                operatorJoystick.b().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.MEDIUM));
-                operatorJoystick.a().onTrue(shooter.runSetRequestedSpeed(() -> ShooterPreferences.LONG));
+                // Set Shooter Speeds
+
+                // SHORT
+                operatorJoystick.y().onTrue(new SequentialCommandGroup(new InstantCommand(
+                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                "Short")),
+                                shootMode.setMode(Mode.SHORT)));
+
+                // MEDIUM
+                operatorJoystick.b().onTrue(new SequentialCommandGroup(new InstantCommand(
+                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                "Medium")),
+                                shootMode.setMode(Mode.MEDIUM)));
+
+                // LONG
+                operatorJoystick.a().and(operatorJoystick.back()
+                                .negate()).onTrue(new SequentialCommandGroup(
+                                                new InstantCommand(
+                                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                                                "Long")),
+                                                shootMode.setMode(Mode.LONG)));
+
+                // LUDICROUS
+                operatorJoystick.a().and(operatorJoystick.back()).onTrue(new SequentialCommandGroup(
+                                new InstantCommand(
+                                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                                "LUDICROUS")),
+                                shootMode.setMode(Mode.LUDICROUS)));
+
+                // DYNAMIC
+                operatorJoystick.x().onTrue(new SequentialCommandGroup(new InstantCommand(
+                                () -> SmartDashboard.putString("Shooter/AutoFireMode",
+                                                "Dynamic")),
+                                shootMode.setMode(Mode.DYNAMIC)));
 
                 // Stop Shooter
                 Command stopShooterAndDeployIntake = Commands.sequence(shooter.stopShooter(), indexer.runStopIndexer(),
@@ -294,10 +339,16 @@ public class RobotContainer {
 
                 // Run Intake (Pickup)
                 // driverJoystick.leftBumper().onFalse(intake.runPickupStop());
-                driverJoystick.leftBumper().whileTrue(intake.runPickupIn());
+                driverJoystick.leftBumper()
+                                .whileTrue(new SequentialCommandGroup(new InstantCommand(
+                                                () -> SmartDashboard.putBoolean("Pickup/PickupButtonPressed", true)),
+                                                pickup.runPickupIn()))
+                                .onFalse(new InstantCommand(
+                                                () -> SmartDashboard.putBoolean("Pickup/PickupButtonPressed", false)));
 
                 // Shoot — continuous auto-fire while held, with drivetrain brake.
                 // Hopper is driven by hopperTrigger (follows indexer state).
+
                 final Command shootCommand = AutoFire.teleop(shooter, indexer,
                                 () -> ShooterPreferences.INDEXER_VELOCITY, intake);
 
@@ -308,8 +359,9 @@ public class RobotContainer {
 
                 // TODO allow driver to override brake mode while shooting so they can manually
                 // adjust
-                driverJoystick.rightBumper()
-                                .whileTrue(Commands.parallel(shootCommand, Commands.none()));
+                driverJoystick.rightBumper().and(
+                                shootMode.isNonDynamicShootMode())
+                                .whileTrue(shootCommand);
 
                 //
                 // Shooter Joystick (DEBUG) Controls

@@ -17,4 +17,7 @@ public class FeatureSwitches {
 
     // Mechanical protections
     public static final boolean INTAKE_SAFTEY_MODE_NO_DEPLOY = false;
+
+    // Drive base
+    public static final boolean PUBLISH_INDIVIDUAL_DRIVE_CURRENTS = false;
 }

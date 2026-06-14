@@ -44,6 +44,8 @@ public class Constants {
         public static final double KS = 0.15;
         public static final double PEAK_FORWARD_VOLTAGE = 10.0;
         public static final double PEAK_REVERSE_VOLTAGE = -10.0;
+        public static final double SUPPLY_CURRENT_LIMIT = 40;
+        public static final double STATOR_CURRENT_LIMIT = 60;
         public static final double MOTION_MAGIC_ACCELERATION = 60.0;
         public static final int FILTER_WINDOW = 50;
         public static final double TARGET_MATCH_TOLERANCE = 1.0;
@@ -72,34 +74,28 @@ public class Constants {
 
     public static class ShooterPreferences {
         // Shooter speeds
-        public static final AngularVelocity SHORT;
-        public static final AngularVelocity INTERMEDIATE;
-        public static final AngularVelocity MEDIUM;
-        public static final AngularVelocity LONG;
-
-        static {
-            SHORT = RotationsPerSecond.of(38.0);
-
-            // Positions are a percentage of a full range of motion
-            Preferences.initDouble("ShooterVelocities/Intermediate", 20.0);
-            INTERMEDIATE = RotationsPerSecond.of(Preferences.getDouble("ShooterVelocities/Intermediate", 20.0));
-
-            MEDIUM = RotationsPerSecond.of(42.0);
-
-            LONG = RotationsPerSecond.of(50.0);
-        }
+        public static final AngularVelocity SHORT = RotationsPerSecond.of(38);
+        public static final AngularVelocity MEDIUM = RotationsPerSecond.of(42);
+        public static final AngularVelocity LONG = RotationsPerSecond.of(50);
+        public static final AngularVelocity LONGER = RotationsPerSecond.of(85);
+        public static final AngularVelocity LUDICROUS_SPEED = RotationsPerSecond.of(90);
+        public static final AngularVelocity DYNAMIC = RotationsPerSecond.of(20);
+        public static final AngularVelocity MAX = RotationsPerSecond.of(90);
 
         // Shooting distances
         // desired robot distances for each shooting speed
         public static Supplier<Double> SHORT_DISTANCE = () -> 1.4;
-        public static Supplier<Double> MEDIUM_DISTANCE = () -> 1.9542;// was 2.2082
-        public static Supplier<Double> LONG_DISTANCE = () -> 2.8;
+        public static Supplier<Double> MEDIUM_DISTANCE = () -> 1.9542;
+        public static Supplier<Double> LONG_DISTANCE = () -> 2.5;
+        public static Supplier<Double> LONGER_DISTANCE = () -> 3.0;
 
         public static final HashMap<AngularVelocity, Supplier<Double>> SHOOTER_SPEED_TO_DISTANCE = new HashMap<>();
         static {
             SHOOTER_SPEED_TO_DISTANCE.put(SHORT, SHORT_DISTANCE);
             SHOOTER_SPEED_TO_DISTANCE.put(MEDIUM, MEDIUM_DISTANCE);
             SHOOTER_SPEED_TO_DISTANCE.put(LONG, LONG_DISTANCE);
+            SHOOTER_SPEED_TO_DISTANCE.put(LONGER, LONGER_DISTANCE);
+
         };
 
         public static final AngularVelocity INDEXER_VELOCITY;
@@ -129,7 +125,7 @@ public class Constants {
         // PID gains for indexer roller motor (MotionMagic velocity control)
         public static final double KS = 0.1;
         public static final double KV = 0.12;
-        public static final double KP = 0.5;
+        public static final double KP = 0.8;
         public static final double KI = 0.0;
         public static final double KD = 0.0;
 
@@ -139,7 +135,10 @@ public class Constants {
 
         // MotionMagic profile for indexer roller
         public static final double CRUISE_VELOCITY = 40.0; // rotations per second
-        public static final double ACCELERATION = 40.0; // rotations per second^2
+        public static final double ACCELERATION = 100.0; // rotations per second^2
+
+        public static final double STATOR_CURRENT_LIMIT = 60;
+        public static final double SUPPLY_CURRENT_LIMIT = 50;
     }
 
     public static class ClimberPreferences {
@@ -249,6 +248,9 @@ public class Constants {
         // MotionMagic profile for hopper roller
         public static final double CRUISE_VELOCITY = 40.0; // rotations per second
         public static final double ACCELERATION = 40.0; // rotations per second^2
+
+        public static final double STATOR_CURRENT_LIMIT = 60;
+        public static final double SUPPLY_CURRENT_LIMIT = 50;
 
         static {
             Preferences.initDouble("Hopper/Forward", 5.0);
