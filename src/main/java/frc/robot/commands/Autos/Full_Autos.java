@@ -200,7 +200,7 @@ public class Full_Autos {
                                 cmds.mediumShoot.get()).withName("LeftStartCenterHarvestInRight");
 
                 // Center Harvest Secondary Sweep
-
+                // TODO: Super Auto
                 Command RightStartCenterHarvest_SecondSweep_TOP_FIRST = new SequentialCommandGroup(
                                 Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
                                                 cmds.intake.runIntakeOut()),
@@ -215,7 +215,8 @@ public class Full_Autos {
                                                                 cmds.MoveTo_rightBump_FieldToAllianceStart.get()),
 
                                                 cmds.pickup.runPickupIn()),
-                                cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
+                                // Command from Frenzy: cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
+                                cmds.MoveTo_rightBump_FieldToAllianceEnd_TEST.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("RightStartCenterHarvest_SecondSweep_TOP_FIRST");
 

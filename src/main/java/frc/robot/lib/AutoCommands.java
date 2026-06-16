@@ -61,14 +61,14 @@ public class AutoCommands {
                 // NamedCommands.getCommand("LeftStart_JUSTSHOOT"));
 
                 // TODO:BUMP AUTOS
-                // commandsToAddToChooser.put("rightBumpToField",
-                // NamedCommands.getCommand("rightBumpToField"));
-                // commandsToAddToChooser.put("leftBumpToField",
-                // NamedCommands.getCommand("leftBumpToField"));
-                // commandsToAddToChooser.put("rightBumpToAlliance",
-                // NamedCommands.getCommand("rightBumpToAlliance"));
-                // commandsToAddToChooser.put("leftBumpToAlliance",
-                // NamedCommands.getCommand("leftBumpToAlliance"));
+                commandsToAddToChooser.put("rightBumpToField",
+                                NamedCommands.getCommand("rightBumpToField"));
+                commandsToAddToChooser.put("leftBumpToField",
+                                NamedCommands.getCommand("leftBumpToField"));
+                commandsToAddToChooser.put("rightBumpToAlliance",
+                                NamedCommands.getCommand("rightBumpToAlliance"));
+                commandsToAddToChooser.put("leftBumpToAlliance",
+                                NamedCommands.getCommand("leftBumpToAlliance"));
 
                 // commandsToAddToChooser.put("ShootFromDepot",
                 // NamedCommands.getCommand("ShootFromDepot"));
