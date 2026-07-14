@@ -15,7 +15,7 @@ import frc.robot.subsystems.Pickup;
 
 public class Full_Autos {
         private CommandsForAutos cmds;
-        // public static Command OVERRIDE_AUTO_COMMAND = null;
+        public static Command OVERRIDE_AUTO_COMMAND = null;
 
         public Full_Autos(CommandsForAutos cmds) {
                 this.cmds = cmds;
@@ -200,7 +200,7 @@ public class Full_Autos {
                                 cmds.mediumShoot.get()).withName("LeftStartCenterHarvestInRight");
 
                 // Center Harvest Secondary Sweep
-                // TODO: Super Auto
+
                 Command RightStartCenterHarvest_SecondSweep_TOP_FIRST = new SequentialCommandGroup(
                                 Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
                                                 cmds.intake.runIntakeOut()),
@@ -215,8 +215,7 @@ public class Full_Autos {
                                                                 cmds.MoveTo_rightBump_FieldToAllianceStart.get()),
 
                                                 cmds.pickup.runPickupIn()),
-                                // Command from Frenzy: cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
-                                cmds.MoveTo_rightBump_FieldToAllianceEnd_TEST.get(),
+                                cmds.MoveTo_rightBump_FieldToAllianceEnd.get(),
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("RightStartCenterHarvest_SecondSweep_TOP_FIRST");
 
@@ -315,6 +314,8 @@ public class Full_Autos {
                                 cmds.MoveTo_ClosestShootingPosition_MEDIUM.get(),
                                 cmds.mediumShoot.get()).withName("LeftSuperSweep");
                 // Quads
+                // TODO: Ask Stephen about curve
+                // TODO: Is it high enough and is the angle good?
                 Command RightQuad = new SequentialCommandGroup(
                                 // Running start
                                 Commands.deadline(cmds.MoveTo_rightBump_AllianceToFieldStart.get(),
@@ -328,12 +329,8 @@ public class Full_Autos {
                                                                 cmds.MoveTo_quadRightIntakeStart.get(),
                                                                 cmds.MoveTo_quadRight.get(),
                                                                 cmds.MoveTo_centerLeftIntakeEnd.get(),
-                                                                cmds.MoveTo_centerLeftIntakeEndLookHub.get(),
-                                                                cmds.MoveTo_rightBump_FieldToAllianceStart.get() // move
-                                                                                                                 // to
-                                                                                                                 // the
-                                                                                                                 // start
-                                                                                                                 // of
+                                                                cmds.MoveTo_centerLeftIntakeEndLookHub.get()// ,
+                                                // MoveTo_rightBump_FieldToAllianceStart.get() // move to the start of
                                                 // the bump before crossing
                                                 ),
                                                 cmds.pickup.runPickupIn()),
@@ -355,7 +352,6 @@ public class Full_Autos {
                                                                 cmds.MoveTo_quadLeftIntakeStart.get(),
                                                                 cmds.MoveTo_quadLeft.get(),
                                                                 cmds.MoveTo_centerRightIntakeEnd.get(),
-                                                                cmds.MoveTo_centerRightIntakeEndLookHub.get(),
                                                                 cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
                                                 cmds.pickup.runPickupIn()),
                                 cmds.MoveTo_leftBump_FieldToAllianceEnd.get(),
@@ -388,7 +384,7 @@ public class Full_Autos {
                                                 Commands.sequence(
                                                                 cmds.MoveTo_centerLeftIntakeStart.get(),
                                                                 cmds.MoveTo_quadLeft.get(),
-                                                                cmds.MoveTo_leftQuadSecondSweep_Start.get(),
+                                                                // cmds.MoveTo_leftQuadSecondSweep_Start.get(),
                                                                 // MoveTo_leftQuadSecondSweep_End.get(),
                                                                 cmds.MoveTo_leftBump_FieldToAllianceStart.get()),
                                                 cmds.pickup.runPickupIn()),
@@ -513,8 +509,7 @@ public class Full_Autos {
                                 cmds.MoveTo_FrontHubShoot.get());
                 // #endregion
                 Command fourMeters = new SequentialCommandGroup(
-                                // Commands.deadline(cmds.MoveTo_fourMeters.get(), cmds.pickup.runPickupIn()))
-                                cmds.MoveTo_fourMeters.get())
+                                Commands.deadline(cmds.MoveTo_fourMeters.get(), cmds.pickup.runPickupIn()))
                                 .withName("fourMeters");
                 Command TheShowboater = new SequentialCommandGroup(
                                 cmds.MoveTo_leftOfDepot_Out.get(),
@@ -595,10 +590,10 @@ public class Full_Autos {
                 // those leftovers
                 // TODO:Get some sleep
                 // TODO: Score more than channing in auto
-                // TODO: Win Comp
-                // OVERRIDE_AUTO_COMMAND = null;
+                // TODO: Win Comp!
+                OVERRIDE_AUTO_COMMAND = Zac_LeftQuad;
                 // LeftStartCenterHarvest_SecondSweep_TOP_FIRST
-                // SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
-                // OVERRIDE_AUTO_COMMAND.getName());
+                SmartDashboard.putString("Auto/SELECTED OVERRIDE_AUTO_COMMAND",
+                                OVERRIDE_AUTO_COMMAND.getName());
         }
 }
